@@ -1,0 +1,86 @@
+<header th:fragment="header" class="fixed-top bg-white shadow-sm border-bottom border-light">
+    <div class="container">
+        <nav class="navbar navbar-expand-lg py-3">
+            <div class="container-fluid">
+                <!-- Logo -->
+                <a class="navbar-brand fw-bold text-primary-blue" href="/">
+                    <img src="#" alt="Logo" width="30" height="30" class="d-inline-block align-text-top me-2">
+                    Donaciones
+                </a>
+
+                <!-- Botón hamburguesa para móvil -->
+                <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarMain"
+                    aria-controls="navbarMain" aria-expanded="false" aria-label="Toggle navigation">
+                    <span class="navbar-toggler-icon"></span>
+                </button>
+
+                <!-- Menú de navegación -->
+                <div class="collapse navbar-collapse" id="navbarMain">
+                    <ul class="navbar-nav me-auto mb-2 mb-lg-0">
+                        <li class="nav-item">
+                            <a class="nav-link" href="/">Inicio</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#about">Nosotros</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#help">Proyectos</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#testimonials">Transparencia</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="#contact">Contacto</a>
+                        </li>
+                        <!-- Menú de administración (visible solo para admin) -->
+                        <li class="nav-item dropdown"
+                            th:if="${#authentication != null and #authentication.principal.rol == 'admin'}">
+                            <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown"
+                                aria-expanded="false">
+                                Administración
+                            </a>
+                            <ul class="dropdown-menu">
+                                <li><a class="dropdown-item" th:href="@{/gestion-usuarios}">Usuarios</a></li>
+                                <li><a class="dropdown-item" th:href="@{/gestion-donadores}">Donadores</a></li>
+                                <li><a class="dropdown-item" th:href="@{/gestion-donaciones}">Donaciones</a></li>
+                                <li><a class="dropdown-item" th:href="@{/gestion-distribuciones}">Distribuciones</a>
+                                </li>
+                                <li>
+                                    <hr class="dropdown-divider">
+                                </li>
+                                <li><a class="dropdown-item" href="#">Reportes</a></li>
+                                <li><a class="dropdown-item" href="#">Configuración</a></li>
+                            </ul>
+                        </li>
+                    </ul>
+
+                    <!-- Notificaciones y usuario -->
+                    <div class="d-flex align-items-center gap-3">
+                        <!-- Notificaciones -->
+                        <div class="position-relative me-2">
+                            <i class="bi bi-bell text-primary-blue fs-5"></i>
+                            <span
+                                class="position-absolute top-0 start-100 translate-middle badge rounded-pill bg-accent-yellow text-dark">
+                                9+
+                            </span>
+                        </div>
+
+                        <!-- Usuario autenticado -->
+                        <div th:if="${#authentication != null and #authentication.isAuthenticated()}">
+                            <span class="me-3 text-dark-blue">¡Hola! <span
+                                    th:text="${#authentication.principal.nombre_completo}">Usuario</span></span>
+                            <form th:action="@{/logout}" method="post" class="d-inline">
+                                <button type="submit" class="btn btn-accent-yellow">Cerrar Sesión</button>
+                            </form>
+                        </div>
+
+                        <!-- Usuario no autenticado -->
+                        <div th:unless="${#authentication != null and #authentication.isAuthenticated()}">
+                            <a th:href="@{/login}" class="btn btn-primary-blue">Iniciar Sesión</a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </nav>
+    </div>
+</header>

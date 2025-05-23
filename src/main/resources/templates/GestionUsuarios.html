@@ -1,0 +1,356 @@
+<!DOCTYPE html>
+<html lang="es" xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Gestión de Usuarios - Sistema de Donaciones</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/css/bootstrap.min.css" rel="stylesheet"
+        integrity="sha384-4Q6Gf2aSP4eDXB8Miphtr37CMZZQ5oXLH2yaXMJ2w8e2ZtHTl7GptT4jmndRuHDT" crossorigin="anonymous" />
+    <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@600;700&display=swap" rel="stylesheet" />
+    <link href="https://fonts.googleapis.com/css2?family=Open+Sans:wght@400;500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css" />
+    <style>
+        body {
+            font-family: "Open Sans", sans-serif;
+            padding-top: 80px;
+        }
+
+        h1,
+        h2,
+        h3 {
+            font-family: "Poppins", sans-serif;
+        }
+
+        .text-primary-blue {
+            color: #2563eb;
+        }
+
+        .bg-primary-blue {
+            background-color: #2563eb;
+        }
+
+        .btn-primary-blue {
+            background-color: #2563eb;
+            color: white;
+        }
+
+        .btn-primary-blue:hover {
+            background-color: #1e3a8a;
+            color: white;
+        }
+
+        .btn-accent-yellow {
+            background-color: #f59e0b;
+            color: #111827;
+        }
+
+        .btn-accent-yellow:hover {
+            background-color: #ffd166;
+            color: #111827;
+        }
+    </style>
+</head>
+
+<body>
+    <!-- Header -->
+    <header th:replace="~{layaouts/header :: header}"></header>
+
+    <div class="container py-5">
+        <h1 class="text-center mb-4 text-primary-blue fw-bold" th:text="${titulo}">
+        </h1>
+        <div class="container py-4">
+            <div class="row justify-content-center">
+                <div class="col-md-6">
+                    <div class="card shadow mb-4">
+                        <div class="card-header bg-primary text-white py-3">
+                            <h5 class="mb-0 fw-semibold">Registrar Usuario</h5>
+                        </div>
+                        <div class="card-body p-4">
+                            <form id="formUsuario" th:action="@{/user/create}" th:object="${usuario}" method="post">
+                                <div class="mb-3">
+                                    <label for="nombreUsuario" class="form-label">Nombre de usuario:</label>
+                                    <input type="text" class="form-control" id="nombreUsuario" name="nombreUsuario"
+                                        required th:field="*{nombreUsuario}" />
+                                </div>
+                                <!-- <div class="invalid-feed" th:if="#fields.hasError('contrasena')" th:errors="*{contrasena}">
+
+                                </div> -->
+                                <div class="mb-3">
+                                    <label for="contrasena" class="form-label">Contraseña:</label>
+                                    <input type="password" class="form-control" id="contrasena" name="contrasena"
+                                        required th:field="*{contrasena}" />
+                                </div>
+
+                                <div class="mb-3">
+                                    <label for="nombreCompleto" class="form-label">Nombre completo:</label>
+                                    <input type="text" class="form-control" id="nombreCompleto" name="nombreCompleto"
+                                        required th:field="*{nombreCompleto}" />
+                                </div>
+                                <div class="mb-3">
+                                    <select class="form-select" id="rolId" name="rolId" required th:field="*{rol.id}">
+                                        <option th:each="rol : ${roles}" th:text="${rol.nombreRol}"
+                                            th:value="${rol.id}">
+                                        </option>
+                                    </select>
+                                </div>
+                                <div class="mb-3">
+                                    <label for="email" class="form-label">Email:</label>
+                                    <input type="email" class="form-control" id="email" name="email" required
+                                        th:field="*{email}" />
+                                </div>
+
+                                <div class="mb-3 form-check" id="donadorCheck" style="display: none">
+                                    <input type="checkbox" class="form-check-input" id="esDonador" name="esDonador" />
+                                    <label class="form-check-label" for="esDonador">Usuario Donador</label>
+                                </div>
+
+                                <div class="mb-3" id="telefonoGroup" style="display: none">
+                                    <label for="telefono" class="form-label">Teléfono:</label>
+                                    <input type="text" class="form-control" id="telefono" name="telefono"
+                                        th:field="*{telefono}" />
+                                </div>
+
+                                <div class="d-grid gap-2">
+                                    <button type="submit" class="btn btn-success" id="btnGuardar">
+                                        Guardar
+                                    </button>
+
+                                    <div id="botonesEdicion" style="display: none">
+                                        <button type="button" class="btn btn-warning w-100 mb-2" id="btnActualizar">
+                                            Actualizar
+                                        </button>
+                                        <button type="button" class="btn btn-secondary w-100" id="btnCancelar">
+                                            Cancelar
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="d-flex justify-content-between align-items-center mb-4">
+                    <h3 class="text-primary-blue">Lista de Usuarios</h3>
+                    <button class="btn btn-primary-blue" data-bs-toggle="modal" data-bs-target="#nuevoUsuarioModal">
+                        <i class="bi bi-person-plus me-2"></i>Nuevo Usuario
+                    </button>
+                </div>
+
+                <div class="table-responsive">
+                    <table class="table table-hover">
+                        <thead class="bg-light">
+                            <tr>
+                                <th>ID</th>
+                                <th>Nombre Completo</th>
+                                <th>Usuario</th>
+                                <th>Email</th>
+                                <th>Rol</th>
+                                <th>Estado</th>
+                                <th>Acciones</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr th:each="usuario : ${usuarios}">
+                                <td th:text="${usuario.id}"></td>
+                                <td th:text="${usuario.nombreCompleto}"></td>
+                                <td th:text="${usuario.nombreUsuario}"></td>
+                                <td th:text="${usuario.email}"></td>
+                                <td th:text="${usuario.rol.nombreRol}"></td>
+                                <td th:text="${usuario.activo ? 'Activo' : 'Inactivo'}"></td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary me-1"
+                                        th:onclick="'editarUsuario(' + ${usuario.id} + ')'">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger"
+                                        th:onclick="'eliminarUsuario(' + ${usuario.id} + ')'">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Modal para Nuevo Usuario -->
+    <div class="modal fade" id="nuevoUsuarioModal" tabindex="-1" aria-labelledby="nuevoUsuarioModalLabel"
+        aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header bg-primary-blue text-white">
+                    <h5 class="modal-title" id="nuevoUsuarioModalLabel">
+                        Agregar Nuevo Usuario
+                    </h5>
+                    <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"
+                        aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="formNuevoUsuario">
+                        <div class="mb-3">
+                            <label for="nombreCompleto" class="form-label">Nombre Completo</label>
+                            <input type="text" class="form-control" id="nombreCompleto" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="nombreUsuario" class="form-label">Nombre de Usuario</label>
+                            <input type="text" class="form-control" id="nombreUsuario" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="email" class="form-label">Email</label>
+                            <input type="email" class="form-control" id="email" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="contrasena" class="form-label">Contraseña</label>
+                            <input type="password" class="form-control" id="contrasena" required />
+                        </div>
+                        <div class="mb-3">
+                            <label for="rol" class="form-label">Rol</label>
+                            <select class="form-select" id="rol" required>
+                                <option value="">Seleccionar rol</option>
+                                <option value="admin">Administrador</option>
+                                <option value="user">Usuario</option>
+                                <option value="donador">Donador</option>
+                            </select>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">
+                        Cancelar
+                    </button>
+                    <button type="button" class="btn btn-primary-blue" id="btnGuardarUsuario">
+                        Guardar
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Script para cargar usuarios -->
+    <script>
+        document.addEventListener("DOMContentLoaded", function () {
+            // Función para cargar usuarios
+            function cargarUsuarios() {
+                fetch("/user/users")
+                    .then((response) => response.json())
+                    .then((data) => {
+                        const tablaUsuarios = document.getElementById("tablaUsuarios");
+                        tablaUsuarios.innerHTML = "";
+
+                        data.forEach((usuario) => {
+                            const fila = document.createElement("tr");
+                            fila.innerHTML = `
+                                <td>${usuario.id_usuario}</td>
+                                <td>${usuario.nombre_completo}</td>
+                                <td>${usuario.nombre_usuario}</td>
+                                <td>${usuario.email}</td>
+                                <td>${usuario.rol || "Usuario"}</td>
+                                <td>${usuario.activo ? "Activo" : "Inactivo"
+                                }</td>
+                                <td>
+                                    <button class="btn btn-sm btn-outline-primary me-1" onclick="editarUsuario(${usuario.id_usuario
+                                })">
+                                        <i class="bi bi-pencil"></i>
+                                    </button>
+                                    <button class="btn btn-sm btn-outline-danger" onclick="eliminarUsuario(${usuario.id_usuario
+                                })">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </td>
+                            `;
+                            tablaUsuarios.appendChild(fila);
+                        });
+                    })
+                    .catch((error) =>
+                        console.error("Error al cargar usuarios:", error)
+                    );
+            }
+
+            // Cargar usuarios al iniciar
+            cargarUsuarios();
+
+            // Guardar nuevo usuario
+            document
+                .getElementById("btnGuardarUsuario")
+                .addEventListener("click", function () {
+                    const nombreCompleto =
+                        document.getElementById("nombreCompleto").value;
+                    const nombreUsuario =
+                        document.getElementById("nombreUsuario").value;
+                    const email = document.getElementById("email").value;
+                    const contrasena = document.getElementById("contrasena").value;
+                    const rol = document.getElementById("rol").value;
+
+                    fetch("/user/create", {
+                        method: "POST",
+                        headers: {
+                            "Content-Type": "application/json",
+                        },
+                        body: JSON.stringify({
+                            nombre_completo: nombreCompleto,
+                            nombre_usuario: nombreUsuario,
+                            email: email,
+                            contrasena: contrasena,
+                            rol: rol,
+                            activo: true,
+                        }),
+                    })
+                        .then((response) => response.text())
+                        .then((data) => {
+                            alert("Usuario guardado correctamente");
+                            document.getElementById("formNuevoUsuario").reset();
+                            const modal = bootstrap.Modal.getInstance(
+                                document.getElementById("nuevoUsuarioModal")
+                            );
+                            modal.hide();
+                            cargarUsuarios();
+                        })
+                        .catch((error) =>
+                            console.error("Error al guardar usuario:", error)
+                        );
+                });
+        });
+
+        // Función para editar usuario
+        function editarUsuario(id) {
+            // Implementar lógica para editar usuario
+            console.log("Editar usuario con ID:", id);
+        }
+
+        // Función para eliminar usuario
+        function eliminarUsuario(id) {
+            if (confirm("¿Está seguro de eliminar este usuario?")) {
+                fetch("/user/delete", {
+                    method: "PUT",
+                    headers: {
+                        "Content-Type": "application/json",
+                    },
+                    body: JSON.stringify({
+                        idUsuario: id,
+                    }),
+                })
+                    .then((response) => response.text())
+                    .then((data) => {
+                        alert("Usuario eliminado correctamente");
+                        // Recargar la lista de usuarios
+                        cargarUsuarios();
+                    })
+                    .catch((error) =>
+                        console.error("Error al eliminar usuario:", error)
+                    );
+            }
+        }
+    </script>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.6/dist/js/bootstrap.bundle.min.js"
+        integrity="sha384-j1CDi7MgGQ12Z7Qab0qlWQ/Qqz24Gc6BM0thvEMVjHnfYGF0rmFCozFSxQBxwHKO"
+        crossorigin="anonymous"></script>
+</body>
+
+</html>
