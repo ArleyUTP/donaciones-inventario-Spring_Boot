@@ -12,7 +12,6 @@ import jakarta.persistence.Id;
 import jakarta.persistence.JoinColumn;
 import jakarta.persistence.OneToOne;
 import jakarta.persistence.Table;
-import jakarta.validation.constraints.NotEmpty;
 
 @Entity
 @Table(name = "usuarios")
@@ -22,18 +21,22 @@ public class Usuario implements Serializable{
     @Id
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
+    
     @Column(name = "nombre_usuario")
     private String nombreUsuario;
-    @NotEmpty(message = "La contraseña no puede estar vacía")
+    
     private String contrasena;
+
     @Column(name = "nombre_completo")
     private String nombreCompleto;
+
     private String email;
+
     @Column(name = "ultimo_acceso")
     private LocalDateTime ultimoAcceso;
+
     private String telefono;
-    @Column(name = "es_donador")
-    private boolean esDonador;
+
     @Column(name = "fecha_registro")
     private LocalDateTime fechaRegistro;
     // @ManyToMany es para muchos a muchos
@@ -86,12 +89,6 @@ public class Usuario implements Serializable{
     public void setTelefono(String telefono) {
         this.telefono = telefono;
     }
-    public boolean isEsDonador() {
-        return esDonador;
-    }
-    public void setEsDonador(boolean esDonador) {
-        this.esDonador = esDonador;
-    }
     public LocalDateTime getFechaRegistro() {
         return fechaRegistro;
     }
@@ -104,5 +101,4 @@ public class Usuario implements Serializable{
     public void setRol(Rol rol) {
         this.rol = rol;
     }
-    
 }

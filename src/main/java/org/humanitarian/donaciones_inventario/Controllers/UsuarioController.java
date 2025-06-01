@@ -1,20 +1,23 @@
 package org.humanitarian.donaciones_inventario.Controllers;
 
+import java.util.List;
+
+import org.humanitarian.donaciones_inventario.Entities.Rol;
 import org.humanitarian.donaciones_inventario.Entities.Usuario;
 import org.humanitarian.donaciones_inventario.Services.IRolService;
 import org.humanitarian.donaciones_inventario.Services.IUsuarioService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Controller;
-import org.springframework.ui.Model;
-import org.springframework.validation.BindingResult;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
-import org.springframework.web.bind.annotation.PathVariable;
-import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
 
-@Controller
+import jakarta.transaction.Transactional;
+
+@RestController
 @RequestMapping("/user")
+@CrossOrigin(origins = "http://localhost:5173") // Permitir solicitudes desde este origen
 public class UsuarioController {
 
     private final IUsuarioService service;
@@ -25,15 +28,30 @@ public class UsuarioController {
         this.rolService = rolService;
     }
 
-    @GetMapping("/GestionUsuarios")
-    public String crear(Model model) {
-        // Agrega logging para verificar los datos
-        Usuario usuario = new Usuario();
-        model.addAttribute("usuario", usuario);
-        model.addAttribute("roles", rolService.findAll());
-        model.addAttribute("usuarios", service.findAll());
-        model.addAttribute("titulo", "Crear Usuario");
-        return "GestionUsuarios";
+    // @GetMapping("/GestionUsuarios")
+    // public String crear(Model model) {
+    // // Agrega logging para verificar los datos
+    // Usuario usuario = new Usuario();
+    // model.addAttribute("usuario", usuario);
+    // model.addAttribute("roles", rolService.findAll());
+    // model.addAttribute("usuarios", service.findAll());
+    // model.addAttribute("titulo", "Crear Usuario");
+    // return "GestionUsuarios";
+    // }
+
+    @GetMapping("/users")
+    @Transactional
+    public ResponseEntity<List<Usuario>> getUsuarios() {
+        try {
+            return ResponseEntity.ok(service.findAll());
+        } catch (Exception e) {
+            return ResponseEntity.internalServerError().build();
+        }
+    }
+
+    @GetMapping("/roles")
+    public List<Rol> getRoles() {
+        return rolService.findAll();
     }
 
     @GetMapping("/test-db")
@@ -47,26 +65,26 @@ public class UsuarioController {
         }
     }
 
-    @GetMapping("/user/{id}")
-    public String editar(@PathVariable(name = "id") Long id, Model model) {
-        Usuario usuario = service.findById(id);
-        model.addAttribute("usuario", usuario);
-        model.addAttribute("roles", rolService.findAll());
-        model.addAttribute("titulo", "Editar Usuario");
-        return "GestionUsuarios";
-    }
+    // @GetMapping("/user/{id}")
+    // public String editar(@PathVariable(name = "id") Long id, Model model) {
+    // Usuario usuario = service.findById(id);
+    // model.addAttribute("usuario", usuario);
+    // model.addAttribute("roles", rolService.findAll());
+    // model.addAttribute("titulo", "Editar Usuario");
+    // return "GestionUsuarios";
+    // }
 
-    @PostMapping("/create")
-    public String guardar(Usuario usuario,BindingResult result) {
-        if (result.hasErrors()) {
-            return "GestionUsuarios";
-        }
-        service.save(usuario);
-        return "redirect:index";
-    }
+    // @PostMapping("/create")
+    // public String guardar(Usuario usuario,BindingResult result) {
+    // if (result.hasErrors()) {
+    // return "GestionUsuarios";
+    // }
+    // service.save(usuario);
+    // return "redirect:index";
+    // }
 
-    @GetMapping({ "/", "/home", "/index" })
-    public String home() {
-        return "index";
-    }
+    // @GetMapping({ "/", "/home", "/index" })
+    // public String home() {
+    // return "index";
+    // }
 }
