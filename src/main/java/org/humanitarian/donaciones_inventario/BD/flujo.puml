@@ -1,0 +1,175 @@
+@startuml
+skinparam backgroundColor #f0f0f0
+skinparam classAttributeIconSize 0
+skinparam defaultTextAlignment center
+skinparam shadowing false
+skinparam ArrowColor black
+skinparam NodeFontColor black
+
+skinparam PartitionBackgroundColor<<Admin>> #d0f0c0
+skinparam PartitionBorderColor<<Admin>> black
+skinparam PartitionBackgroundColor<<Donador>> #c0e0f0
+skinparam PartitionBorderColor<<Donador>> black
+skinparam PartitionBackgroundColor<<Usuario>> #f0e0c0
+skinparam PartitionBorderColor<<Usuario>> black
+
+start
+
+:Inicio;
+:Mostrar página principal;
+:Dashboard de evidencias de distribuciones;
+note right
+Publicaciones con imágenes y comentarios (MongoDB)
+end note
+
+if (¿Usuario autenticado?) then (Sí)
+    :Loggearse;
+    if (¿Es Administrador?) then (Sí)
+        :Dashboard Principal;
+        split
+            :Seleccionar gestión de donaciones;
+            partition "Gestión de Donaciones" <<Admin>> {
+                :Registrar nueva donación;
+                :Confirmar donación recibida;
+                :Ver donaciones recibidas;
+                :Editar o eliminar donación;
+                :Asignar donación a inventario;
+                :Generar reportes de donaciones;
+                :Buscar y filtrar donaciones;
+                :Ver historial de donaciones;
+            }
+        split again
+            :Seleccionar gestión de usuarios;
+            partition "Gestión de Usuario" <<Admin>> {
+                :Agregar nuevo usuario;
+                :Actualizar datos de usuario;
+                :Eliminar usuario;
+                :Ver listado de usuarios;
+                :Buscar y filtrar usuarios;
+                :Asignar roles;
+                :Restablecer contraseñas;
+            }
+        split again
+            :Seleccionar gestión de inventario;
+            partition "Gestión de Inventario" <<Admin>> {
+                :Agregar nuevo artículo;
+                :Actualizar información de artículo;
+                :Eliminar artículo;
+                :Ver inventario actual;
+                :Control de stock mínimo;
+                :Alertas de vencimiento;
+                :Historial de movimientos;
+            }
+        split again
+            :Seleccionar distribuciones;
+            partition "Distribución" <<Admin>> {
+                :Planificar entregas;
+                :Asignar recursos;
+                :Generar reportes de entrega;
+                :Ver comentarios sobre distribuciones;
+                :Registrar incidencias;
+                :Seguimiento de entregas;
+            }
+        split again
+            :Seleccionar gestión de reportes;
+            partition "Reportes" <<Admin>> {
+                :Reporte de donaciones;
+                :Reporte de inventario;
+                :Top usuarios y organizaciones;
+                :Reporte de distribuciones;
+                :Exportar reportes (PDF/Excel);
+            }
+        split again
+            :Seleccionar gestión de beneficiarios;
+            partition "Gestión de Beneficiarios" <<Admin>> {
+                :Registrar beneficiario;
+                :Actualizar datos de beneficiario;
+                :Eliminar beneficiario;
+                :Ver listado de beneficiarios;
+                :Asignar prioridad;
+                :Historial de entregas por beneficiario;
+            }
+        split again
+            :Seleccionar seguimiento y trazabilidad;
+            partition "Seguimiento y Trazabilidad" <<Admin>> {
+                :Seguimiento de estado de donaciones;
+                :Bitácora de movimientos de inventario;
+                :Registro de incidencias;
+                :Trazabilidad de entregas;
+            }
+        split again
+            :Seleccionar notificaciones y alertas;
+            partition "Notificaciones y Alertas" <<Admin>> {
+                :Alertas por bajo stock;
+                :Notificaciones de nuevas necesidades;
+                :Alertas de vencimiento de productos;
+                :Notificaciones por correo electrónico;
+                :Notificaciones en página principal;
+            }
+        split again
+            :Seleccionar gestión de voluntarios;
+            partition "Gestión de Voluntarios" <<Admin>> {
+                :Registrar voluntario;
+                :Asignar tareas;
+                :Seguimiento de participación;
+                :Historial de voluntariado;
+            }
+        split again
+            :Seleccionar integración de mapas;
+            partition "Integración de Mapas" <<Admin>> {
+                :Visualizar ubicaciones de beneficiarios;
+                :Visualizar puntos de entrega;
+                :Optimización de rutas de entrega;
+            }
+        split again
+            :Seleccionar gestión de campañas;
+            partition "Gestión de Campañas" <<Admin>> {
+                :Crear campaña de donación;
+                :Seguimiento de metas;
+                :Visualizar progreso de campañas;
+            }
+        end split
+        partition "Análisis Predictivo" <<Admin>> {
+            :Predecir demanda por zona;
+            :Sugerir reposiciones;
+            :Alertas tempranas de escasez;
+        }
+    else (No)
+        if (¿Es usuario donador?) then (Sí)
+            :Dashboard Donador;
+            partition "Donaciones" <<Donador>> {
+                :Visualizar necesidades;
+                :Seleccionar necesidad;
+                :Completar formulario;
+                :Confirmar donación;
+                :Ver confirmación;
+                :Recibir actualizaciones;
+                :Ver historial de donaciones propias;
+            }
+        else (No)
+            :Dashboard Usuario;
+            partition "Evidencias" <<Usuario>> {
+                :Ver evidencias de distribuciones;
+                :Comentar en publicaciones;
+            }
+        endif
+    endif
+else (No autenticado)
+    :Mostrar opciones de login y registro;
+    if (¿Desea registrarse?) then (Sí)
+        :Mostrar formulario de registro;
+        :Elegir tipo de usuario (Donador / Usuario);
+        if (¿Selecciona Donador?) then (Sí)
+            :Registrar usuario como donador;
+        else (No)
+            :Registrar usuario como usuario común;
+        endif
+    else
+        :Mostrar formulario de login;
+        :Validar credenciales;
+    endif
+endif
+:Posibilidad de cerrar sesión;
+
+stop
+@enduml
