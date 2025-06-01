@@ -59,6 +59,12 @@ public class UsuarioController {
         }
     }
 
+/**
+ * Obtiene la lista de todos los roles disponibles en el sistema.
+ *
+ * @return ResponseEntity con la lista de objetos {@link Rol} si la operación es exitosa,
+ *         o una lista vacía y un código de error HTTP 500 si ocurre una excepción.
+ */
    @GetMapping("/roles")
     @Transactional
     public ResponseEntity<List<Rol>> getRoles() {
@@ -82,6 +88,16 @@ public class UsuarioController {
                     .body("Error al conectar a la BD: " + e.getMessage());
         }
     }
+/**
+ * Crea un nuevo usuario en el sistema.
+ *
+ * Este método recibe un objeto Usuario en el cuerpo de la solicitud y lo registra utilizando el servicio correspondiente.
+ * Si la creación es exitosa, retorna una respuesta con el usuario creado y el código de estado HTTP 201 (CREATED).
+ * En caso de error, retorna un mensaje de error y el código de estado HTTP 500 (INTERNAL_SERVER_ERROR).
+ *
+ * @param usuario El objeto Usuario que se desea crear.
+ * @return ResponseEntity con el usuario creado o un mensaje de error en caso de fallo.
+ */
   @PostMapping("/create")
     @Transactional
     public ResponseEntity<?> createUsuario(@RequestBody Usuario usuario) {
@@ -95,6 +111,14 @@ public class UsuarioController {
                     .body(response);
         }
     }
+    /**
+     * Actualiza la información de un usuario existente.
+     *
+     * @param usuario El objeto Usuario con los datos actualizados.
+     * @return ResponseEntity con el usuario actualizado si la operación es exitosa,
+     *         un mensaje de error si el usuario no se encuentra,
+     *         o un mensaje de error interno si ocurre una excepción.
+     */
     @PutMapping("/update")
     @Transactional
     public ResponseEntity<?> updateUsuario(@RequestBody Usuario usuario) {
@@ -113,6 +137,13 @@ public class UsuarioController {
                     .body(response);
         }
     }
+    /**
+     * Elimina un usuario identificado por su ID.
+     *
+     * @param id El identificador único del usuario a eliminar.
+     * @return ResponseEntity con un mensaje de éxito si el usuario fue eliminado correctamente,
+     *         o un mensaje de error en caso de que ocurra una excepción durante el proceso.
+     */
      @PostMapping("/delete/{id}")
     @Transactional
     public ResponseEntity<?> deleteUsuario(@PathVariable Long id) {
