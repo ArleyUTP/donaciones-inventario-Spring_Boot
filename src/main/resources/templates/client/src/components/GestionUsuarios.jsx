@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Axios from "axios";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
@@ -16,35 +16,75 @@ function GestionUsuarios() {
   const [roles, setRoles] = useState([]);
   const [editar, setEditar] = useState(false);
   const [usuariosLista, setUsuariosLista] = useState([]);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
 
+  // Cargar datos iniciales solo una vez
   useEffect(() => {
-    const fetchRoles = async () => {
+    const fetchInitialData = async () => {
       try {
-        const response = await Axios.get("http://localhost:8080/user/roles");
-        setRoles(response.data);
+        setLoading(true);
+        // Hacer ambas peticiones en paralelo
+        const [rolesResponse, usuariosResponse] = await Promise.all([
+          Axios.get("http://localhost:8080/user/roles"),
+          Axios.get("http://localhost:8080/user/users"),
+        ]);
+
+        setRoles(rolesResponse.data);
+        setUsuariosLista(usuariosResponse.data);
       } catch (error) {
-        console.error("Error al cargar roles:", error);
+        console.error("Error al cargar datos iniciales:", error);
+        setError("Error al cargar datos iniciales");
         notificacion.fire({
           title: "Error",
-          text: "No se pudieron cargar los roles" + error,
+          text: "No se pudieron cargar los datos iniciales",
           icon: "error",
         });
+      } finally {
+        setLoading(false);
       }
     };
-    fetchRoles();
+
+    fetchInitialData();
+  }, []); // Solo se ejecuta una vez al montar el componente
+
+  // Función para obtener usuarios - usando useCallback para evitar re-renderizados
+  const getUsuarios = useCallback(async () => {
+    try {
+      setLoading(true);
+      setError(null);
+      const response = await Axios.get("http://localhost:8080/user/users");
+      setUsuariosLista(response.data);
+    } catch (error) {
+      console.error("Error fetching users:", error);
+      setError("Error al cargar usuarios");
+      notificacion.fire({
+        title: "Error",
+        text: "No se pudieron cargar los usuarios",
+        icon: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
   }, []);
-  const addUsuario = () => {
-    Axios.post("http://localhost:8080/user/create", {
-      nombre_usuario: nombreUsuario,
-      contrasena: contrasena,
-      nombre_completo: nombreCompleto,
-      rol_id: rolId, // Cambiado de rol a rol_id
-      email: email,
-      telefono: telefono,
-      es_donador: esDonador,
-    }).then(() => {
-      getUsuarios();
+  const addUsuario = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      await Axios.post("http://localhost:8080/user/create", {
+        nombreUsuario: nombreUsuario,
+        contrasena: contrasena,
+        nombreCompleto: nombreCompleto,
+        rol: { id: rolId },
+        email: email,
+        telefono: telefono
+      });
+
+      // Recargar usuarios después de crear
+      await getUsuarios();
       limpiarCampos();
+
       notificacion.fire({
         title: "Guardado",
         text: "El usuario fue guardado correctamente",
@@ -52,105 +92,133 @@ function GestionUsuarios() {
         confirmButtonText: "Aceptar",
         timer: 3000,
       });
-    });
-  };
-
-  const getUsuarios = () => {
-    Axios.get("http://localhost:8080/user/users")
-      .then((response) => {
-        setUsuariosLista(response.data);
-      })
-      .catch((error) => {
-        console.error("Error fetching users:", error);
+    } catch (error) {
+      console.error("Error al crear usuario:", error);
+      setError("Error al crear usuario");
+      notificacion.fire({
+        title: "Error",
+        text: "No se pudo crear el usuario",
+        icon: "error",
       });
+    } finally {
+      setLoading(false);
+    }
   };
 
-  getUsuarios();
-  const updateUsuario = () => {
-    Axios.put("http://localhost:8080/user/update", {
-      nombre_usuario: nombreUsuario,
-      contrasena: contrasena,
-      nombre_completo: nombreCompleto,
-      rol_id: rolId, // Cambiado de rol a rol_id
-      email: email,
-      telefono: telefono,
-      es_donador: esDonador,
-      idUsuario: idUsuario,
-    })
-      .then(() => {
-        getUsuarios();
-        limpiarCampos();
+  const updateUsuario = async () => {
+    try {
+      setLoading(true);
+      setError(null);
+
+      await Axios.put("http://localhost:8080/user/update", {
+        id: idUsuario,
+        nombreUsuario: nombreUsuario,
+        contrasena: contrasena,
+        nombreCompleto: nombreCompleto,
+        rol: { id: rolId },
+        email: email,
+        telefono: telefono,
+        es_donador: esDonador,
+      });
+
+      // Recargar usuarios después de actualizar
+      await getUsuarios();
+      limpiarCampos();
+
+      notificacion.fire({
+        title: "Actualizado",
+        text: "El usuario fue actualizado correctamente",
+        icon: "success",
+        confirmButtonText: "Aceptar",
+        timer: 3000,
+      });
+    } catch (error) {
+      console.error("Error al actualizar el usuario:", error);
+      setError("Error al actualizar usuario");
+      notificacion.fire({
+        title: "Error",
+        text: "No se pudo actualizar el usuario",
+        icon: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const eliminarUsuario = async (idUsuario) => {
+    // Validar que el ID sea válido
+    if (!idUsuario) {
+      notificacion.fire({
+        title: "Error",
+        text: "ID de usuario no válido",
+        icon: "error"
+      });
+      return;
+    }
+
+    const result = await notificacion.fire({
+      title: "¿Estás seguro?",
+      text: "Esta acción marcará el usuario como eliminado.",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
+    });
+
+    if (result.isConfirmed) {
+      try {
+        setLoading(true);
+        setError(null);
+
+        await Axios.post(`http://localhost:8080/user/delete/${idUsuario}`);
+        console.log("Usuario eliminado con éxito es"+idUsuario);
+        await getUsuarios();
+
         notificacion.fire({
-          title: "Actualizado",
-          text: "El usuario fue actualizado correctamente",
+          title: "Eliminado",
+          text: "El usuario fue marcado como eliminado.",
           icon: "success",
-          confirmButtonText: "Aceptar",
           timer: 3000,
         });
-      })
-      .catch((error) => {
-        console.error("Error al actualizar el usuario:", error);
+      } catch (error) {
+        console.error("Error al eliminar usuario:", error);
+        setError("Error al eliminar usuario");
         notificacion.fire({
           title: "Error",
-          text: "No se pudo actualizar el usuario" + error,
+          text: "No se pudo eliminar el usuario.",
           icon: "error",
         });
-      });
+      } finally {
+        setLoading(false);
+      }
+    }
   };
-  const eliminarUsuario = (idUsuario) => {
-    notificacion
-      .fire({
-        title: "¿Estás seguro?",
-        text: "Esta acción marcará el usuario como eliminado.",
-        icon: "warning",
-        showCancelButton: true,
-        confirmButtonText: "Sí, eliminar",
-        cancelButtonText: "Cancelar",
-      })
-      .then((result) => {
-        if (result.isConfirmed) {
-          Axios.put("http://localhost:8080/users/delete", {
-            idUsuario: idUsuario,
-          })
-            .then(() => {
-              getUsuarios();
-              notificacion.fire({
-                title: "Eliminado",
-                text: "El usuario fue marcado como eliminado.",
-                icon: "success",
-                timer: 3000,
-              });
-            })
-            .catch(() => {
-              notificacion.fire({
-                title: "Error",
-                text: "No se pudo eliminar el usuario.",
-                icon: "error",
-              });
-            });
-        }
-      });
-  };
-  const limpiarCampos = () => {
+  // Función para limpiar campos
+  const limpiarCampos = useCallback(() => {
+    setIdUsuario(0);
     setNombreUsuario("");
     setContrasena("");
     setNombreCompleto("");
-    setRolId(null);
     setEmail("");
-    setIdUsuario(0);
+    setTelefono("");
+    setEsDonador(false);
+    setRolId(null);
     setEditar(false);
-  };
+    setError(null);
+  }, []);
   const editarUsuario = (val) => {
     setEditar(true);
-    setNombreUsuario(val.nombre_usuario);
+    setNombreUsuario(val.nombreUsuario);
     setContrasena(val.contrasena);
-    setNombreCompleto(val.nombre_completo);
-    setRolId(val.rol_id);
+    setNombreCompleto(val.nombreCompleto);
+    setRolId(val.rol?.id);
     setEmail(val.email);
     setIdUsuario(val.id);
   };
   return (
     <>
+      {loading && <div>Cargando...</div>}
+      {error && <div className="error">{error}</div>}
       <div className="max-w-7xl mx-auto py-8 px-4">
         <h1 className="text-center mb-8 text-3xl font-bold text-blue-600">
           Gestor de Usuarios
@@ -386,15 +454,15 @@ function GestionUsuarios() {
                           .map((val) => {
                             return (
                               <tr
-                                key={val.usuario_id}
+                                key={val.id} // Cambiado de val.id a val.usuario_id para consistencia
                                 className={
-                                  val.id % 2 === 0 
+                                  val.id % 2 === 0 // Cambiado de val.id a val.usuario_id
                                     ? "bg-white hover:bg-blue-50"
                                     : "bg-blue-50 hover:bg-blue-100"
                                 }
                               >
                                 <td className="px-2 py-2 border-b border-blue-100 text-center">
-                                  {val.id}
+                                  {val.id} {/* Cambiado de val.id a val.usuario_id */}
                                 </td>
                                 <td className="px-2 py-2 border-b border-blue-100 truncate max-w-[120px] text-center">
                                   {val.nombreUsuario}
@@ -426,7 +494,7 @@ function GestionUsuarios() {
                                   <button
                                     className="bg-red-600 rounded-xl px-2 py-1 hover:bg-red-800 hover:text-white transition text-xs sm:text-sm"
                                     onClick={() =>
-                                      eliminarUsuario(val.usuario_id)
+                                      eliminarUsuario(val.id)
                                     }
                                   >
                                     Eliminar
