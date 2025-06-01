@@ -12,4 +12,5 @@ public interface IUsuarioService {
     public Usuario register(Usuario usuario);
     public Usuario update(Usuario usuario);
     public void softDelete(Long id);
+    Usuario findByNombreUsuario(String nombreUsuario);
 }

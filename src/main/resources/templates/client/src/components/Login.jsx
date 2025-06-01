@@ -12,15 +12,15 @@ function Login() {
     const [nombreUsuario, setNombreUsuario] = useState('');
     const [contrasena, setContrasena] = useState('');
 
-    const handleLogin = async (e) => {
+        const handleLogin = async (e) => {
         e.preventDefault();
         try {
-            const response = await Axios.post('http://localhost:3000/auth/login', {
-                nombre_usuario: nombreUsuario,
+            const response = await Axios.post('http://localhost:8080/user/login', {
+                nombreUsuario: nombreUsuario,
                 contrasena: contrasena
             });
 
-            if (response.data.success) {
+            if (response.status === 200) {
                 await MySwal.fire({
                     title: '¡Bienvenido!',
                     text: 'Inicio de sesión exitoso',
@@ -29,22 +29,15 @@ function Login() {
                     timer: 2000,
                     timerProgressBar: true
                 });
-                login(response.data.usuario); // Guarda usuario en contexto
+                login(response.data); // Guarda usuario en contexto
                 navigate('/'); // Redirige al home o dashboard
-            } else {
-                await MySwal.fire({
-                    title: 'Error',
-                    text: 'Credenciales incorrectas',
-                    icon: 'error',
-                    confirmButtonText: 'Intentar nuevamente'
-                });
             }
         } catch (error) {
             await MySwal.fire({
                 title: 'Error',
-                text: `No se pudo conectar al servidor: ${error.message}`,
+                text: error.response?.data?.error || 'Error al intentar iniciar sesión',
                 icon: 'error',
-                confirmButtonText: 'Entendido'
+                confirmButtonText: 'Intentar nuevamente'
             });
         }
     };

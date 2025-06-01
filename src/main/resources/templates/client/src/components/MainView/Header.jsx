@@ -45,9 +45,11 @@ export function Header({
               <li>
                 <Link to="#" className="text-[#111827] hover:text-[#2563EB] font-medium transition-colors">Contacto</Link>
               </li>
-              {isAuthenticated && user.rol_nombre === 'Administrador' ? (
+              {isAuthenticated && user.rol?.nombreRol === 'Administrador' ? (
                 <li className="relative group">
-                  <Link to="#" className="text-[#111827] hover:text-[#F59E0B] font-semibold transition-colors">Administración</Link>
+                  <Link to="#" className="text-[#111827] hover:text-[#F59E0B] font-semibold transition-colors">
+                    Administración
+                  </Link>
                   <div className="fixed left-1/2 transform -translate-x-1/2 mt-2 w-96 opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-300 z-50">
                     <SubMenu />
                   </div>
@@ -67,7 +69,7 @@ export function Header({
           {isAuthenticated && user ? (
             <>
               <div className="flex flex-col w-full rounded px-3 py-1 bg-transparent">
-                <p className="text-[#1E3A8A] font-medium">¡Hola! {user.nombre_completo}</p>
+                <p className="text-[#1E3A8A] font-medium">¡Hola! {user.nombreCompleto}</p>
               </div>
               <button
                 onClick={() => {
@@ -108,7 +110,7 @@ export function Header({
             <li>
               <Link to="#" className="block text-[#111827] hover:text-[#2563EB] font-medium transition-colors" onClick={() => setMenuOpen(false)}>Contacto</Link>
             </li>
-            {isAuthenticated && user.rol === 'admin' ? (
+            {isAuthenticated && user.rol?.nombreRol === 'Administrador' ? (
               <li>
                 <Link to="#" className="block text-[#111827] hover:text-[#F59E0B] font-semibold transition-colors" onClick={() => setMenuOpen(false)}>Administración</Link>
               </li>

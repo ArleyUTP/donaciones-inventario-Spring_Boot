@@ -58,4 +58,9 @@ public class UsuarioService  implements IUsuarioService {
         //     usuarioRepository.save(usuario);
         // }
     }
+
+    @Override
+    public Usuario findByNombreUsuario(String nombreUsuario) {
+        return usuarioRepository.findByNombreUsuario(nombreUsuario);
+    }
 }

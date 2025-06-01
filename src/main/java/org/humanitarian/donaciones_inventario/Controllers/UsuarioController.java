@@ -1,5 +1,6 @@
 package org.humanitarian.donaciones_inventario.Controllers;
 
+import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -11,6 +12,7 @@ import org.humanitarian.donaciones_inventario.Services.IRolService;
 import org.humanitarian.donaciones_inventario.Services.IUsuarioService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -29,21 +31,24 @@ public class UsuarioController {
 
     private final IUsuarioService service;
     private final IRolService rolService;
+    private final BCryptPasswordEncoder passwordEncoder;
 
-    public UsuarioController(IUsuarioService service, IRolService rolService) {
+    public UsuarioController(IUsuarioService service, IRolService rolService,BCryptPasswordEncoder passwordEncoder) {
         this.service = service;
         this.rolService = rolService;
+        this.passwordEncoder = passwordEncoder;
     }
 
-    
     /**
      * Obtiene la lista de todos los usuarios registrados.
      * <p>
-     * Este método maneja solicitudes GET a la ruta "/users" y retorna una lista de objetos {@link Usuario}.
+     * Este método maneja solicitudes GET a la ruta "/users" y retorna una lista de
+     * objetos {@link Usuario}.
      * Utiliza una transacción de solo lectura para mejorar el rendimiento.
      * En caso de error, retorna un código de estado HTTP 500 y una lista vacía.
      *
-     * @return ResponseEntity con la lista de usuarios y el código de estado HTTP correspondiente.
+     * @return ResponseEntity con la lista de usuarios y el código de estado HTTP
+     *         correspondiente.
      */
     @GetMapping("/users")
     @Transactional // Solo lectura para mejorar rendimiento
@@ -59,13 +64,15 @@ public class UsuarioController {
         }
     }
 
-/**
- * Obtiene la lista de todos los roles disponibles en el sistema.
- *
- * @return ResponseEntity con la lista de objetos {@link Rol} si la operación es exitosa,
- *         o una lista vacía y un código de error HTTP 500 si ocurre una excepción.
- */
-   @GetMapping("/roles")
+    /**
+     * Obtiene la lista de todos los roles disponibles en el sistema.
+     *
+     * @return ResponseEntity con la lista de objetos {@link Rol} si la operación es
+     *         exitosa,
+     *         o una lista vacía y un código de error HTTP 500 si ocurre una
+     *         excepción.
+     */
+    @GetMapping("/roles")
     @Transactional
     public ResponseEntity<List<Rol>> getRoles() {
         try {
@@ -88,20 +95,28 @@ public class UsuarioController {
                     .body("Error al conectar a la BD: " + e.getMessage());
         }
     }
-/**
- * Crea un nuevo usuario en el sistema.
- *
- * Este método recibe un objeto Usuario en el cuerpo de la solicitud y lo registra utilizando el servicio correspondiente.
- * Si la creación es exitosa, retorna una respuesta con el usuario creado y el código de estado HTTP 201 (CREATED).
- * En caso de error, retorna un mensaje de error y el código de estado HTTP 500 (INTERNAL_SERVER_ERROR).
- *
- * @param usuario El objeto Usuario que se desea crear.
- * @return ResponseEntity con el usuario creado o un mensaje de error en caso de fallo.
- */
-  @PostMapping("/create")
+
+    /**
+     * Crea un nuevo usuario en el sistema.
+     *
+     * Este método recibe un objeto Usuario en el cuerpo de la solicitud y lo
+     * registra utilizando el servicio correspondiente.
+     * Si la creación es exitosa, retorna una respuesta con el usuario creado y el
+     * código de estado HTTP 201 (CREATED).
+     * En caso de error, retorna un mensaje de error y el código de estado HTTP 500
+     * (INTERNAL_SERVER_ERROR).
+     *
+     * @param usuario El objeto Usuario que se desea crear.
+     * @return ResponseEntity con el usuario creado o un mensaje de error en caso de
+     *         fallo.
+     */
+    @PostMapping("/create")
     @Transactional
     public ResponseEntity<?> createUsuario(@RequestBody Usuario usuario) {
         try {
+            // Encriptar la contraseña antes de guardar
+            usuario.setContrasena(passwordEncoder.encode(usuario.getContrasena()));
+            usuario.setFechaRegistro(LocalDateTime.now());
             Usuario nuevoUsuario = service.register(usuario);
             return ResponseEntity.status(HttpStatus.CREATED).body(nuevoUsuario);
         } catch (Exception e) {
@@ -111,6 +126,7 @@ public class UsuarioController {
                     .body(response);
         }
     }
+
     /**
      * Actualiza la información de un usuario existente.
      *
@@ -137,14 +153,17 @@ public class UsuarioController {
                     .body(response);
         }
     }
+
     /**
      * Elimina un usuario identificado por su ID.
      *
      * @param id El identificador único del usuario a eliminar.
-     * @return ResponseEntity con un mensaje de éxito si el usuario fue eliminado correctamente,
-     *         o un mensaje de error en caso de que ocurra una excepción durante el proceso.
+     * @return ResponseEntity con un mensaje de éxito si el usuario fue eliminado
+     *         correctamente,
+     *         o un mensaje de error en caso de que ocurra una excepción durante el
+     *         proceso.
      */
-     @PostMapping("/delete/{id}")
+    @PostMapping("/delete/{id}")
     @Transactional
     public ResponseEntity<?> deleteUsuario(@PathVariable Long id) {
         try {
@@ -157,6 +176,25 @@ public class UsuarioController {
             response.put("error", "Error al eliminar usuario: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(response);
+        }
+    }
+        @PostMapping("/login")
+    public ResponseEntity<?> login(@RequestBody Map<String, String> credentials) {
+        try {
+            String username = credentials.get("nombreUsuario");
+            String password = credentials.get("contrasena");
+            Usuario usuario = service.findByNombreUsuario(username);
+            if (usuario != null && passwordEncoder.matches(password, usuario.getContrasena())) {
+                usuario.setUltimoAcceso(LocalDateTime.now());
+                service.update(usuario);
+                return ResponseEntity.ok(usuario);
+            }
+            
+            return ResponseEntity.status(HttpStatus.UNAUTHORIZED)
+                    .body(Collections.singletonMap("error", "Credenciales inválidas"));
+        } catch (Exception e) {
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.singletonMap("error", "Error en login: " + e.getMessage()));
         }
     }
 }
