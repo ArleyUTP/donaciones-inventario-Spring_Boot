@@ -6,8 +6,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import org.humanitarian.donaciones_inventario.Entities.Donador;
 import org.humanitarian.donaciones_inventario.Entities.Rol;
+import org.humanitarian.donaciones_inventario.Entities.TiposDonador;
 import org.humanitarian.donaciones_inventario.Entities.Usuario;
+import org.humanitarian.donaciones_inventario.Services.IDonadorService;
 import org.humanitarian.donaciones_inventario.Services.IRolService;
 import org.humanitarian.donaciones_inventario.Services.IUsuarioService;
 import org.springframework.http.HttpStatus;
@@ -32,11 +35,12 @@ public class UsuarioController {
     private final IUsuarioService service;
     private final IRolService rolService;
     private final BCryptPasswordEncoder passwordEncoder;
-
-    public UsuarioController(IUsuarioService service, IRolService rolService,BCryptPasswordEncoder passwordEncoder) {
+    private final IDonadorService donadorService;
+    public UsuarioController(IUsuarioService service, IRolService rolService,BCryptPasswordEncoder passwordEncoder,IDonadorService donadorService) {
         this.service = service;
         this.rolService = rolService;
         this.passwordEncoder = passwordEncoder;
+        this.donadorService = donadorService;
     }
 
     /**
@@ -127,6 +131,33 @@ public class UsuarioController {
         }
     }
 
+    @PostMapping("/registro/create")
+        @Transactional
+    public ResponseEntity<?> registreUsuario(@RequestBody Usuario usuario) {
+        try {
+            // Encriptar la contraseña antes de guardar
+            usuario.setContrasena(passwordEncoder.encode(usuario.getContrasena()));
+            usuario.setFechaRegistro(LocalDateTime.now());
+            Usuario nuevoUsuario = service.register(usuario);
+            // Crear un donador asociado al usuario
+            if (nuevoUsuario != null) {
+                Donador donador = new Donador();
+                donador.setUsuario(nuevoUsuario);
+                donador.setFechaRegistro(LocalDateTime.now());
+                donador.setEstadoActivo(true);
+                TiposDonador tipoDonador = new TiposDonador();
+                tipoDonador.setId(1L); // Asignar un tipo de donador por defecto
+                donador.setTipoDonador(tipoDonador);
+                donadorService.save(donador);
+            }
+            return ResponseEntity.status(HttpStatus.CREATED).body(nuevoUsuario);
+        } catch (Exception e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "Error al crear usuario: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(response);
+        }
+    }
     /**
      * Actualiza la información de un usuario existente.
      *

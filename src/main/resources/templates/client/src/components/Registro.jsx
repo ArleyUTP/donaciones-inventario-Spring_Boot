@@ -13,10 +13,10 @@ function Registro() {
     const [telefono, setTelefono] = useState("");
     const navigate = useNavigate();
     const registrarUsuario = () => {
-        Axios.post('http://localhost:3000/user/registro/create', {
-            nombre_usuario: nombreUsuario,
+        Axios.post('http://localhost:8080/user/registro/create', {
+            nombreUsuario: nombreUsuario,
             contrasena: contrasena,
-            nombre_completo: nombreCompleto,
+            nombreCompleto: nombreCompleto,
             email: email,
             telefono: telefono
         }).then(() => {
@@ -47,6 +47,8 @@ function Registro() {
         setTelefono("");
     };
 
+    const [mostrarContrasena, setMostrarContrasena] = useState(false);
+
     return (
         <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
             <h2 className="text-2xl font-bold mb-6 text-center text-blue-600">Registro de Usuario</h2>
@@ -62,12 +64,22 @@ function Registro() {
                 </div>
                 <div>
                     <label className="block text-gray-700 font-medium mb-1">Contraseña:</label>
-                    <input
-                        type="password"
-                        value={contrasena}
-                        onChange={(e) => setContrasena(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                    />
+                    <div className="relative">
+                        <input
+                            type={mostrarContrasena ? "text" : "password"}
+                            value={contrasena}
+                            onChange={(e) => setContrasena(e.target.value)}
+                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
+                        />
+                        <button
+                            type="button"
+                            onClick={() => setMostrarContrasena(!mostrarContrasena)}
+                            className="absolute right-2 top-2 text-sm text-blue-600 focus:outline-none"
+                            tabIndex={-1}
+                        >
+                        {mostrarContrasena ?  "👁": "Ver"}
+                        </button>
+                    </div>
                 </div>
                 <div>
                     <label className="block text-gray-700 font-medium mb-1">Nombre Completo:</label>
