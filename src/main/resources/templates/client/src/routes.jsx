@@ -6,7 +6,7 @@ import GestionDonaciones from './components/GestionDonaciones';
 import GestionDonadores from './components/GestionDonadores';
 import Registro from './components/Registro';
 import GestionDistribuciones from './components/GestionDistribuciones';
-
+import GestionNecesidades from './components/GestionNecesidades';
 export default function AppRoutes() {
   return (
     <Routes>
@@ -17,6 +17,7 @@ export default function AppRoutes() {
       <Route path='/gestion-donadores' element={<GestionDonadores/>}/>
       <Route path='/registro' element={<Registro/>}/>
       <Route path="/gestion-distribuciones" element={<GestionDistribuciones />} />
+      <Route path="/gestion-necesidades" element={<GestionNecesidades />} />
     </Routes>
   );
 }

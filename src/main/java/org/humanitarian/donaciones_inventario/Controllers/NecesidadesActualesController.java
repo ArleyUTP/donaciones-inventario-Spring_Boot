@@ -1,0 +1,139 @@
+package org.humanitarian.donaciones_inventario.Controllers;
+
+import java.time.LocalDateTime;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.humanitarian.donaciones_inventario.Entities.NecesidadesActuales;
+import org.humanitarian.donaciones_inventario.Entities.CategoriaInventario;
+import org.humanitarian.donaciones_inventario.Services.INecesidadesActualesService;
+import org.humanitarian.donaciones_inventario.Services.ICategoriaInventario;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.PutMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RestController;
+
+import jakarta.transaction.Transactional;
+
+@RestController
+@RequestMapping("/needs")
+@CrossOrigin(origins = "http://localhost:5173")
+public class NecesidadesActualesController {
+
+    private final INecesidadesActualesService necesidadesService;
+    private final ICategoriaInventario categoriaService;
+
+    public NecesidadesActualesController(INecesidadesActualesService necesidadesService,
+            ICategoriaInventario categoriaService) {
+        this.necesidadesService = necesidadesService;
+        this.categoriaService = categoriaService;
+    }
+
+    @GetMapping("/list")
+    @Transactional
+    public ResponseEntity<List<NecesidadesActuales>> getNecesidades() {
+        try {
+            List<NecesidadesActuales> necesidades = necesidadesService.findAll();
+            return ResponseEntity.ok(necesidades);
+        } catch (Exception e) {
+            System.err.println("Error al obtener necesidades: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.emptyList());
+        }
+    }
+
+    @GetMapping("/categories")
+    @Transactional
+    public ResponseEntity<List<CategoriaInventario>> getCategorias() {
+        try {
+            List<CategoriaInventario> categorias = categoriaService.findAll();
+            return ResponseEntity.ok(categorias);
+        } catch (Exception e) {
+            System.err.println("Error al obtener categorías: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.emptyList());
+        }
+    }
+
+    @PostMapping("/create")
+    @Transactional
+    public ResponseEntity<?> createNecesidad(@RequestBody NecesidadesActuales necesidad) {
+        try {
+            necesidad.setFechaCreacion(LocalDateTime.now());
+            NecesidadesActuales nuevaNecesidad = necesidadesService.save(necesidad);
+            return ResponseEntity.status(HttpStatus.CREATED).body(nuevaNecesidad);
+        } catch (Exception e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "Error al crear necesidad: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(response);
+        }
+    }
+
+    @PutMapping("/update")
+    @Transactional
+    public ResponseEntity<?> updateNecesidad(@RequestBody NecesidadesActuales necesidad) {
+        try {
+            NecesidadesActuales necesidadExistente = necesidadesService.findById(necesidad.getId());
+            if (necesidadExistente == null) {
+                Map<String, String> response = new HashMap<>();
+                response.put("error", "Necesidad no encontrada");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            // Mantener la fecha de creación original
+            necesidad.setFechaCreacion(necesidadExistente.getFechaCreacion());
+
+            NecesidadesActuales necesidadActualizada = necesidadesService.update(necesidad);
+            return ResponseEntity.ok(necesidadActualizada);
+        } catch (Exception e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "Error al actualizar necesidad: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(response);
+        }
+    }
+
+    @PostMapping("/delete/{id}")
+    @Transactional
+    public ResponseEntity<?> deleteNecesidad(@PathVariable Long id) {
+        try {
+            necesidadesService.deleteById(id);
+            Map<String, String> response = new HashMap<>();
+            response.put("mensaje", "Necesidad eliminada correctamente");
+            return ResponseEntity.ok(response);
+        } catch (Exception e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "Error al eliminar necesidad: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(response);
+        }
+    }
+
+    @GetMapping("/{id}")
+    @Transactional
+    public ResponseEntity<?> getNecesidadById(@PathVariable Long id) {
+        try {
+            NecesidadesActuales necesidad = necesidadesService.findById(id);
+            if (necesidad == null) {
+                Map<String, String> response = new HashMap<>();
+                response.put("error", "Necesidad no encontrada");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+            return ResponseEntity.ok(necesidad);
+        } catch (Exception e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "Error al obtener necesidad: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(response);
+        }
+    }
+}

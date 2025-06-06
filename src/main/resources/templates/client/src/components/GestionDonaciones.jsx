@@ -1,182 +1,422 @@
-import { useState, useEffect } from 'react';
-import Axios from 'axios';
-import Swal from 'sweetalert2';
-import withReactContent from 'sweetalert2-react-content';
+import React, { useState, useEffect, useCallback } from "react";
+import Axios from "axios";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
 
 const MySwal = withReactContent(Swal);
 
 function GestionDonaciones() {
-    const [donaciones, setDonaciones] = useState([]);
-    const [nuevaDonacion, setNuevaDonacion] = useState({
-        donante: '',
-        tipo: '',
-        cantidad: 0,
-        fecha: new Date().toISOString().split('T')[0]
+  const [donacionId, setDonacionId] = useState(0);
+  const [monto, setMonto] = useState(0);
+  const [estado, setEstado] = useState("");
+  const [detallesEspecie, setDetallesEspecie] = useState("");
+  const [tipoDonacionId, setTipoDonacionId] = useState(null);
+  const [donadorId, setDonadorId] = useState(null);
+  const [usuarioId, setUsuarioId] = useState(null);
+
+  const [donaciones, setDonaciones] = useState([]);
+  const [tiposDonacion, setTiposDonacion] = useState([]);
+  const [donadores, setDonadores] = useState([]);
+  const [usuarios, setUsuarios] = useState([]);
+
+  const [editar, setEditar] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+
+  // Cargar datos iniciales
+  useEffect(() => {
+    const fetchInitialData = async () => {
+      try {
+        setLoading(true);
+        const [donacionesRes, tiposRes, donadoresRes, usuariosRes] =
+          await Promise.all([
+            Axios.get("http://localhost:8080/donation/donations"),
+            Axios.get("http://localhost:8080/donation/types"),
+            Axios.get("http://localhost:8080/donor/donors"),
+            Axios.get("http://localhost:8080/user/users"),
+          ]);
+
+        setDonaciones(donacionesRes.data);
+        setTiposDonacion(tiposRes.data);
+        setDonadores(donadoresRes.data);
+        setUsuarios(usuariosRes.data);
+      } catch (error) {
+        console.error("Error al cargar datos:", error);
+        MySwal.fire({
+          title: "Error",
+          text: "No se pudieron cargar los datos iniciales",
+          icon: "error",
+        });
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    fetchInitialData();
+  }, []);
+
+  const getDonaciones = useCallback(async () => {
+    try {
+      setLoading(true);
+      const response = await Axios.get(
+        "http://localhost:8080/donation/donations"
+      );
+      setDonaciones(response.data);
+    } catch (error) {
+      console.error("Error al obtener donaciones:", error);
+      MySwal.fire({
+        title: "Error",
+        text: "No se pudieron cargar las donaciones",
+        icon: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  const addDonacion = async () => {
+    try {
+      setLoading(true);
+      await Axios.post("http://localhost:8080/donation/create", {
+        monto,
+        estado,
+        detallesEspecie,
+        tipoDonacion: { id: tipoDonacionId },
+        donador: { id: donadorId },
+        usuario: { id: usuarioId },
+      });
+
+      await getDonaciones();
+      limpiarCampos();
+      MySwal.fire({
+        title: "Éxito",
+        text: "Donación registrada correctamente",
+        icon: "success",
+        timer: 3000,
+      });
+    } catch (error) {
+      console.error("Error al crear donación:", error);
+      MySwal.fire({
+        title: "Error",
+        text: "No se pudo registrar la donación",
+        icon: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const updateDonacion = async () => {
+    try {
+      setLoading(true);
+      await Axios.put("http://localhost:8080/donation/update", {
+        id: donacionId,
+        monto,
+        estado,
+        detallesEspecie,
+        tipoDonacion: { id: tipoDonacionId },
+        donador: { id: donadorId },
+        usuario: { id: usuarioId },
+      });
+
+      await getDonaciones();
+      limpiarCampos();
+      MySwal.fire({
+        title: "Actualizado",
+        text: "Donación actualizada correctamente",
+        icon: "success",
+        timer: 3000,
+      });
+    } catch (error) {
+      console.error("Error al actualizar donación:", error);
+      MySwal.fire({
+        title: "Error",
+        text: "No se pudo actualizar la donación",
+        icon: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const eliminarDonacion = async (id) => {
+    const result = await MySwal.fire({
+      title: "¿Estás seguro?",
+      text: "Esta acción eliminará la donación",
+      icon: "warning",
+      showCancelButton: true,
+      confirmButtonText: "Sí, eliminar",
+      cancelButtonText: "Cancelar",
     });
 
-    useEffect(() => {
-        obtenerDonaciones();
-    }, []);
+    if (result.isConfirmed) {
+      try {
+        setLoading(true);
+        await Axios.post(`http://localhost:8080/donation/delete/${id}`);
+        await getDonaciones();
+        MySwal.fire({
+          title: "Eliminado",
+          text: "Donación eliminada correctamente",
+          icon: "success",
+          timer: 3000,
+        });
+      } catch (error) {
+        console.error("Error al eliminar donación:", error);
+        MySwal.fire({
+          title: "Error",
+          text: "No se pudo eliminar la donación",
+          icon: "error",
+        });
+      } finally {
+        setLoading(false);
+      }
+    }
+  };
 
-    const obtenerDonaciones = async () => {
-        try {
-            const response = await Axios.get('http://localhost:3000/donaciones');
-            setDonaciones(response.data);
-        } catch (error) {
-            MySwal.fire({
-                title: 'Error',
-                text: 'No se pudieron obtener las donaciones',
-                icon: 'error'
-            });
-        }
-    };
+  const limpiarCampos = () => {
+    setDonacionId(0);
+    setMonto(0);
+    setEstado("");
+    setDetallesEspecie("");
+    setTipoDonacionId(null);
+    setDonadorId(null);
+    setUsuarioId(null);
+    setEditar(false);
+  };
 
-    const registrarDonacion = async () => {
-        try {
-            await Axios.post('http://localhost:3000/donaciones', nuevaDonacion);
-            await MySwal.fire({
-                title: 'Éxito',
-                text: 'Donación registrada correctamente',
-                icon: 'success'
-            });
-            obtenerDonaciones();
-            setNuevaDonacion({
-                donante: '',
-                tipo: '',
-                cantidad: 0,
-                fecha: new Date().toISOString().split('T')[0]
-            });
-        } catch (error) {
-            MySwal.fire({
-                title: 'Error',
-                text: 'No se pudo registrar la donación',
-                icon: 'error'
-            });
-        }
-    };
+  const editarDonacion = (donacion) => {
+    setEditar(true);
+    setDonacionId(donacion.id);
+    setMonto(donacion.monto);
+    setEstado(donacion.estado);
+    setDetallesEspecie(donacion.detallesEspecie);
+    setTipoDonacionId(donacion.tipoDonacion?.id);
+    setDonadorId(donacion.donador?.id);
+    setUsuarioId(donacion.usuario?.id);
+  };
 
-    const confirmarDonacion = async (id) => {
-        try {
-            await Axios.put(`http://localhost:3000/donaciones/${id}/confirmar`);
-            await MySwal.fire({
-                title: 'Éxito',
-                text: 'Donación confirmada correctamente',
-                icon: 'success'
-            });
-            obtenerDonaciones();
-        } catch (error) {
-            MySwal.fire({
-                title: 'Error',
-                text: 'No se pudo confirmar la donación',
-                icon: 'error'
-            });
-        }
-    };
+  return (
+    <>
+      {loading && <div>Cargando...</div>}
+      {error && <div className="error">{error}</div>}
+      <div className="max-w-7xl mx-auto py-8 px-4">
+        <h1 className="text-center mb-8 text-3xl font-bold text-blue-600">
+          Gestión de Donaciones
+        </h1>
 
-    return (
-        <div className="max-w-7xl mx-auto py-8 px-4">
-            <h1 className="text-center mb-8 text-3xl font-bold text-blue-600">Gestión de Donaciones</h1>
+        {/* Formulario */}
+        <div className="flex justify-center">
+          <div className="w-full max-w-md">
+            <div className="bg-white rounded-lg shadow-lg mb-8">
+              <div className="bg-blue-600 text-white rounded-t-lg px-6 py-4">
+                <h5 className="mb-0 text-lg font-semibold">
+                  {editar ? "Editar Donación" : "Registrar Donación"}
+                </h5>
+              </div>
+              <div className="px-6 py-4">
+                <form>
+                  <div className="mb-4">
+                    <label className="block text-gray-700 font-medium mb-1">
+                      Donador:
+                    </label>
+                    <select
+                      value={donadorId || ""}
+                      onChange={(e) => setDonadorId(Number(e.target.value))}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    >
+                      <option value="">Seleccionar Donador</option>
+                      {donadores.map((donador) => (
+                        <option key={donador.id} value={donador.id}>
+                          {donador.usuario?.id == null ? donador.nombreDonador: donador.usuario?.nombreUsuario}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
 
-            {/* Formulario para nueva donación */}
-            <div className="bg-white rounded-lg shadow-lg mb-8 p-6">
-                <h2 className="text-xl font-semibold mb-4">Registrar Nueva Donación</h2>
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                    <div>
-                        <label className="block text-gray-700 mb-1">Donante</label>
-                        <input
-                            type="text"
-                            value={nuevaDonacion.donante}
-                            onChange={(e) => setNuevaDonacion({ ...nuevaDonacion, donante: e.target.value })}
-                            className="w-full border rounded-lg px-3 py-2"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-gray-700 mb-1">Tipo de Donación</label>
-                        <select
-                            value={nuevaDonacion.tipo}
-                            onChange={(e) => setNuevaDonacion({ ...nuevaDonacion, tipo: e.target.value })}
-                            className="w-full border rounded-lg px-3 py-2"
+                  <div className="mb-4">
+                    <label className="block text-gray-700 font-medium mb-1">
+                      Tipo de Donación:
+                    </label>
+                    <select
+                      value={tipoDonacionId || ""}
+                      onChange={(e) =>
+                        setTipoDonacionId(Number(e.target.value))
+                      }
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    >
+                      <option value="">Seleccionar Tipo</option>
+                      {tiposDonacion.map((val) => (
+                        <option key={val.id} value={val.id}>
+                          {val.tipo}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="block text-gray-700 font-medium mb-1">
+                      Monto:
+                    </label>
+                    <input
+                      type="number"
+                      value={monto}
+                      onChange={(e) => setMonto(Number(e.target.value))}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    />
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="block text-gray-700 font-medium mb-1">
+                      Estado:
+                    </label>
+                    <select
+                      value={estado}
+                      onChange={(e) => setEstado(e.target.value)}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    >
+                      <option value="">Seleccionar Estado</option>
+                      <option value="Pendiente">Pendiente</option>
+                      <option value="Confirmada">Confirmada</option>
+                      <option value="Cancelada">Cancelada</option>
+                    </select>
+                  </div>
+
+                  <div className="mb-4">
+                    <label className="block text-gray-700 font-medium mb-1">
+                      Detalles (si es en especie):
+                    </label>
+                    <textarea
+                      value={detallesEspecie}
+                      onChange={(e) => setDetallesEspecie(e.target.value)}
+                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                      rows="3"
+                    />
+                  </div>
+
+                  <div>
+                    {editar ? (
+                      <div className="flex flex-col gap-1.5">
+                        <button
+                          type="button"
+                          onClick={updateDonacion}
+                          className="w-full bg-orange-400 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg"
                         >
-                            <option value="">Seleccionar</option>
-                            <option value="dinero">Dinero</option>
-                            <option value="alimentos">Alimentos</option>
-                            <option value="medicinas">Medicinas</option>
-                        </select>
-                    </div>
-                    <div>
-                        <label className="block text-gray-700 mb-1">Cantidad</label>
-                        <input
-                            type="number"
-                            value={nuevaDonacion.cantidad}
-                            onChange={(e) => setNuevaDonacion({ ...nuevaDonacion, cantidad: e.target.value })}
-                            className="w-full border rounded-lg px-3 py-2"
-                        />
-                    </div>
-                    <div>
-                        <label className="block text-gray-700 mb-1">Fecha</label>
-                        <input
-                            type="date"
-                            value={nuevaDonacion.fecha}
-                            onChange={(e) => setNuevaDonacion({ ...nuevaDonacion, fecha: e.target.value })}
-                            className="w-full border rounded-lg px-3 py-2"
-                        />
-                    </div>
-                </div>
-                <button
-                    onClick={registrarDonacion}
-                    className="mt-4 bg-blue-600 text-white px-6 py-2 rounded-lg hover:bg-blue-700 transition"
-                >
-                    Registrar Donación
-                </button>
+                          Actualizar
+                        </button>
+                        <button
+                          type="button"
+                          onClick={limpiarCampos}
+                          className="w-full bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
+                        >
+                          Cancelar
+                        </button>
+                      </div>
+                    ) : (
+                      <button
+                        type="button"
+                        onClick={addDonacion}
+                        className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg"
+                      >
+                        Registrar
+                      </button>
+                    )}
+                  </div>
+                </form>
+              </div>
             </div>
-
-            {/* Listado de donaciones */}
-            <div className="bg-white rounded-lg shadow-lg p-6">
-                <h2 className="text-xl font-semibold mb-4">Donaciones Recibidas</h2>
-                <div className="overflow-x-auto">
-                    <table className="min-w-full">
-                        <thead>
-                            <tr className="bg-blue-100">
-                                <th className="px-4 py-2">Donante</th>
-                                <th className="px-4 py-2">Tipo</th>
-                                <th className="px-4 py-2">Cantidad</th>
-                                <th className="px-4 py-2">Fecha</th>
-                                <th className="px-4 py-2">Estado</th>
-                                <th className="px-4 py-2">Acciones</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {donaciones.map((donacion) => (
-                                <tr key={donacion.id} className="border-b">
-                                    <td className="px-4 py-2">{donacion.donante}</td>
-                                    <td className="px-4 py-2">{donacion.tipo}</td>
-                                    <td className="px-4 py-2">{donacion.cantidad}</td>
-                                    <td className="px-4 py-2">{donacion.fecha}</td>
-                                    <td className="px-4 py-2">
-                                        {donacion.confirmada ? (
-                                            <span className="text-green-600">Confirmada</span>
-                                        ) : (
-                                            <span className="text-yellow-600">Pendiente</span>
-                                        )}
-                                    </td>
-                                    <td className="px-4 py-2">
-                                        {!donacion.confirmada && (
-                                            <button
-                                                onClick={() => confirmarDonacion(donacion.id)}
-                                                className="bg-green-500 text-white px-3 py-1 rounded hover:bg-green-600"
-                                            >
-                                                Confirmar
-                                            </button>
-                                        )}
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
-            </div>
+          </div>
         </div>
-    );
+
+        {/* Tabla de Donaciones */}
+        <div className="flex justify-center">
+          <div className="w-full max-w-[1080px]">
+            <div className="bg-white rounded-xl shadow-2xl border border-blue-200">
+              <div className="bg-gradient-to-r from-blue-700 to-blue-400 text-white rounded-t-xl flex justify-between items-center px-6 py-4">
+                <h5 className="mb-0 text-lg font-semibold">
+                  Lista de Donaciones
+                </h5>
+                <button
+                  onClick={getDonaciones}
+                  className="bg-white text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-50"
+                >
+                  Actualizar
+                </button>
+              </div>
+
+              <div className="p-6">
+                <div className="overflow-x-auto">
+                  <table className="min-w-full bg-white">
+                    <thead>
+                      <tr className="bg-blue-100">
+                        <th className="px-4 py-2">ID</th>
+                        <th className="px-4 py-2">Donador</th>
+                        <th className="px-4 py-2">Tipo</th>
+                        <th className="px-4 py-2">Monto</th>
+                        <th className="px-4 py-2">Estado</th>
+                        <th className="px-4 py-2">Fecha</th>
+                        <th className="px-4 py-2">Acciones</th>
+                      </tr>
+                    </thead>
+                    <tbody>
+                      {donaciones.map((donacion) => (
+                        <tr
+                          key={donacion.id}
+                          className="border-b hover:bg-gray-50"
+                        >
+                          <td className="px-4 py-2">{donacion.id}</td>
+                          <td className="px-4 py-2">
+                            {donacion.donador?.nombreDonador}
+                          </td>
+                          <td className="px-4 py-2">
+                            {donacion.tipoDonacion?.nombre}
+                          </td>
+                          <td className="px-4 py-2">${donacion.monto}</td>
+                          <td className="px-4 py-2">
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs ${
+                                donacion.estado === "Confirmada"
+                                  ? "bg-green-100 text-green-800"
+                                  : donacion.estado === "Pendiente"
+                                  ? "bg-yellow-100 text-yellow-800"
+                                  : "bg-red-100 text-red-800"
+                              }`}
+                            >
+                              {donacion.estado}
+                            </span>
+                          </td>
+                          <td className="px-4 py-2">
+                            {new Date(
+                              donacion.fechaDonacion
+                            ).toLocaleDateString()}
+                          </td>
+                          <td className="px-4 py-2">
+                            <div className="flex gap-2">
+                              <button
+                                onClick={() => editarDonacion(donacion)}
+                                className="bg-orange-400 text-white px-2 py-1 rounded hover:bg-orange-500"
+                              >
+                                Editar
+                              </button>
+                              <button
+                                onClick={() => eliminarDonacion(donacion.id)}
+                                className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
+                              >
+                                Eliminar
+                              </button>
+                            </div>
+                          </td>
+                        </tr>
+                      ))}
+                    </tbody>
+                  </table>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </>
+  );
 }
 
 export default GestionDonaciones;
