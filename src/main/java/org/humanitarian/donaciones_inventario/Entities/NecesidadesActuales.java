@@ -4,6 +4,8 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
+import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.FetchType;
@@ -26,8 +28,9 @@ public class NecesidadesActuales implements Serializable{
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Long id;
 
-    @ManyToOne(fetch = FetchType.LAZY)
-    @JoinColumn(name = "categoria_id", referencedColumnName = "id", nullable = false)
+    @JsonIgnore
+    @ManyToOne
+    @JoinColumn(name = "categoria_id")
     private CategoriaInventario categoriaInventario;
     
     @Column(name = "nombre_necesidad")
@@ -53,7 +56,7 @@ public class NecesidadesActuales implements Serializable{
 
     @Column(name = "fecha_creacion")
     private LocalDateTime fechaCreacion;
-
+    @JsonIgnore
     @ManyToOne(fetch = FetchType.LAZY)
     @JoinColumn(name = "creado_por_id",referencedColumnName = "id",nullable = false)
     private Usuario creadoPor;

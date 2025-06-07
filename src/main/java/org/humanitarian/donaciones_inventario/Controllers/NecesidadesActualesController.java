@@ -20,7 +20,7 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
+import java.util.logging.Logger;
 import jakarta.transaction.Transactional;
 
 @RestController
@@ -30,6 +30,8 @@ public class NecesidadesActualesController {
 
     private final INecesidadesActualesService necesidadesService;
     private final ICategoriaInventario categoriaService;
+
+    Logger logger = Logger.getLogger(NecesidadesActualesController.class.getName());
 
     public NecesidadesActualesController(INecesidadesActualesService necesidadesService,
             ICategoriaInventario categoriaService) {
@@ -44,9 +46,8 @@ public class NecesidadesActualesController {
             List<NecesidadesActuales> necesidades = necesidadesService.findAll();
             return ResponseEntity.ok(necesidades);
         } catch (Exception e) {
-            System.err.println("Error al obtener necesidades: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(Collections.emptyList());
+            System.out.println("Error al obtener necesidades: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
         }
     }
 
@@ -57,7 +58,7 @@ public class NecesidadesActualesController {
             List<CategoriaInventario> categorias = categoriaService.findAll();
             return ResponseEntity.ok(categorias);
         } catch (Exception e) {
-            System.err.println("Error al obtener categorías: " + e.getMessage());
+            logger.info("Error al obtener categorías: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(Collections.emptyList());
         }
@@ -136,4 +137,5 @@ public class NecesidadesActualesController {
                     .body(response);
         }
     }
+
 }
