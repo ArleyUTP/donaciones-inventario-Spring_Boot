@@ -45,6 +45,9 @@ export function Header({
               <li>
                 <Link to="#" className="text-[#111827] hover:text-[#2563EB] font-medium transition-colors">Contacto</Link>
               </li>
+              <li>
+                <Link to="/necesidades" className="text-[#111827] hover:text-[#2563EB] font-medium transition-colors">Necesidades</Link>
+              </li>
               {isAuthenticated && user.rol?.nombreRol === 'Administrador' ? (
                 <li className="relative group">
                   <Link to="#" className="text-[#111827] hover:text-[#F59E0B] font-semibold transition-colors">
