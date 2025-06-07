@@ -40,7 +40,7 @@ function GestionNecesidades() {
         console.error("Error al cargar datos:", error);
         MySwal.fire({
           title: "Error",
-          text: "No se pudieron cargar los datos iniciales"+error.message,
+          text: "No se pudieron cargar los datos iniciales: "+error,
           icon: "error",
         });
       } finally {
@@ -420,7 +420,7 @@ function GestionNecesidades() {
                       >
                         <td className="px-4 py-2">{necesidad.id}</td>
                         <td className="px-4 py-2">
-                          {necesidad.categoriaInventario?.nombre}
+                          {necesidad.categoriaInventario?.categoria}
                         </td>
                         <td className="px-4 py-2">
                           {necesidad.nombreNecesidad}
