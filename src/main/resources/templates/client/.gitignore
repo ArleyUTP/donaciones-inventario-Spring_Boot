@@ -22,6 +22,25 @@ dist-ssr
 *.njsproj
 *.sln
 *.sw?
+# IntelliJ IDEA
+.idea/
+*.iml
+*.ipr
+*.iws
+
+# Eclipse
+.metadata/
+*.classpath
+*.project
+*.settings/
+
+# NetBeans
+nbproject/
+build/
+nbdist/
+dist/
+nbactions.xml
+nb-configuration.xml
 
 *storybook.log
 
