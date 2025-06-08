@@ -9,6 +9,7 @@ function Necesidades() {
     const [necesidades, setNecesidades] = useState([]);
     const [loading, setLoading] = useState(false);
     const [selectedNecesidad, setSelectedNecesidad] = useState(null);
+
     const [donationForm, setDonationForm] = useState({
         cantidad: "",
         mensaje: "",
@@ -64,8 +65,10 @@ function Necesidades() {
         MySwal.fire({
             title: "Confirmar Donación",
             html: `
-        <p>¿Desea confirmar su donación para la necesidad: <strong>${selectedNecesidad.nombreNecesidad}</strong>?</p>
-        <p>Cantidad a donar: <strong>${donationForm.cantidad} ${selectedNecesidad.unidadMedida}</strong></p>
+        <p>¿Desea confirmar su donación para la necesidad: <strong>${selectedNecesidad.nombreNecesidad
+                }</strong>?</p>
+        <p>Cantidad a donar: <strong>${donationForm.cantidad} ${selectedNecesidad.unidadMedida
+                }</strong></p>
         <p>Mensaje: <em>${donationForm.mensaje || "Ninguno"}</em></n>
       `,
             icon: "question",
@@ -78,6 +81,9 @@ function Necesidades() {
                     setLoading(true);
                     // Simulación de envío de datos al backend
                     // En un caso real, aquí harías un Axios.post a un endpoint de donaciones
+                    Axios.post(
+                        `http://localhost:8080/donation/confirm/${donationForm.cantidad}`
+                    );
                     console.log("Donación enviada:", {
                         necesidadId: selectedNecesidad.id,
                         cantidadDonada: donationForm.cantidad,
@@ -86,7 +92,7 @@ function Necesidades() {
                     });
 
                     // Simular una llamada exitosa al backend
-                    await new Promise(resolve => setTimeout(resolve, 1000));
+                    await new Promise((resolve) => setTimeout(resolve, 1000));
 
                     MySwal.fire({
                         title: "¡Gracias!",
@@ -116,7 +122,9 @@ function Necesidades() {
                 Necesidades Actuales - ¡Tu Ayuda Hace la Diferencia!
             </h1>
 
-            {loading && <div className="text-center text-lg">Cargando necesidades...</div>}
+            {loading && (
+                <div className="text-center text-lg">Cargando necesidades...</div>
+            )}
 
             {!loading && necesidades.length === 0 && (
                 <div className="text-center text-lg text-gray-500">
@@ -128,7 +136,10 @@ function Necesidades() {
                 {necesidades.map((necesidad) => (
                     <div
                         key={necesidad.id}
-                        className={`bg-white rounded-lg shadow-md p-6 border-2 ${selectedNecesidad?.id === necesidad.id ? "border-green-500" : "border-gray-200"}
+                        className={`bg-white rounded-lg shadow-md p-6 border-2 ${selectedNecesidad?.id === necesidad.id
+                                ? "border-green-500"
+                                : "border-gray-200"
+                            }
             hover:shadow-lg transition-shadow duration-300 cursor-pointer`}
                         onClick={() => handleSelectNecesidad(necesidad)}
                     >
@@ -143,16 +154,31 @@ function Necesidades() {
                             </span>
                         </p>
                         <p className="text-gray-700 text-sm mb-1">
-                            Prioridad: {necesidad.prioridad === 1 ? "Baja" : necesidad.prioridad === 2 ? "Media" : "Alta"}
+                            Prioridad:{" "}
+                            {necesidad.prioridad === 1
+                                ? "Baja"
+                                : necesidad.prioridad === 2
+                                    ? "Media"
+                                    : "Alta"}
                         </p>
                         <p className="text-gray-700 text-sm mb-1">
-                            Fecha Límite: <span className="font-medium">{necesidad.fechaLimite}</span>
+                            Fecha Límite:{" "}
+                            <span className="font-medium">{necesidad.fechaLimite}</span>
                         </p>
                         <p className="text-gray-700 text-sm mb-1">
-                            Categoría: <span className="font-medium">{necesidad.categoriaInventario?.categoria || "N/A"}</span>
+                            Categoría:{" "}
+                            <span className="font-medium">
+                                {necesidad.categoriaInventario?.categoria || "N/A"}
+                            </span>
                         </p>
                         <p className="text-gray-700 text-sm">
-                            Beneficiarios: <span className="font-medium">{necesidad.beneficiariosObjetivo}</span>
+                            Beneficiarios:{" "}
+                            <span className="font-medium">
+                                {necesidad.beneficiariosObjetivo}
+                            </span>
+                        </p>
+                        <p className="text-gray-700 text-sm">
+                            Tipo Donación: <span className="font-medium">{necesidad.tipoDonacion}</span>
                         </p>
                     </div>
                 ))}
@@ -163,7 +189,10 @@ function Necesidades() {
                     <h3 className="text-lg font-semibold mb-4">Formulario de Donación</h3>
                     <form onSubmit={handleSubmitDonation}>
                         <div className="mb-4">
-                            <label htmlFor="cantidad" className="block text-gray-700 font-medium mb-2">
+                            <label
+                                htmlFor="cantidad"
+                                className="block text-gray-700 font-medium mb-2"
+                            >
                                 Cantidad a donar ({selectedNecesidad.unidadMedida}):
                             </label>
                             <input
@@ -178,7 +207,10 @@ function Necesidades() {
                             />
                         </div>
                         <div className="mb-6">
-                            <label htmlFor="mensaje" className="block text-gray-700 font-medium mb-2">
+                            <label
+                                htmlFor="mensaje"
+                                className="block text-gray-700 font-medium mb-2"
+                            >
                                 Mensaje (opcional):
                             </label>
                             <textarea

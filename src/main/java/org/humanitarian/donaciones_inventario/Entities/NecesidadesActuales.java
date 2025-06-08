@@ -4,8 +4,6 @@ import java.io.Serializable;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
-import com.fasterxml.jackson.annotation.JsonIgnore;
-
 import jakarta.persistence.Column;
 import jakarta.persistence.Entity;
 import jakarta.persistence.GeneratedValue;
@@ -62,5 +60,9 @@ public class NecesidadesActuales implements Serializable {
     @ManyToOne
     @JoinColumn(name = "creado_por_id", referencedColumnName = "id", nullable = false)
     private Usuario creadoPor;
+        // Relación con categoría
+    @ManyToOne
+    @JoinColumn(name = "tipo_donacion_id", nullable = false)
+    private TipoDonacion tipoDonacion;
 }
 
