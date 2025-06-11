@@ -138,7 +138,37 @@ function GestionDonaciones() {
       setLoading(false);
     }
   };
+  const confirmarDonacion = async (id) => {
+    try {
+      const result = await MySwal.fire({
+        title: "¿Confirmar donación?",
+        text: "Esta acción no se puede deshacer",
+        icon: "question",
+        showCancelButton: true,
+        confirmButtonText: "Sí, confirmar",
+        cancelButtonText: "Cancelar",
+        confirmButtonColor: "#10B981"
+      });
 
+      if (result.isConfirmed) {
+        await Axios.post(`http://localhost:8080/donation/confirm/${id}`);
+        await getDonaciones();
+        MySwal.fire({
+          title: "¡Confirmada!",
+          text: "La donación ha sido confirmada exitosamente",
+          icon: "success",
+          timer: 2000
+        });
+      }
+    } catch (error) {
+      console.error("Error al confirmar donación:", error);
+      MySwal.fire({
+        title: "Error",
+        text: "No se pudo confirmar la donación",
+        icon: "error"
+      });
+    }
+  };
   const eliminarDonacion = async (id) => {
     const result = await MySwal.fire({
       title: "¿Estás seguro?",
@@ -227,7 +257,7 @@ function GestionDonaciones() {
                       <option value="">Seleccionar Donador</option>
                       {donadores.map((donador) => (
                         <option key={donador.id} value={donador.id}>
-                          {donador.usuario?.id == null ? donador.nombreDonador: donador.usuario?.nombreUsuario}
+                          {donador.usuario?.id == null ? donador.nombreDonador : donador.usuario?.nombreUsuario}
                         </option>
                       ))}
                     </select>
@@ -351,46 +381,64 @@ function GestionDonaciones() {
                         <th className="px-4 py-2">ID</th>
                         <th className="px-4 py-2">Donador</th>
                         <th className="px-4 py-2">Tipo</th>
-                        <th className="px-4 py-2">Monto</th>
+                        <th className="px-4 py-2">Monto/Detalles</th>
                         <th className="px-4 py-2">Estado</th>
+                        <th className="px-4 py-2">Ubicación</th>
                         <th className="px-4 py-2">Fecha</th>
                         <th className="px-4 py-2">Acciones</th>
                       </tr>
                     </thead>
                     <tbody>
                       {donaciones.map((donacion) => (
-                        <tr
-                          key={donacion.id}
-                          className="border-b hover:bg-gray-50"
-                        >
+                        <tr key={donacion.id} className="border-b hover:bg-gray-50">
                           <td className="px-4 py-2">{donacion.id}</td>
                           <td className="px-4 py-2">
-                            {donacion.donador?.nombreDonador}
+                            {donacion.donador?.usuario?.nombreUsuario || donacion.donador?.nombreDonador}
+                          </td>
+                          <td className="px-4 py-2">{donacion.tipoDonacion?.tipo}</td>
+                          <td className="px-4 py-2">
+                            {donacion.tipoDonacion?.tipo === 'Monetaria' ? (
+                              `$${donacion.monto}`
+                            ) : (
+                              <div className="text-sm">
+                                <p className="font-medium">{donacion.monto} {donacion.unidadMedida}</p>
+                                <p className="text-gray-600">{donacion.detallesEspecie}</p>
+                              </div>
+                            )}
                           </td>
                           <td className="px-4 py-2">
-                            {donacion.tipoDonacion?.nombre}
-                          </td>
-                          <td className="px-4 py-2">${donacion.monto}</td>
-                          <td className="px-4 py-2">
-                            <span
-                              className={`px-2 py-1 rounded-full text-xs ${
-                                donacion.estado === "Confirmada"
-                                  ? "bg-green-100 text-green-800"
-                                  : donacion.estado === "Pendiente"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : "bg-red-100 text-red-800"
-                              }`}
-                            >
+                            <span className={`px-2 py-1 rounded-full text-xs ${donacion.estado === "Confirmada"
+                              ? "bg-green-100 text-green-800"
+                              : donacion.estado === "Pendiente"
+                                ? "bg-yellow-100 text-yellow-800"
+                                : "bg-red-100 text-red-800"
+                              }`}>
                               {donacion.estado}
                             </span>
                           </td>
                           <td className="px-4 py-2">
-                            {new Date(
-                              donacion.fechaDonacion
-                            ).toLocaleDateString()}
+                            {donacion.direccionRecojo && (
+                              <div className="text-sm">
+                                <p className="text-gray-600">{donacion.direccionRecojo}</p>
+                                {donacion.referenciaRecojo && (
+                                  <p className="text-xs text-gray-500">Ref: {donacion.referenciaRecojo}</p>
+                                )}
+                              </div>
+                            )}
+                          </td>
+                          <td className="px-4 py-2">
+                            {new Date(donacion.fechaDonacion).toLocaleDateString()}
                           </td>
                           <td className="px-4 py-2">
                             <div className="flex gap-2">
+                              {donacion.estado === "Pendiente" && (
+                                <button
+                                  onClick={() => confirmarDonacion(donacion.id)}
+                                  className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
+                                >
+                                  Confirmar
+                                </button>
+                              )}
                               <button
                                 onClick={() => editarDonacion(donacion)}
                                 className="bg-orange-400 text-white px-2 py-1 rounded hover:bg-orange-500"

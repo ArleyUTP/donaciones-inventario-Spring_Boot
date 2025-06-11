@@ -1,5 +1,6 @@
 package org.humanitarian.donaciones_inventario.Controllers;
 
+import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.Collections;
 import java.util.HashMap;
@@ -7,8 +8,10 @@ import java.util.List;
 import java.util.Map;
 
 import org.humanitarian.donaciones_inventario.Entities.Donacion;
+import org.humanitarian.donaciones_inventario.Entities.NecesidadesActuales;
 import org.humanitarian.donaciones_inventario.Entities.TipoDonacion;
 import org.humanitarian.donaciones_inventario.Services.IDonacionService;
+import org.humanitarian.donaciones_inventario.Services.INecesidadesActualesService;
 import org.humanitarian.donaciones_inventario.Services.ITipoDonacionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -30,11 +33,13 @@ public class DonacionController {
 
     private final IDonacionService donacionService;
     private final ITipoDonacionService tiposDonacionService;
+    private final INecesidadesActualesService necesidadesService;
 
     public DonacionController(IDonacionService donacionService,
-            ITipoDonacionService tiposDonacionService) {
+            ITipoDonacionService tiposDonacionService, INecesidadesActualesService necesidadesService) {
         this.donacionService = donacionService;
         this.tiposDonacionService = tiposDonacionService;
+        this.necesidadesService = necesidadesService;
     }
 
     /**
@@ -60,14 +65,26 @@ public class DonacionController {
     @Transactional
     public ResponseEntity<?> createDonacion(@RequestBody Donacion donacion) {
         try {
+            // Validaciones
+            if (donacion.getDonador() == null || donacion.getDonador().getId() == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Donador es requerido"));
+            }
+            if (donacion.getMonto() == null || donacion.getMonto().compareTo(BigDecimal.ZERO) <= 0) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Monto inválido"));
+            }
+            if (donacion.getUbicacionRecojo() == null) {
+                return ResponseEntity.badRequest().body(Map.of("error", "Ubicación de recojo es requerida"));
+            }
+
+            donacion.setFechaDonacion(LocalDateTime.now());
             donacion.setFechaCreacion(LocalDateTime.now());
             Donacion nuevaDonacion = donacionService.save(donacion);
             return ResponseEntity.status(HttpStatus.CREATED).body(nuevaDonacion);
         } catch (Exception e) {
+            e.printStackTrace(); // Para debug
             Map<String, String> response = new HashMap<>();
             response.put("error", "Error al crear donación: " + e.getMessage());
-            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
-                    .body(response);
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(response);
         }
     }
 
@@ -144,6 +161,32 @@ public class DonacionController {
         } catch (Exception e) {
             Map<String, String> response = new HashMap<>();
             response.put("error", "Error al obtener donación: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(response);
+        }
+    }
+
+    // TODO: Metodo para actualizar la cantidad necesaria de un pedido en funcion a
+    // la cantidad de donacion
+    // recibida cuando el administrador confirme la donación
+    @PostMapping("/updateQuantity/{id}/{cantidad}")
+    @Transactional
+    public ResponseEntity<?> updateNecesidad(@PathVariable Long id, @PathVariable Integer cantidad) {
+        try {
+            NecesidadesActuales necesidad = necesidadesService.findById(id);
+            if (necesidad == null) {
+                Map<String, String> response = new HashMap<>();
+                response.put("error", "Necesidad no encontrada");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            necesidad.setCantidadNecesaria(cantidad);
+
+            NecesidadesActuales actualizada = necesidadesService.update(necesidad);
+            return ResponseEntity.ok(actualizada);
+        } catch (Exception e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "Error al actualizar cantidad necesaria: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(response);
         }

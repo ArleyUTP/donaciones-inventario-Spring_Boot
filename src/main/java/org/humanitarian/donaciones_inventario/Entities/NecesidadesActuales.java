@@ -60,9 +60,10 @@ public class NecesidadesActuales implements Serializable {
     @ManyToOne
     @JoinColumn(name = "creado_por_id", referencedColumnName = "id", nullable = false)
     private Usuario creadoPor;
-        // Relación con categoría
+    // Relación con categoría
     @ManyToOne
     @JoinColumn(name = "tipo_donacion_id", nullable = false)
     private TipoDonacion tipoDonacion;
+
 }
 

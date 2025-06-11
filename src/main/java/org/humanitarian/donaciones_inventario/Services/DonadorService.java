@@ -40,5 +40,8 @@ public class DonadorService implements IDonadorService{
         }
         return null;
     }
-    
+    @Override
+    public Donador findByUsuarioId(Long usuarioId) {
+        return donadoresRepository.findByUsuarioId(usuarioId);
+    }
 }

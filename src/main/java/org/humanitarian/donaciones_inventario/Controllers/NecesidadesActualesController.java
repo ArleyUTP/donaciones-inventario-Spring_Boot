@@ -90,7 +90,6 @@ public class NecesidadesActualesController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
 
-            // Mantener la fecha de creación original
             necesidad.setFechaCreacion(necesidadExistente.getFechaCreacion());
 
             NecesidadesActuales necesidadActualizada = necesidadesService.update(necesidad);
@@ -119,6 +118,29 @@ public class NecesidadesActualesController {
         }
     }
 
+    // TODO: Metodo para confirmar una donación que se ha recibido por parte de usuario donador
+    @PostMapping("/confirm/{amount}")
+    @Transactional
+    public ResponseEntity<?> confirmDonation(@PathVariable Long amount) {
+        try {
+            NecesidadesActuales necesidad = necesidadesService.findById(amount);
+            if (necesidad == null) {
+                Map<String, String> response = new HashMap<>();
+                response.put("error", "Necesidad no encontrada");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            necesidad.setEstado("Confirmada");
+
+            NecesidadesActuales actualizada = necesidadesService.update(necesidad);
+            return ResponseEntity.ok(actualizada);
+        } catch (Exception e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "Error al confirmar donación: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(response);}
+    }
+
     @GetMapping("/{id}")
     @Transactional
     public ResponseEntity<?> getNecesidadById(@PathVariable Long id) {
@@ -137,5 +159,4 @@ public class NecesidadesActualesController {
                     .body(response);
         }
     }
-
 }

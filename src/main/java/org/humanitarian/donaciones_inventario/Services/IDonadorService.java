@@ -10,4 +10,5 @@ public interface IDonadorService {
     public void deleteById(Long id);
     public List<Donador> findAll();
     public Donador update(Donador donador);
+    public Donador findByUsuarioId(Long usuarioId);
 }
