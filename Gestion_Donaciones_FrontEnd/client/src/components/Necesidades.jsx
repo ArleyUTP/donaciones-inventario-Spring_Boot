@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import Axios from "axios";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
-
+import { useAuth } from "../AuthContext";
 const MySwal = withReactContent(Swal);
 
 function Necesidades() {
+    const { user } = useAuth(); // Obtener usuario autenticado
     const [necesidades, setNecesidades] = useState([]);
     const [loading, setLoading] = useState(false);
     const [selectedNecesidad, setSelectedNecesidad] = useState(null);
@@ -38,7 +39,7 @@ function Necesidades() {
 
     const handleSelectNecesidad = (necesidad) => {
         setSelectedNecesidad(necesidad);
-        setDonationForm({ cantidad: "", mensaje: "" }); // Reset form when selecting new need
+        setDonationForm({ cantidad: "", mensaje: "" }); 
     };
 
     const handleDonationFormChange = (e) => {
@@ -84,6 +85,17 @@ function Necesidades() {
                     Axios.post(
                         `http://localhost:8080/donation/confirm/${donationForm.cantidad}`
                     );
+                    Axios.post("http://localhost:8080/donation/create",{
+                        donador: {id: user.id},
+                        usuario: {id: user.id},
+                        monto: donationForm.cantidad,
+                        tipoDonacion:{id : selectedNecesidad.tipoDonacion?.id},
+                        fechaDonacion: new Date().toISOString(),
+                        estado: "Pendiente",
+                        detallesEspecie: donationForm.mensaje,
+                        fechaCreacion: new Date().toISOString(),
+                        categoriaInventario: {id: selectedNecesidad.categoriaInventario?.id}
+                    });
                     console.log("Donación enviada:", {
                         necesidadId: selectedNecesidad.id,
                         cantidadDonada: donationForm.cantidad,
@@ -115,7 +127,6 @@ function Necesidades() {
             }
         });
     };
-
     return (
         <div className="max-w-7xl mx-auto py-8 px-4">
             <h1 className="text-center mb-8 text-3xl font-bold text-green-600">
@@ -178,7 +189,7 @@ function Necesidades() {
                             </span>
                         </p>
                         <p className="text-gray-700 text-sm">
-                            Tipo Donación: <span className="font-medium">{necesidad.tipoDonacion}</span>
+                            Tipo Donación: <span className="font-medium">{necesidad.tipoDonacion?.tipo}</span>
                         </p>
                     </div>
                 ))}
