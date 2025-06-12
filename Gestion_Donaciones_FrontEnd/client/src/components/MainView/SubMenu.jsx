@@ -31,6 +31,13 @@ export function SubMenu() {
                             >
                                 Donaciones
                             </Link>
+                        </li>                        <li>
+                            <Link
+                                to="/gestion-voluntarios"
+                                className="text-gray-700 hover:text-blue-500 transition-colors duration-300 text-lg flex items-center gap-2 hover:translate-x-2 transform"
+                            >
+                                Voluntarios
+                            </Link>
                         </li>
                         <li>
                             <Link

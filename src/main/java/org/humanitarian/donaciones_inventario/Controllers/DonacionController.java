@@ -169,10 +169,17 @@ public class DonacionController {
     // TODO: Metodo para actualizar la cantidad necesaria de un pedido en funcion a
     // la cantidad de donacion
     // recibida cuando el administrador confirme la donación
-    @PostMapping("/updateQuantity/{id}/{cantidad}")
+    @PostMapping("/updateQuantity/{id}")
     @Transactional
-    public ResponseEntity<?> updateNecesidad(@PathVariable Long id, @PathVariable Integer cantidad) {
+    public ResponseEntity<?> updateNecesidad(@PathVariable Long id, @RequestBody Map<String, Integer> payload) {
         try {
+            Integer cantidad = payload.get("monto");
+            if (cantidad == null) {
+                Map<String, String> response = new HashMap<>();
+                response.put("error", "El monto es requerido");
+                return ResponseEntity.badRequest().body(response);
+            }
+
             NecesidadesActuales necesidad = necesidadesService.findById(id);
             if (necesidad == null) {
                 Map<String, String> response = new HashMap<>();
@@ -180,13 +187,39 @@ public class DonacionController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
             }
 
-            necesidad.setCantidadNecesaria(cantidad);
+            int nuevaCantidad = necesidad.getCantidadNecesaria() - cantidad;
+            necesidad.setCantidadNecesaria(nuevaCantidad);
 
             NecesidadesActuales actualizada = necesidadesService.update(necesidad);
             return ResponseEntity.ok(actualizada);
         } catch (Exception e) {
             Map<String, String> response = new HashMap<>();
             response.put("error", "Error al actualizar cantidad necesaria: " + e.getMessage());
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(response);
+        }
+    }
+
+    // Metodo para confirmar la donaciion actualizar por la solicitud de la vista
+    // http://localhost:8080/donation/confirm/${id}
+    @PostMapping("/confirm/{id}")
+    @Transactional
+    public ResponseEntity<?> confirmDonation(@PathVariable Long id) {
+        try {
+            Donacion donacion = donacionService.findById(id);
+            if (donacion == null) {
+                Map<String, String> response = new HashMap<>();
+                response.put("error", "Donación no encontrada");
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(response);
+            }
+
+            donacion.setEstado("Confirmada");
+
+            Donacion actualizada = donacionService.update(donacion);
+            return ResponseEntity.ok(actualizada);
+        } catch (Exception e) {
+            Map<String, String> response = new HashMap<>();
+            response.put("error", "Error al confirmar donación: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                     .body(response);
         }

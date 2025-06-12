@@ -22,7 +22,7 @@ function GestionDonaciones() {
   const [editar, setEditar] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-
+  const [selectedDonacion, setSelectedDonacion] = useState(null);
   // Cargar datos iniciales
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -140,9 +140,19 @@ function GestionDonaciones() {
   };
   const confirmarDonacion = async (id) => {
     try {
+      // Primero obtener la donación específica
+      const donacionToConfirm = donaciones.find(d => d.id === id);
+      setSelectedDonacion(donacionToConfirm);
+
       const result = await MySwal.fire({
         title: "¿Confirmar donación?",
-        text: "Esta acción no se puede deshacer",
+        html: `
+          <div class="text-left">
+            <p><strong>Tipo:</strong> ${donacionToConfirm.tipoDonacion?.tipo}</p>
+            <p><strong>Cantidad:</strong> ${donacionToConfirm.monto} ${donacionToConfirm.tipoDonacion?.tipo === 'Monetaria' ? 'USD' : 'unidades'}</p>
+            ${donacionToConfirm.detallesEspecie ? `<p><strong>Detalles:</strong> ${donacionToConfirm.detallesEspecie}</p>` : ''}
+          </div>
+        `,
         icon: "question",
         showCancelButton: true,
         confirmButtonText: "Sí, confirmar",
@@ -151,8 +161,20 @@ function GestionDonaciones() {
       });
 
       if (result.isConfirmed) {
+        // Confirmar la donación
         await Axios.post(`http://localhost:8080/donation/confirm/${id}`);
+
+        // Si es una donación en especie, actualizar la cantidad
+        if (donacionToConfirm.tipoDonacion?.tipo === 'En especie') {
+          await Axios.post(
+            `http://localhost:8080/donation/updateQuantity/${id}`,
+            { monto: donacionToConfirm.monto }
+          );
+        }
+
         await getDonaciones();
+        setSelectedDonacion(null);
+
         MySwal.fire({
           title: "¡Confirmada!",
           text: "La donación ha sido confirmada exitosamente",
