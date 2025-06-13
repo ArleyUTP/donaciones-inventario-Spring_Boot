@@ -7,7 +7,7 @@ import { CampaignsSeccion } from './components/MainView/CampaignsSeccion';
 import { PublicationsSeccion } from './components/MainView/PublicationsSeccion'
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-
+import { Button } from '@heroui/react';
 function App() {
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
@@ -29,6 +29,14 @@ function App() {
         {/* How to Help Section */}
         <HelpSeccion />
         {/* Testimonials Section */}
+        {/* Nueva sección de prueba */}
+        <div className="min-h-screen w-full flex flex-col bg-gray-100 app">
+      {/* ... existing code ... */}
+      <main className="flex-1 w-full">
+        <Button color="primary">Prueba HeroUI</Button>
+        {/* ... rest of your code ... */}
+      </main>
+    </div>
         <section id="testimonials" className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4">
             <h2 className="text-3xl font-bold text-blue-800 mb-8 text-center">
