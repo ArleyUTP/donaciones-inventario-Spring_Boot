@@ -13,6 +13,7 @@ import org.humanitarian.donaciones_inventario.Entities.TipoDonacion;
 import org.humanitarian.donaciones_inventario.Services.IDonacionService;
 import org.humanitarian.donaciones_inventario.Services.INecesidadesActualesService;
 import org.humanitarian.donaciones_inventario.Services.ITipoDonacionService;
+import org.humanitarian.donaciones_inventario.Services.NotificacionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -34,12 +35,16 @@ public class DonacionController {
     private final IDonacionService donacionService;
     private final ITipoDonacionService tiposDonacionService;
     private final INecesidadesActualesService necesidadesService;
+    private final NotificacionService notificacionService;
 
     public DonacionController(IDonacionService donacionService,
-            ITipoDonacionService tiposDonacionService, INecesidadesActualesService necesidadesService) {
+            ITipoDonacionService tiposDonacionService,
+            INecesidadesActualesService necesidadesService,
+            NotificacionService notificacionService) {
         this.donacionService = donacionService;
         this.tiposDonacionService = tiposDonacionService;
         this.necesidadesService = necesidadesService;
+        this.notificacionService = notificacionService;
     }
 
     /**
@@ -214,8 +219,11 @@ public class DonacionController {
             }
 
             donacion.setEstado("Confirmada");
-
             Donacion actualizada = donacionService.update(donacion);
+
+            // Crear notificación
+            notificacionService.crearNotificacionDonacionConfirmada(donacion);
+
             return ResponseEntity.ok(actualizada);
         } catch (Exception e) {
             Map<String, String> response = new HashMap<>();

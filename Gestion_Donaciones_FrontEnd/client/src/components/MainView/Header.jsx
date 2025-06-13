@@ -1,8 +1,10 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { Link } from 'react-router-dom';
 import { IoNotificationsOutline } from "react-icons/io5";
 import { HiMenu, HiX } from "react-icons/hi";
 import { SubMenu } from './SubMenu';
+import Notificaciones from './Notificaciones';
+import Axios from 'axios';
 export function Header({
   isAuthenticated,
   user,
@@ -10,7 +12,15 @@ export function Header({
   navigate
 }) {
   const [menuOpen, setMenuOpen] = useState(false);
-
+  const [mostrarNotificaciones, setMostrarNotificaciones] = useState(false);
+  const [notificaciones, setNotificaciones] = useState([]);
+  useEffect(() => {
+    if (user && user.id) {
+      Axios.get(`http://localhost:8080/notificaciones/usuario/${user.id}`)
+        .then(res => setNotificaciones(res.data))
+        .catch(err => console.error(err));
+    }
+  }, [user]);
   return (
     <header className="fixed z-50 w-full bg-white shadow-lg border-b border-[#DBEAFE]">
       <div className="max-w-7xl mx-auto flex justify-between items-center px-8 py-4">
@@ -64,10 +74,15 @@ export function Header({
         {/* Notificaciones y usuario */}
         <div className="flex items-center gap-6">
           <div className="relative">
-            <IoNotificationsOutline className="text-[#2563EB] text-3xl" />
-            <span className="absolute -top-2 -right-3 bg-[#F59E0B] text-[#111827] text-xs  rounded-full px-2 py-0.5">
-              9+
-            </span>
+            <IoNotificationsOutline className="text-[#2563EB] text-3xl" onClick={() => setMostrarNotificaciones(true)} />
+            {user && user.id !== null ? (
+              <span className="absolute -top-2 -right-3 bg-[#F59E0B] text-[#111827] text-xs  rounded-full px-2 py-0.5">
+                {notificaciones.length > 9 ? '9+' : notificaciones.length}
+              </span>
+            ) : null}
+            {mostrarNotificaciones && user && user.id !== null ? (
+              <Notificaciones usuarioId={user.id} onClose={() => setMostrarNotificaciones(false)} />
+            ) : null}
           </div>
           {isAuthenticated && user ? (
             <>
