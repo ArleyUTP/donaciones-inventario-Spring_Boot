@@ -2,6 +2,30 @@ import React, { useState, useEffect, useCallback } from "react";
 import Axios from "axios";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
+
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Checkbox } from "@/components/ui/checkbox";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+
 const notificacion = withReactContent(Swal);
 
 function GestionUsuarios() {
@@ -11,7 +35,6 @@ function GestionUsuarios() {
   const [nombreCompleto, setNombreCompleto] = useState("");
   const [email, setEmail] = useState("");
   const [telefono, setTelefono] = useState("");
-  const [esDonador, setEsDonador] = useState(false);
   const [rolId, setRolId] = useState(null);
   const [roles, setRoles] = useState([]);
   const [editar, setEditar] = useState(false);
@@ -19,12 +42,10 @@ function GestionUsuarios() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
 
-  // Cargar datos iniciales solo una vez
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
         setLoading(true);
-        // Hacer ambas peticiones en paralelo
         const [rolesResponse, usuariosResponse] = await Promise.all([
           Axios.get("http://localhost:8080/user/roles"),
           Axios.get("http://localhost:8080/user/users"),
@@ -46,9 +67,8 @@ function GestionUsuarios() {
     };
 
     fetchInitialData();
-  }, []); // Solo se ejecuta una vez al montar el componente
+  }, []);
 
-  // Función para obtener usuarios - usando useCallback para evitar re-renderizados
   const getUsuarios = useCallback(async () => {
     try {
       setLoading(true);
@@ -67,24 +87,40 @@ function GestionUsuarios() {
       setLoading(false);
     }
   }, []);
+
+  const limpiarCampos = useCallback(() => {
+    setIdUsuario(0);
+    setNombreUsuario("");
+    setContrasena("");
+    setNombreCompleto("");
+    setEmail("");
+    setTelefono("");
+    setRolId(null);
+  }, []);
+  
+  const handleDialogClose = () => {
+    limpiarCampos();
+    setEditar(false);
+  };
+  
+  // Modificar el uso de `limpiarCampos` en las funciones de creación y actualización
   const addUsuario = async () => {
     try {
       setLoading(true);
       setError(null);
-
+  
       await Axios.post("http://localhost:8080/user/create", {
         nombreUsuario: nombreUsuario,
         contrasena: contrasena,
         nombreCompleto: nombreCompleto,
-        rol: { id: rolId },
         email: email,
-        telefono: telefono
+        telefono: telefono,
+        rol: { id: rolId }
       });
-
-      // Recargar usuarios después de crear
+  
       await getUsuarios();
       limpiarCampos();
-
+  
       notificacion.fire({
         title: "Guardado",
         text: "El usuario fue guardado correctamente",
@@ -104,28 +140,25 @@ function GestionUsuarios() {
       setLoading(false);
     }
   };
-
+  
   const updateUsuario = async () => {
     try {
       setLoading(true);
       setError(null);
-
+  
       await Axios.put("http://localhost:8080/user/update", {
         id: idUsuario,
         nombreUsuario: nombreUsuario,
         contrasena: contrasena,
         nombreCompleto: nombreCompleto,
-        rol: { id: rolId },
         email: email,
         telefono: telefono,
-        es_donador: esDonador,
+        rol: { id: rolId }
       });
-
-      // Recargar usuarios después de actualizar
-      //comentario
+  
       await getUsuarios();
       limpiarCampos();
-
+  
       notificacion.fire({
         title: "Actualizado",
         text: "El usuario fue actualizado correctamente",
@@ -147,7 +180,6 @@ function GestionUsuarios() {
   };
 
   const eliminarUsuario = async (idUsuario) => {
-    // Validar que el ID sea válido
     if (!idUsuario) {
       notificacion.fire({
         title: "Error",
@@ -172,7 +204,7 @@ function GestionUsuarios() {
         setError(null);
 
         await Axios.post(`http://localhost:8080/user/delete/${idUsuario}`);
-        console.log("Usuario eliminado con éxito es"+idUsuario);
+        console.log("Usuario eliminado con éxito es" + idUsuario);
         await getUsuarios();
 
         notificacion.fire({
@@ -194,19 +226,8 @@ function GestionUsuarios() {
       }
     }
   };
-  // Función para limpiar campos
-  const limpiarCampos = useCallback(() => {
-    setIdUsuario(0);
-    setNombreUsuario("");
-    setContrasena("");
-    setNombreCompleto("");
-    setEmail("");
-    setTelefono("");
-    setEsDonador(false);
-    setRolId(null);
-    setEditar(false);
-    setError(null);
-  }, []);
+
+
   const editarUsuario = (val) => {
     setEditar(true);
     setNombreUsuario(val.nombreUsuario);
@@ -216,305 +237,281 @@ function GestionUsuarios() {
     setEmail(val.email);
     setIdUsuario(val.id);
   };
+
   return (
     <>
-      {loading && <div>Cargando...</div>}
-      {error && <div className="error">{error}</div>}
-      <div className="max-w-7xl mx-auto py-8 px-4">
-        <h1 className="text-center mb-8 text-3xl font-bold text-blue-600">
-          Gestor de Usuarios
-        </h1>
-        <div className="flex justify-center">
-          <div className="w-full max-w-md">
-            <div className="bg-white rounded-lg shadow-lg mb-8">
-              <div className="bg-blue-600 text-white rounded-t-lg px-6 py-4">
-                <h5 className="mb-0 text-lg font-semibold">
-                  Registrar Usuario
-                </h5>
-              </div>
-              <div className="px-6 py-4">
-                <form>
-                  <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Nombre de usuario:
-                    </label>
-                    <input
-                      value={nombreUsuario}
-                      type="text"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                      onChange={(event) => setNombreUsuario(event.target.value)}
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Contraseña:
-                    </label>
-                    <input
-                      value={contrasena}
-                      type="password"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                      onChange={(event) => setContrasena(event.target.value)}
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Nombre completo:
-                    </label>
-                    <input
-                      value={nombreCompleto}
-                      type="text"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                      onChange={(event) =>
-                        setNombreCompleto(event.target.value)
-                      }
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Rol:
-                    </label>
-                    <select
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                      onChange={(event) => {
-                        const selectedRolId = Number(event.target.value);
-                        setRolId(selectedRolId);
-                        // Verificar si el rol seleccionado es 'usuario'
-                        const rolSeleccionado = roles.find(
-                          (r) => r.id === selectedRolId
-                        );
-                        if (
-                          rolSeleccionado &&
-                          rolSeleccionado.nombre.trim().toLowerCase() ===
-                          "usuario"
-                        ) {
-                          setEsDonador(true);
-                        } else {
-                          setEsDonador(false);
-                          setTelefono(""); // Limpiar teléfono si no es usuario
-                        }
-                      }}
-                      value={rolId || ""}
-                    >
-                      <option value="">Seleccionar rol</option>
-                      {roles.map((rol) => (
-                        <option key={rol.id} value={rol.id}>
-                          {rol.nombreRol}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Email:
-                    </label>
-                    <input
-                      value={email}
-                      type="email"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                      onChange={(event) => setEmail(event.target.value)}
-                    />
-                  </div>
-                  {roles.find((r) => r.id === rolId)?.nombre === "usuario" && (
-                    <div className="flex items-center mb-4">
+      <div className="container mx-auto py-8 px-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Gestión de Usuarios</CardTitle>
+            <div className="flex space-x-2">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button>Crear Usuario</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle>Crear Nuevo Usuario</DialogTitle>
+                    <DialogDescription>
+                      Ingrese los datos del nuevo usuario
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <label htmlFor="name" className="text-right">
+                        Nombre
+                      </label>
                       <input
-                        type="checkbox"
-                        checked={esDonador}
-                        onChange={(e) => setEsDonador(e.target.checked)}
-                        className="mr-2"
+                        id="name"
+                        className="col-span-3 px-3 py-2 border rounded-md"
+                        placeholder="Ingrese el nombre"
+                        value={nombreUsuario}
+                        onChange={(e) => setNombreUsuario(e.target.value)}
                       />
-                      <label className="text-gray-700">Usuario Donador</label>
                     </div>
-                  )}
-
-                  {esDonador &&
-                    roles.find((r) => r.id === rolId)?.nombre === "usuario" && (
-                      <div className="mb-4">
-                        <label className="block text-gray-700 font-medium mb-1">
-                          Teléfono:
-                        </label>
-                        <input
-                          type="text"
-                          value={telefono}
-                          onChange={(e) => setTelefono(e.target.value)}
-                          className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                          required
-                        />
-                      </div>
-                    )}
-                  <div>
-                    {editar ? (
-                      <div className="flex flex-col gap-1.5">
-                        <button
-                          type="button"
-                          className="w-full bg-orange-400 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg transition"
-                          onClick={updateUsuario}
-                        >
-                          Actualizar
-                        </button>
-                        <button
-                          type="button"
-                          className="w-full bg-blue-400 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition"
-                          onClick={limpiarCampos}
-                        >
-                          Carcelar
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition"
-                        onClick={addUsuario}
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <label htmlFor="password" className="text-right">
+                        Contraseña
+                      </label>
+                      <input
+                        id="password"
+                        type="password"
+                        className="col-span-3 px-3 py-2 border rounded-md"
+                        placeholder="Ingrese la contraseña"
+                        value={contrasena}
+                        onChange={(e) => setContrasena(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <label htmlFor="fullName" className="text-right">
+                        Nombre Completo
+                      </label>
+                      <input
+                        id="fullName"
+                        className="col-span-3 px-3 py-2 border rounded-md"
+                        placeholder="Ingrese el nombre completo"
+                        value={nombreCompleto}
+                        onChange={(e) => setNombreCompleto(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <label htmlFor="email" className="text-right">
+                        Email
+                      </label>
+                      <input
+                        id="email"
+                        type="email"
+                        className="col-span-3 px-3 py-2 border rounded-md"
+                        placeholder="Ingrese el email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <label htmlFor="phone" className="text-right">
+                        Teléfono
+                      </label>
+                      <input
+                        id="phone"
+                        className="col-span-3 px-3 py-2 border rounded-md"
+                        placeholder="Ingrese el teléfono"
+                        value={telefono}
+                        onChange={(e) => setTelefono(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <label htmlFor="role" className="text-right">
+                        Rol
+                      </label>
+                      <select
+                        id="role"
+                        className="col-span-3 px-3 py-2 border rounded-md"
+                        value={rolId || ""}
+                        onChange={(e) => setRolId(Number(e.target.value))}
                       >
-                        Guardar
-                      </button>
-                    )}
+                        <option value="">Seleccionar rol</option>
+                        {roles.map((rol) => (
+                          <option key={rol.id} value={rol.id}>
+                            {rol.nombreRol}
+                          </option>
+                        ))}
+                      </select>
+                    </div>
                   </div>
-                </form>
-              </div>
+                  <div className="flex justify-end space-x-2">
+                    <DialogTrigger asChild>
+                      <Button variant="outline">Cancelar</Button>
+                    </DialogTrigger>
+                    <Button onClick={addUsuario}>Guardar</Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              <Button variant="outline" onClick={getUsuarios}>
+                Actualizar Lista
+              </Button>
             </div>
-          </div>
-        </div>
-        <div className="flex justify-center ">
-          <div className="w-full max-w-[1080px]  ">
-            <div className="bg-white rounded-xl shadow-2xl border border-blue-200">
-              <div className="bg-gradient-to-r from-blue-700 to-blue-400 text-white rounded-t-xl flex justify-between items-center px-6 py-4">
-                <h5 className="mb-0 text-lg font-semibold">
-                  Lista de Usuarios
-                </h5>
-                <button
-                  className="bg-white text-blue-700 border border-blue-300 rounded px-3 py-1 text-sm hover:bg-blue-100 transition"
-                  onClick={getUsuarios}
-                >
-                  Actualizar
-                </button>
-              </div>
-              <div className="px-6 py-4">
-                {usuariosLista.filter((u) => u.rol !== "eliminado").length ===
-                  0 ? (
-                  <div className="text-center text-gray-400">
-                    No hay usuarios registrados.
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto w-full">
-                    <table className="min-w-full border border-blue-200 rounded-lg overflow-hidden shadow text-xs sm:text-sm">
-                      <thead>
-                        <tr className="bg-blue-100">
-                          <th
-                            className="px-2 py-2 border-b border-blue-200 text-blue-800 font-semibold whitespace-nowrap"
-                            scope="col"
-                          >
-                            #
-                          </th>
-                          <th
-                            className="px-2 py-2 border-b border-blue-200 text-blue-800 font-semibold whitespace-nowrap"
-                            scope="col"
-                          >
-                            Nombre de Usuario
-                          </th>
-                          <th
-                            className="px-2 py-2 border-b border-blue-200 text-blue-800 font-semibold whitespace-nowrap"
-                            scope="col"
-                          >
-                            Contraseña
-                          </th>
-                          <th
-                            className="px-2 py-2 border-b border-blue-200 text-blue-800 font-semibold whitespace-nowrap"
-                            scope="col"
-                          >
-                            Nombre Completo
-                          </th>
-                          <th
-                            className="px-2 py-2 border-b border-blue-200 text-blue-800 font-semibold whitespace-nowrap"
-                            scope="col"
-                          >
-                            Rol
-                          </th>
-                          <th
-                            className="px-2 py-2 border-b border-blue-200 text-blue-800 font-semibold whitespace-nowrap"
-                            scope="col"
-                          >
-                            Email
-                          </th>
-                          <th
-                            className="px-2 py-2 border-b border-blue-200 text-blue-800 font-semibold whitespace-nowrap"
-                            scope="col"
-                          >
-                            Ultimo Acceso
-                          </th>
-                          <th
-                            className="px-2 py-2 border-b border-blue-200 text-blue-800 font-semibold whitespace-nowrap"
-                            scope="col"
-                          >
-                            Acciones
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {usuariosLista
-                          .filter((val) => val.rol !== "eliminado")
-                          .map((val) => {
-                            return (
-                              <tr
-                                key={val.id} // Cambiado de val.id a val.usuario_id para consistencia
-                                className={
-                                  val.id % 2 === 0 // Cambiado de val.id a val.usuario_id
-                                    ? "bg-white hover:bg-blue-50"
-                                    : "bg-blue-50 hover:bg-blue-100"
-                                }
-                              >
-                                <td className="px-2 py-2 border-b border-blue-100 text-center">
-                                  {val.id} {/* Cambiado de val.id a val.usuario_id */}
-                                </td>
-                                <td className="px-2 py-2 border-b border-blue-100 truncate max-w-[120px] text-center">
-                                  {val.nombreUsuario}
-                                </td>
-                                <td className="px-2 py-2 border-b border-blue-100 truncate max-w-[100px] text-center">
-                                  {val.contrasena}
-                                </td>
-                                <td className="px-2 py-2 border-b border-blue-100 truncate max-w-[120px] text-center">
-                                  {val.nombreCompleto}
-                                </td>
-                                <td className="px-2 py-2 border-b border-blue-100 text-center">
-                                  {val.rol?.nombreRol}
-                                </td>
-                                <td className="px-2 py-2 border-b border-blue-100 truncate max-w-[140px] text-center">
-                                  {val.email}
-                                </td>
-                                <td className="px-2 py-2 border-b border-blue-100 truncate max-w-[120px] text-center">
-                                  {val.ultimoAcceso}
-                                </td>
-                                <td className="px-2 py-2 border-b border-blue-100 flex flex-col gap-1 sm:flex-row text-center">
-                                  <button
-                                    className="bg-orange-400 rounded-xl px-2 py-1 hover:bg-orange-600 hover:text-white transition text-xs sm:text-sm"
-                                    onClick={() => {
-                                      editarUsuario(val);
-                                    }}
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <p className="text-center">Cargando usuarios...</p>
+            ) : usuariosLista.filter((u) => u.rol !== "eliminado").length === 0 ? (
+              <p className="text-center text-muted-foreground">
+                No hay usuarios registrados.
+              </p>
+            ) : (
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">#</TableHead>
+                      <TableHead>Usuario</TableHead>
+                      <TableHead>Nombre</TableHead>
+                      <TableHead>Rol</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Teléfono</TableHead>
+                      <TableHead>Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {usuariosLista
+                      .filter((val) => val.rol !== "eliminado")
+                      .sort((a, b) => a.id - b.id)
+                      .map((val) => (
+                        <TableRow key={val.id}>
+                          <TableCell>{val.id}</TableCell>
+                          <TableCell>{val.nombreUsuario}</TableCell>
+                          <TableCell>{val.nombreCompleto}</TableCell>
+                          <TableCell>{val.rol?.nombreRol}</TableCell>
+                          <TableCell>{val.email}</TableCell>
+                          <TableCell>{val.telefono || '-'}</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button 
+                                    variant="outline" 
+                                    size="sm"
+                                    onClick={() => editarUsuario(val)}
                                   >
                                     Editar
-                                  </button>
-                                  <button
-                                    className="bg-red-600 rounded-xl px-2 py-1 hover:bg-red-800 hover:text-white transition text-xs sm:text-sm"
-                                    onClick={() =>
-                                      eliminarUsuario(val.id)
-                                    }
-                                  >
-                                    Eliminar
-                                  </button>
-                                </td>
-                              </tr>
-                            );
-                          })}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Editar Usuario</DialogTitle>
+                                    <DialogDescription>
+                                      Modifique los datos del usuario
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <div className="grid gap-4 py-4">
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                      <label htmlFor="name" className="text-right">
+                                        Nombre
+                                      </label>
+                                      <input
+                                        id="name"
+                                        className="col-span-3 px-3 py-2 border rounded-md"
+                                        placeholder="Ingrese el nombre"
+                                        value={nombreUsuario}
+                                        onChange={(e) => setNombreUsuario(e.target.value)}
+                                      />
+                                    </div>
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                      <label htmlFor="password" className="text-right">
+                                        Contraseña
+                                      </label>
+                                      <input
+                                        id="password"
+                                        type="password"
+                                        className="col-span-3 px-3 py-2 border rounded-md"
+                                        placeholder="Ingrese la contraseña"
+                                        value={contrasena}
+                                        onChange={(e) => setContrasena(e.target.value)}
+                                      />
+                                    </div>
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                      <label htmlFor="fullName" className="text-right">
+                                        Nombre Completo
+                                      </label>
+                                      <input
+                                        id="fullName"
+                                        className="col-span-3 px-3 py-2 border rounded-md"
+                                        placeholder="Ingrese el nombre completo"
+                                        value={nombreCompleto}
+                                        onChange={(e) => setNombreCompleto(e.target.value)}
+                                      />
+                                    </div>
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                      <label htmlFor="email" className="text-right">
+                                        Email
+                                      </label>
+                                      <input
+                                        id="email"
+                                        type="email"
+                                        className="col-span-3 px-3 py-2 border rounded-md"
+                                        placeholder="Ingrese el email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                      />
+                                    </div>
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                      <label htmlFor="phone" className="text-right">
+                                        Teléfono
+                                      </label>
+                                      <input
+                                        id="phone"
+                                        className="col-span-3 px-3 py-2 border rounded-md"
+                                        placeholder="Ingrese el teléfono"
+                                        value={telefono}
+                                        onChange={(e) => setTelefono(e.target.value)}
+                                      />
+                                    </div>
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                      <label htmlFor="role" className="text-right">
+                                        Rol
+                                      </label>
+                                      <select
+                                        id="role"
+                                        className="col-span-3 px-3 py-2 border rounded-md"
+                                        value={rolId || ""}
+                                        onChange={(e) => setRolId(Number(e.target.value))}
+                                      >
+                                        <option value="">Seleccionar rol</option>
+                                        {roles.map((rol) => (
+                                          <option key={rol.id} value={rol.id}>
+                                            {rol.nombreRol}
+                                          </option>
+                                        ))}
+                                      </select>
+                                    </div>
+                                  </div>
+                                  <div className="flex justify-end space-x-2">
+                                    <DialogTrigger asChild>
+                                      <Button variant="outline">Cancelar</Button>
+                                    </DialogTrigger>
+                                    <Button onClick={updateUsuario}>Guardar</Button>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => eliminarUsuario(val.id)}
+                              >
+                                Eliminar
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                  </TableBody>
+                </Table>
               </div>
-            </div>
-          </div>
-        </div>
+            )}
+          </CardContent>
+        </Card>
       </div>
     </>
   );
 }
-
 export default GestionUsuarios;

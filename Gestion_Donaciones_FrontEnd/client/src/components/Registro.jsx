@@ -2,7 +2,13 @@ import { useState } from 'react';
 import Axios from 'axios';
 import Swal from 'sweetalert2';
 import withReactContent from 'sweetalert2-react-content';
-import {useNavigate } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
+import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
+import { Button } from "@/components/ui/button";
+import { Eye, EyeOff } from "lucide-react";
+
 const MySwal = withReactContent(Swal);
 
 function Registro() {
@@ -11,14 +17,16 @@ function Registro() {
     const [nombreCompleto, setNombreCompleto] = useState("");
     const [email, setEmail] = useState("");
     const [telefono, setTelefono] = useState("");
+    const [mostrarContrasena, setMostrarContrasena] = useState(false);
     const navigate = useNavigate();
+
     const registrarUsuario = () => {
         Axios.post('http://localhost:8080/user/registro/create', {
-            nombreUsuario: nombreUsuario,
-            contrasena: contrasena,
-            nombreCompleto: nombreCompleto,
-            email: email,
-            telefono: telefono
+            nombreUsuario,
+            contrasena,
+            nombreCompleto,
+            email,
+            telefono
         }).then(() => {
             MySwal.fire({
                 title: 'Éxito',
@@ -47,75 +55,82 @@ function Registro() {
         setTelefono("");
     };
 
-    const [mostrarContrasena, setMostrarContrasena] = useState(false);
-
     return (
-        <div className="max-w-md mx-auto p-6 bg-white rounded-lg shadow-md">
-            <h2 className="text-2xl font-bold mb-6 text-center text-blue-600">Registro de Usuario</h2>
-            <div className="space-y-4">
-                <div>
-                    <label className="block text-gray-700 font-medium mb-1">Nombre de Usuario:</label>
-                    <input
+        <Card className="max-w-md mx-auto">
+            <CardHeader>
+                <CardTitle className="text-center text-blue-600">
+                    Registro de Usuario
+                </CardTitle>
+            </CardHeader>
+            <CardContent className="space-y-4">
+                <div className="space-y-2">
+                    <Label htmlFor="nombreUsuario">Nombre de Usuario</Label>
+                    <Input
+                        id="nombreUsuario"
                         type="text"
                         value={nombreUsuario}
                         onChange={(e) => setNombreUsuario(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     />
                 </div>
-                <div>
-                    <label className="block text-gray-700 font-medium mb-1">Contraseña:</label>
+
+                <div className="space-y-2">
+                    <Label htmlFor="contrasena">Contraseña</Label>
                     <div className="relative">
-                        <input
+                        <Input
+                            id="contrasena"
                             type={mostrarContrasena ? "text" : "password"}
                             value={contrasena}
                             onChange={(e) => setContrasena(e.target.value)}
-                            className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                         />
-                        <button
-                            type="button"
+                        <Button
+                            variant="ghost"
+                            size="icon"
+                            className="absolute right-2 top-1/2 -translate-y-1/2"
                             onClick={() => setMostrarContrasena(!mostrarContrasena)}
-                            className="absolute right-2 top-2 text-sm text-blue-600 focus:outline-none"
-                            tabIndex={-1}
                         >
-                        {mostrarContrasena ?  "👁": "Ver"}
-                        </button>
+                            {mostrarContrasena ? <EyeOff size={16} /> : <Eye size={16} />}
+                        </Button>
                     </div>
                 </div>
-                <div>
-                    <label className="block text-gray-700 font-medium mb-1">Nombre Completo:</label>
-                    <input
+
+                <div className="space-y-2">
+                    <Label htmlFor="nombreCompleto">Nombre Completo</Label>
+                    <Input
+                        id="nombreCompleto"
                         type="text"
                         value={nombreCompleto}
                         onChange={(e) => setNombreCompleto(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     />
                 </div>
-                <div>
-                    <label className="block text-gray-700 font-medium mb-1">Email:</label>
-                    <input
+
+                <div className="space-y-2">
+                    <Label htmlFor="email">Email</Label>
+                    <Input
+                        id="email"
                         type="email"
                         value={email}
                         onChange={(e) => setEmail(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     />
                 </div>
-                <div>
-                    <label className="block text-gray-700 font-medium mb-1">Teléfono:</label>
-                    <input
+
+                <div className="space-y-2">
+                    <Label htmlFor="telefono">Teléfono</Label>
+                    <Input
+                        id="telefono"
                         type="text"
                         value={telefono}
                         onChange={(e) => setTelefono(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
                     />
                 </div>
-                <button
+
+                <Button 
+                    className="w-full" 
                     onClick={registrarUsuario}
-                    className="w-full bg-blue-600 text-white font-bold py-2 px-4 rounded-lg hover:bg-blue-700 transition"
                 >
                     Registrar
-                </button>
-            </div>
-        </div>
+                </Button>
+            </CardContent>
+        </Card>
     );
 }
 
