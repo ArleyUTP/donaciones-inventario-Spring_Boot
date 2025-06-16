@@ -37,10 +37,8 @@ function GestionUsuarios() {
   const [telefono, setTelefono] = useState("");
   const [rolId, setRolId] = useState(null);
   const [roles, setRoles] = useState([]);
-  const [editar, setEditar] = useState(false);
   const [usuariosLista, setUsuariosLista] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -55,7 +53,6 @@ function GestionUsuarios() {
         setUsuariosLista(usuariosResponse.data);
       } catch (error) {
         console.error("Error al cargar datos iniciales:", error);
-        setError("Error al cargar datos iniciales");
         notificacion.fire({
           title: "Error",
           text: "No se pudieron cargar los datos iniciales",
@@ -72,12 +69,10 @@ function GestionUsuarios() {
   const getUsuarios = useCallback(async () => {
     try {
       setLoading(true);
-      setError(null);
       const response = await Axios.get("http://localhost:8080/user/users");
       setUsuariosLista(response.data);
     } catch (error) {
       console.error("Error fetching users:", error);
-      setError("Error al cargar usuarios");
       notificacion.fire({
         title: "Error",
         text: "No se pudieron cargar los usuarios",
@@ -97,17 +92,10 @@ function GestionUsuarios() {
     setTelefono("");
     setRolId(null);
   }, []);
-  
-  const handleDialogClose = () => {
-    limpiarCampos();
-    setEditar(false);
-  };
-  
   // Modificar el uso de `limpiarCampos` en las funciones de creación y actualización
   const addUsuario = async () => {
     try {
       setLoading(true);
-      setError(null);
   
       await Axios.post("http://localhost:8080/user/create", {
         nombreUsuario: nombreUsuario,
@@ -130,7 +118,6 @@ function GestionUsuarios() {
       });
     } catch (error) {
       console.error("Error al crear usuario:", error);
-      setError("Error al crear usuario");
       notificacion.fire({
         title: "Error",
         text: "No se pudo crear el usuario",
@@ -144,7 +131,6 @@ function GestionUsuarios() {
   const updateUsuario = async () => {
     try {
       setLoading(true);
-      setError(null);
   
       await Axios.put("http://localhost:8080/user/update", {
         id: idUsuario,
@@ -168,7 +154,6 @@ function GestionUsuarios() {
       });
     } catch (error) {
       console.error("Error al actualizar el usuario:", error);
-      setError("Error al actualizar usuario");
       notificacion.fire({
         title: "Error",
         text: "No se pudo actualizar el usuario",
@@ -201,7 +186,6 @@ function GestionUsuarios() {
     if (result.isConfirmed) {
       try {
         setLoading(true);
-        setError(null);
 
         await Axios.post(`http://localhost:8080/user/delete/${idUsuario}`);
         console.log("Usuario eliminado con éxito es" + idUsuario);
@@ -215,7 +199,6 @@ function GestionUsuarios() {
         });
       } catch (error) {
         console.error("Error al eliminar usuario:", error);
-        setError("Error al eliminar usuario");
         notificacion.fire({
           title: "Error",
           text: "No se pudo eliminar el usuario.",
@@ -229,7 +212,6 @@ function GestionUsuarios() {
 
 
   const editarUsuario = (val) => {
-    setEditar(true);
     setNombreUsuario(val.nombreUsuario);
     setContrasena(val.contrasena);
     setNombreCompleto(val.nombreCompleto);
