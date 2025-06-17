@@ -8,8 +8,10 @@ import java.util.Map;
 
 import org.humanitarian.donaciones_inventario.Entities.NecesidadesActuales;
 import org.humanitarian.donaciones_inventario.Entities.CategoriaInventario;
+import org.humanitarian.donaciones_inventario.Entities.TipoDonacion;
 import org.humanitarian.donaciones_inventario.Services.INecesidadesActualesService;
 import org.humanitarian.donaciones_inventario.Services.ICategoriaInventario;
+import org.humanitarian.donaciones_inventario.Services.ITipoDonacionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -30,13 +32,13 @@ public class NecesidadesActualesController {
 
     private final INecesidadesActualesService necesidadesService;
     private final ICategoriaInventario categoriaService;
-
+    private final ITipoDonacionService tipoDonacionService;
     Logger logger = Logger.getLogger(NecesidadesActualesController.class.getName());
 
-    public NecesidadesActualesController(INecesidadesActualesService necesidadesService,
-            ICategoriaInventario categoriaService) {
+    public NecesidadesActualesController(INecesidadesActualesService necesidadesService, ICategoriaInventario categoriaService, ITipoDonacionService tipoDonacionService) {
         this.necesidadesService = necesidadesService;
         this.categoriaService = categoriaService;
+        this.tipoDonacionService = tipoDonacionService;
     }
 
     @GetMapping("/list")
@@ -48,6 +50,18 @@ public class NecesidadesActualesController {
         } catch (Exception e) {
             System.out.println("Error al obtener necesidades: " + e.getMessage());
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(null);
+        }
+    }
+    @GetMapping("/donation-types")
+    @Transactional
+    public ResponseEntity<List<TipoDonacion>> getTipoDonacion(){
+        try {
+            List<TipoDonacion> tipoDonaciones = tipoDonacionService.findAll();
+            return ResponseEntity.ok(tipoDonaciones);
+        }catch (Exception e){
+            logger.info("Error al obtener tipos de donaciones");
+            return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                    .body(Collections.emptyList());
         }
     }
 

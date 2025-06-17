@@ -2,6 +2,27 @@ import { useEffect, useState, useCallback } from "react";
 import Axios from "axios";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
 
 const MySwal = withReactContent(Swal);
 
@@ -9,15 +30,18 @@ function GestionDonadores() {
   const [donadorId, setDonadorId] = useState(0);
   const [nombre, setNombre] = useState("");
   const [tipo_id, setTipo_id] = useState(null);
-  const [documentoIdentidad,setDocumentoIdentidad] = useState("");
-  const [email,setEmail] = useState("");
+  const [documentoIdentidad, setDocumentoIdentidad] = useState("");
+  const [email, setEmail] = useState("");
   const [telefono, setTelefono] = useState("");
   const [editar, setEditar] = useState(false);
   const [donadoresLista, setDonadoresLista] = useState([]);
   const [tiposDonador, setTiposDonador] = useState([]);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [paisOrigen,setPaisOrigen] = useState("");
+  const [paisOrigen, setPaisOrigen] = useState("");
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
   // Fetch inicial de datos
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -63,12 +87,24 @@ function GestionDonadores() {
     }
   }, []);
 
+  // Función para limpiar campos - usando useCallback para optimización
+  const limpiarCampos = useCallback(() => {
+    setDonadorId(0);
+    setNombre("");
+    setTelefono("");
+    setEmail("");
+    setTipo_id(null);
+    setDocumentoIdentidad("");
+    setPaisOrigen("");
+    setEditar(false);
+  }, []);
+
   const addDonador = async () => {
     try {
       setLoading(true);
       await Axios.post("http://localhost:8080/donor/create", {
         nombreDonador: nombre,
-        documentoIdentidad:documentoIdentidad,
+        documentoIdentidad: documentoIdentidad,
         paisOrigen: paisOrigen,
         email: email,
         telefono: telefono,
@@ -77,6 +113,7 @@ function GestionDonadores() {
 
       await getDonadores();
       limpiarCampos();
+      setIsCreateDialogOpen(false);
       MySwal.fire({
         title: "Guardado",
         text: "El donador fue guardado correctamente",
@@ -98,9 +135,9 @@ function GestionDonadores() {
   const updateDonador = async () => {
     try {
       setLoading(true);
-      
+
       const donadorData = {
-        id: donadorId, // Asegúrate de enviar el ID
+        id: donadorId,
         nombreDonador: nombre,
         documentoIdentidad: documentoIdentidad,
         paisOrigen: paisOrigen,
@@ -109,7 +146,6 @@ function GestionDonadores() {
         tipoDonador: { id: tipo_id },
       };
 
-      // Si es tipo persona (ID 1), incluir datos de usuario
       if (tipo_id === 1) {
         donadorData.usuario = {
           nombreCompleto: nombre,
@@ -121,6 +157,7 @@ function GestionDonadores() {
       await Axios.put(`http://localhost:8080/donor/update`, donadorData);
       await getDonadores();
       limpiarCampos();
+      setIsEditDialogOpen(false);
       MySwal.fire({
         title: "Actualizado",
         text: "El donador fue actualizado correctamente",
@@ -172,22 +209,11 @@ function GestionDonadores() {
       }
     }
   };
-  const limpiarCampos = () => {
-    setNombre("");
-    setTelefono("");
-    setEmail("");
-    setTipo_id(0);
-    setDonadorId(0);
-    setDocumentoIdentidad("");
-    setPaisOrigen("");
-    setEditar(false);
-  };
 
   const editarDonador = (val) => {
     setEditar(true);
     setDonadorId(val.id);
-    
-    // Si es tipo persona (ID 1), usar datos del usuario
+
     if (val.tipoDonador?.id === 1 && val.usuario) {
       setNombre(val.usuario.nombreCompleto);
       setEmail(val.usuario.email);
@@ -197,239 +223,332 @@ function GestionDonadores() {
       setEmail(val.email);
       setTelefono(val.telefono);
     }
-    
+
     setDocumentoIdentidad(val.documentoIdentidad);
     setTipo_id(val.tipoDonador?.id);
     setPaisOrigen(val.paisOrigen);
-};
+    setIsEditDialogOpen(true);
+  };
+
+  // SOLUCIÓN 1: Limpiar campos al abrir diálogo de creación
+  const handleOpenCreateDialog = () => {
+    limpiarCampos(); // Limpiar antes de abrir
+    setIsCreateDialogOpen(true);
+  };
+
+  // SOLUCIÓN 2: Limpiar campos al cerrar cualquier diálogo
+  const handleCreateDialogChange = (open) => {
+    setIsCreateDialogOpen(open);
+    if (!open) {
+      limpiarCampos(); // Limpiar al cerrar
+    }
+  };
+
+  const handleEditDialogChange = (open) => {
+    setIsEditDialogOpen(open);
+    if (!open) {
+      limpiarCampos(); // Limpiar al cerrar
+    }
+  };
+
+  const handleCreateCancel = () => {
+    limpiarCampos();
+    setIsCreateDialogOpen(false);
+  };
+
+  const handleEditCancel = () => {
+    limpiarCampos();
+    setIsEditDialogOpen(false);
+  };
+
   return (
     <>
-      {loading && <div>Cargando...</div>}
-      {error && <div className="error">{error}</div>}
-      <div className="max-w-7xl mx-auto py-8 px-4">
-        <h1 className="text-center mb-8 text-3xl font-bold text-blue-600">
-          Gestión de Donadores
-        </h1>
-        {/* Formulario */}
-        <div className="flex justify-center">
-          <div className="w-full max-w-md">
-            <div className="bg-white rounded-lg shadow-lg mb-8">
-              <div className="bg-blue-600 text-white rounded-t-lg px-6 py-4">
-                <h5 className="mb-0 text-lg font-semibold">
-                  Registrar Donador
-                </h5>
-              </div>
-              <div className="px-6 py-4">
-                <form>
-                  <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Nombre:
-                    </label>
-                    <input
-                      value={nombre}
-                      type="text"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                      onChange={(e) => setNombre(e.target.value)}
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Documento de Identidad:
-                    </label>
-                    <input
-                      value={documentoIdentidad}
-                      type="text"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                      onChange={(e) => setDocumentoIdentidad(e.target.value)}
-                    />
-                  </div>
-                                    <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Pais Origen:
-                    </label>
-                    <input
-                      value={paisOrigen}
-                      type="text"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                      onChange={(e) => setPaisOrigen(e.target.value)}
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Teléfono:
-                    </label>
-                    <input
-                      value={telefono}
-                      type="text"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                      onChange={(e) => setTelefono(e.target.value)}
-                    />
-                  </div>
-                                    <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Email:
-                    </label>
-                    <input
-                      value={email}
-                      type="email"
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                      onChange={(e) => setEmail(e.target.value)}
-                    />
-                  </div>
-                  <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Tipo:
-                    </label>
-                    <select
-                      value={tipo_id || ""}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2 focus:outline-none focus:ring-2 focus:ring-blue-400"
-                      onChange={(e) => {
-                        const selectedTipoDonadorId = Number(e.target.value);
-                        setTipo_id(selectedTipoDonadorId);
-                      }}
-                    >
-                      <option value="">Selecionar Tipo Donador</option>
-                      {tiposDonador.map((tipoDonador) => (
-                        <option key={tipoDonador.id} value={tipoDonador.id}>
-                          {tipoDonador.nombreTipoDonador}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-                  <div>
-                    {editar ? (
-                      <div className="flex flex-col gap-1.5">
-                        <button
-                          type="button"
-                          className="w-full bg-orange-400 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg transition"
-                          onClick={updateDonador}
-                        >
-                          Actualizar
-                        </button>
-                        <button
-                          type="button"
-                          className="w-full bg-blue-400 hover:bg-blue-600 text-white font-bold py-2 px-4 rounded-lg transition"
-                          onClick={limpiarCampos}
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg transition"
-                        onClick={addDonador}
+      <div className="container mx-auto py-8 px-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Gestión de Donadores</CardTitle>
+            <div className="flex space-x-2">
+              <Dialog open={isCreateDialogOpen} onOpenChange={handleCreateDialogChange}>
+                <DialogTrigger asChild>
+                  <Button onClick={handleOpenCreateDialog}>Crear Donador</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle>Crear Nuevo Donador</DialogTitle>
+                    <DialogDescription>
+                      Ingrese los datos del nuevo donador
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="nombre" className="text-right">
+                        Nombre
+                      </Label>
+                      <Input
+                        id="nombre"
+                        className="col-span-3"
+                        placeholder="Ingrese el nombre"
+                        value={nombre}
+                        onChange={(e) => setNombre(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="documentoIdentidad" className="text-right">
+                        Documento
+                      </Label>
+                      <Input
+                        id="documentoIdentidad"
+                        className="col-span-3"
+                        placeholder="Ingrese el documento de identidad"
+                        value={documentoIdentidad}
+                        onChange={(e) => setDocumentoIdentidad(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="paisOrigen" className="text-right">
+                        País
+                      </Label>
+                      <Input
+                        id="paisOrigen"
+                        className="col-span-3"
+                        placeholder="Ingrese el país de origen"
+                        value={paisOrigen}
+                        onChange={(e) => setPaisOrigen(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="email" className="text-right">
+                        Email
+                      </Label>
+                      <Input
+                        id="email"
+                        type="email"
+                        className="col-span-3"
+                        placeholder="Ingrese el email"
+                        value={email}
+                        onChange={(e) => setEmail(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="telefono" className="text-right">
+                        Teléfono
+                      </Label>
+                      <Input
+                        id="telefono"
+                        className="col-span-3"
+                        placeholder="Ingrese el teléfono"
+                        value={telefono}
+                        onChange={(e) => setTelefono(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="tipo" className="text-right">
+                        Tipo
+                      </Label>
+                      <Select
+                        value={tipo_id?.toString() || ""}
+                        onValueChange={(value) => setTipo_id(Number(value))}
                       >
-                        Guardar
-                      </button>
-                    )}
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Seleccionar tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {tiposDonador.map((tipo) => (
+                            <SelectItem key={tipo.id} value={tipo.id.toString()}>
+                              {tipo.nombreTipoDonador}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
                   </div>
-                </form>
-              </div>
+                  <div className="flex justify-end space-x-2">
+                    <Button variant="outline" onClick={handleCreateCancel}>
+                      Cancelar
+                    </Button>
+                    <Button onClick={addDonador} disabled={loading}>
+                      {loading ? "Guardando..." : "Guardar"}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              <Button variant="outline" onClick={getDonadores} disabled={loading}>
+                Actualizar Lista
+              </Button>
             </div>
-          </div>
-        </div>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <p className="text-center">Cargando donadores...</p>
+            ) : donadoresLista.length === 0 ? (
+              <p className="text-center text-muted-foreground">
+                No hay donadores registrados.
+              </p>
+            ) : (
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">#</TableHead>
+                      <TableHead>Nombre</TableHead>
+                      <TableHead>Email</TableHead>
+                      <TableHead>Teléfono</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead>País</TableHead>
+                      <TableHead>Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {donadoresLista.map((val) => (
+                      <TableRow key={val.id}>
+                        <TableCell>{val.id}</TableCell>
+                        <TableCell>
+                          {val.tipoDonador?.id !== 1
+                            ? val.nombreDonador
+                            : val.usuario?.nombreCompleto}
+                        </TableCell>
+                        <TableCell>
+                          {val.tipoDonador?.id !== 1
+                            ? val.email
+                            : val.usuario?.email}
+                        </TableCell>
+                        <TableCell>
+                          {val.tipoDonador?.id !== 1
+                            ? val.telefono
+                            : val.usuario?.telefono}
+                        </TableCell>
+                        <TableCell>{val.tipoDonador?.nombreTipoDonador}</TableCell>
+                        <TableCell>{val.paisOrigen || '-'}</TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => editarDonador(val)}
+                            >
+                              Editar
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => eliminarDonador(val.id)}
+                              disabled={loading}
+                            >
+                              Eliminar
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
 
-        {/* Lista de Donadores */}
-        <div className="flex justify-center">
-          <div className="w-full max-w-[1080px]">
-            <div className="bg-white rounded-xl shadow-2xl border border-blue-200">
-              <div className="bg-gradient-to-r from-blue-700 to-blue-400 text-white rounded-t-xl flex justify-between items-center px-6 py-4">
-                <h5 className="mb-0 text-lg font-semibold">
-                  Lista de Donadores
-                </h5>
-                <button
-                  className="bg-white text-blue-700 border border-blue-300 rounded px-3 py-1 text-sm hover:bg-blue-100 transition"
-                  onClick={getDonadores}
-                >
-                  Actualizar
-                </button>
+        {/* Dialog de Edición */}
+        <Dialog open={isEditDialogOpen} onOpenChange={handleEditDialogChange}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Editar Donador</DialogTitle>
+              <DialogDescription>
+                Modifique los datos del donador
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-nombre" className="text-right">
+                  Nombre
+                </Label>
+                <Input
+                  id="edit-nombre"
+                  className="col-span-3"
+                  placeholder="Ingrese el nombre"
+                  value={nombre}
+                  onChange={(e) => setNombre(e.target.value)}
+                />
               </div>
-              <div className="px-6 py-4">
-                {donadoresLista.length === 0 ? (
-                  <div className="text-center text-gray-400">
-                    No hay donadores registrados.
-                  </div>
-                ) : (
-                  <div className="overflow-x-auto w-full">
-                    <table className="min-w-full border border-blue-200 rounded-lg overflow-hidden shadow text-xs sm:text-sm">
-                      <thead>
-                        <tr className="bg-blue-100">
-                          <th className="px-2 py-2 border-b border-blue-200 text-blue-800 font-semibold whitespace-nowrap">
-                            #
-                          </th>
-                          <th className="px-2 py-2 border-b border-blue-200 text-blue-800 font-semibold whitespace-nowrap">
-                            Nombre
-                          </th>
-                          <th className="px-2 py-2 border-b border-blue-200 text-blue-800 font-semibold whitespace-nowrap">
-                            Email
-                          </th>
-                          <th className="px-2 py-2 border-b border-blue-200 text-blue-800 font-semibold whitespace-nowrap">
-                            Teléfono
-                          </th>
-                          <th className="px-2 py-2 border-b border-blue-200 text-blue-800 font-semibold whitespace-nowrap">
-                            Tipo
-                          </th>
-                          <th className="px-2 py-2 border-b border-blue-200 text-blue-800 font-semibold whitespace-nowrap">
-                            Fecha Registro
-                          </th>
-                          <th className="px-2 py-2 border-b border-blue-200 text-blue-800 font-semibold whitespace-nowrap">
-                            Acciones
-                          </th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {donadoresLista.map((val) => (
-                          <tr
-                            key={val.id}
-                            className={
-                              val.id % 2 === 0
-                                ? "bg-white hover:bg-blue-50"
-                                : "bg-blue-50 hover:bg-blue-100"
-                            }
-                          >
-                            <td className="px-2 py-2 border-b border-blue-100">
-                              {val.id}
-                            </td>
-                            <td className="px-2 py-2 border-b border-blue-100 truncate max-w-[120px]">
-                              {val.tipoDonador?.id != 1? val.nombreDonador: val.usuario?.nombreCompleto}
-                            </td>
-                            <td className="px-2 py-2 border-b border-blue-100 truncate max-w-[140px]">
-                              {val.tipoDonador?.id != 1? val.email:val.usuario?.email}
-                            </td>
-                            <td className="px-2 py-2 border-b border-blue-100 truncate max-w-[100px]">
-                              {val.tipoDonador?.id != 1? val.telefono:val.usuario?.telefono}
-                            </td>
-                            <td className="px-2 py-2 border-b border-blue-100">
-                              {val.tipoDonador?.nombreTipoDonador}
-                            </td>
-                            <td className="px-2 py-2 border-b border-blue-100 truncate max-w-[120px]">
-                              {val.fechaRegistro}
-                            </td>
-                            <td className="px-2 py-2 border-b border-blue-100 flex flex-col gap-1 sm:flex-row">
-                              <button
-                                className="bg-orange-400 rounded-xl px-2 py-1 hover:bg-orange-600 hover:text-white transition text-xs sm:text-sm"
-                                onClick={() => editarDonador(val)}
-                              >
-                                Editar
-                              </button>
-                              <button
-                                className="bg-red-600 rounded-xl px-2 py-1 hover:bg-red-800 hover:text-white transition text-xs sm:text-sm"
-                                onClick={() => eliminarDonador(val.id)}
-                              >
-                                Eliminar
-                              </button>
-                            </td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
-                  </div>
-                )}
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-documentoIdentidad" className="text-right">
+                  Documento
+                </Label>
+                <Input
+                  id="edit-documentoIdentidad"
+                  className="col-span-3"
+                  placeholder="Ingrese el documento de identidad"
+                  value={documentoIdentidad}
+                  onChange={(e) => setDocumentoIdentidad(e.target.value)}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-paisOrigen" className="text-right">
+                  País
+                </Label>
+                <Input
+                  id="edit-paisOrigen"
+                  className="col-span-3"
+                  placeholder="Ingrese el país de origen"
+                  value={paisOrigen}
+                  onChange={(e) => setPaisOrigen(e.target.value)}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-email" className="text-right">
+                  Email
+                </Label>
+                <Input
+                  id="edit-email"
+                  type="email"
+                  className="col-span-3"
+                  placeholder="Ingrese el email"
+                  value={email}
+                  onChange={(e) => setEmail(e.target.value)}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-telefono" className="text-right">
+                  Teléfono
+                </Label>
+                <Input
+                  id="edit-telefono"
+                  className="col-span-3"
+                  placeholder="Ingrese el teléfono"
+                  value={telefono}
+                  onChange={(e) => setTelefono(e.target.value)}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-tipo" className="text-right">
+                  Tipo
+                </Label>
+                <Select
+                  value={tipo_id?.toString() || ""}
+                  onValueChange={(value) => setTipo_id(Number(value))}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccionar tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tiposDonador.map((tipo) => (
+                      <SelectItem key={tipo.id} value={tipo.id.toString()}>
+                        {tipo.nombreTipoDonador}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
             </div>
-          </div>
-        </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={handleEditCancel}>
+                Cancelar
+              </Button>
+              <Button onClick={updateDonador} disabled={loading}>
+                {loading ? "Actualizando..." : "Actualizar"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </>
   );

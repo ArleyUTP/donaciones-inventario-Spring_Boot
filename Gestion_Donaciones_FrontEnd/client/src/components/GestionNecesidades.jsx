@@ -3,11 +3,34 @@ import Axios from "axios";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
 import { useAuth } from "../AuthContext";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 const MySwal = withReactContent(Swal);
 
 function GestionNecesidades() {
-  const { user } = useAuth(); // Obtener usuario autenticado
+  const { user } = useAuth();
   const [necesidadId, setNecesidadId] = useState(0);
   const [nombreNecesidad, setNombreNecesidad] = useState("");
   const [descripcion, setDescripcion] = useState("");
@@ -18,29 +41,37 @@ function GestionNecesidades() {
   const [estado, setEstado] = useState("Pendiente");
   const [beneficiariosObjetivo, setBeneficiariosObjetivo] = useState("");
   const [categoriaId, setCategoriaId] = useState(null);
-
+  const [tipoDonacion, settipoDonacion] = useState(null);
+  const [tipoDonaciones, setTipoDonaciones] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [necesidades, setNecesidades] = useState([]);
   const [editar, setEditar] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [error, setError] = useState(null);
+  const [selectedNecesidad, setSelectedNecesidad] = useState(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
 
   // Cargar datos iniciales
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
         setLoading(true);
-        const [necesidadesRes, categoriasRes] = await Promise.all([
+        const [necesidadesRes, categoriasRes, tipoDonacionRes] = await Promise.all([
           Axios.get("http://localhost:8080/needs/list"),
           Axios.get("http://localhost:8080/needs/categories"),
+          Axios.get("http://localhost:8080/needs/donation-types")
         ]);
 
         setNecesidades(necesidadesRes.data);
         setCategorias(categoriasRes.data);
+        setTipoDonaciones(tipoDonacionRes.data);
       } catch (error) {
         console.error("Error al cargar datos:", error);
+        setError("No se pudieron cargar los datos iniciales");
         MySwal.fire({
           title: "Error",
-          text: "No se pudieron cargar los datos iniciales: "+error,
+          text: "No se pudieron cargar los datos iniciales: " + error,
           icon: "error",
         });
       } finally {
@@ -78,11 +109,13 @@ function GestionNecesidades() {
         estado,
         beneficiariosObjetivo,
         categoriaInventario: { id: categoriaId },
-        creadoPor: { id: user.id }, // Usuario que creó la necesidad
+        creadoPor: { id: user.id },
+        tipoDonacion: { id: tipoDonacion.id }
       });
 
       await getNecesidades();
       limpiarCampos();
+      setIsCreateDialogOpen(false);
       MySwal.fire({
         title: "Éxito",
         text: "Necesidad registrada correctamente",
@@ -116,10 +149,12 @@ function GestionNecesidades() {
         beneficiariosObjetivo,
         categoriaInventario: { id: categoriaId },
         creadoPor: { id: user.id },
+        tipoDonacion: { id: tipoDonacion.id }
       });
 
       await getNecesidades();
       limpiarCampos();
+      setIsEditDialogOpen(false);
       MySwal.fire({
         title: "Actualizado",
         text: "Necesidad actualizada correctamente",
@@ -188,6 +223,7 @@ function GestionNecesidades() {
 
   const editarNecesidad = (necesidad) => {
     setEditar(true);
+    setSelectedNecesidad(necesidad);
     setNecesidadId(necesidad.id);
     setNombreNecesidad(necesidad.nombreNecesidad);
     setDescripcion(necesidad.descripcion);
@@ -198,288 +234,527 @@ function GestionNecesidades() {
     setEstado(necesidad.estado);
     setBeneficiariosObjetivo(necesidad.beneficiariosObjetivo);
     setCategoriaId(necesidad.categoriaInventario?.id);
+    settipoDonacion(necesidad.tipoDonacion)
+    setIsEditDialogOpen(true);
+  };
+
+  const handleOpenCreateDialog = () => {
+    limpiarCampos();
+    setIsCreateDialogOpen(true);
+  };
+
+  const handleCreateDialogChange = (open) => {
+    setIsCreateDialogOpen(open);
+    if (!open) {
+      limpiarCampos();
+    }
+  };
+
+  const handleEditDialogChange = (open) => {
+    setIsEditDialogOpen(open);
+    if (!open) {
+      limpiarCampos();
+    }
+  };
+
+  const handleCreateCancel = () => {
+    limpiarCampos();
+    setIsCreateDialogOpen(false);
+  };
+
+  const handleEditCancel = () => {
+    limpiarCampos();
+    setIsEditDialogOpen(false);
+  };
+
+  const getPrioridadBadgeVariant = (prioridad) => {
+    switch (prioridad) {
+      case 3:
+        return "destructive"; // Rojo para alta
+      case 2:
+        return "secondary"; // Amarillo para media
+      case 1:
+        return "default"; // Verde para baja
+      default:
+        return "outline";
+    }
+  };
+
+  const getEstadoBadgeVariant = (estado) => {
+    switch (estado) {
+      case "Completada":
+        return "default"; // Verde
+      case "En Proceso":
+        return "secondary"; // Amarillo
+      case "Pendiente":
+        return "destructive"; // Rojo
+      default:
+        return "outline";
+    }
+  };
+
+  const getPrioridadText = (prioridad) => {
+    switch (prioridad) {
+      case 3: return "Alta";
+      case 2: return "Media";
+      case 1: return "Baja";
+      default: return "Desconocida";
+    }
   };
 
   return (
     <>
-      {loading && <div>Cargando...</div>}
-      <div className="max-w-7xl mx-auto py-8 px-4">
-        <h1 className="text-center mb-8 text-3xl font-bold text-blue-600">
-          Gestión de Necesidades Actuales
-        </h1>
+      <div className="container mx-auto py-8 px-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Gestión de Necesidades Actuales</CardTitle>
+            <div className="flex space-x-2">
+              <Dialog open={isCreateDialogOpen} onOpenChange={handleCreateDialogChange}>
+                <DialogTrigger asChild>
+                  <Button onClick={handleOpenCreateDialog}>Registrar Necesidad</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[600px]">
+                  <DialogHeader>
+                    <DialogTitle>Registrar Nueva Necesidad</DialogTitle>
+                    <DialogDescription>
+                      Ingrese los datos de la nueva necesidad
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="categoria" className="text-right">
+                        Categoría
+                      </Label>
+                      <Select
+                        value={categoriaId?.toString() || ""}
+                        onValueChange={(value) => setCategoriaId(Number(value))}
+                      >
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Seleccionar categoría" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categorias.map((categoria) => (
+                            <SelectItem key={categoria.id} value={categoria.id.toString()}>
+                              {categoria.categoria}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
 
-        {/* Formulario */}
-        <div className="flex justify-center">
-          <div className="w-full max-w-md">
-            <div className="bg-white rounded-lg shadow-lg mb-8">
-              <div className="bg-blue-600 text-white rounded-t-lg px-6 py-4">
-                <h5 className="mb-0 text-lg font-semibold">
-                  {editar ? "Editar Necesidad" : "Registrar Necesidad"}
-                </h5>
-              </div>
-              <div className="px-6 py-4">
-                <form>
-                  <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Categoría:
-                    </label>
-                    <select
-                      value={categoriaId || ""}
-                      onChange={(e) => setCategoriaId(Number(e.target.value))}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                    >
-                      <option value="">Seleccionar Categoría</option>
-                      {categorias.map((cat) => (
-                        <option key={cat.id} value={cat.id}>
-                          {cat.categoria}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="nombre" className="text-right">
+                        Nombre
+                      </Label>
+                      <Input
+                        id="nombre"
+                        value={nombreNecesidad}
+                        onChange={(e) => setNombreNecesidad(e.target.value)}
+                        className="col-span-3"
+                      />
+                    </div>
 
-                  <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Nombre:
-                    </label>
-                    <input
-                      value={nombreNecesidad}
-                      onChange={(e) => setNombreNecesidad(e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                      type="text"
-                    />
-                  </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="descripcion" className="text-right">
+                        Descripción
+                      </Label>
+                      <Textarea
+                        id="descripcion"
+                        value={descripcion}
+                        onChange={(e) => setDescripcion(e.target.value)}
+                        className="col-span-3"
+                        rows={3}
+                      />
+                    </div>
 
-                  <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Descripción:
-                    </label>
-                    <textarea
-                      value={descripcion}
-                      onChange={(e) => setDescripcion(e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                      rows="3"
-                    />
-                  </div>
-
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label className="block text-gray-700 font-medium mb-1">
-                        Cantidad:
-                      </label>
-                      <input
-                        value={cantidadNecesaria}
-                        onChange={(e) =>
-                          setCantidadNecesaria(Number(e.target.value))
-                        }
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="cantidad" className="text-right">
+                        Cantidad
+                      </Label>
+                      <Input
+                        id="cantidad"
                         type="number"
                         min="0"
+                        value={cantidadNecesaria}
+                        onChange={(e) => setCantidadNecesaria(Number(e.target.value))}
+                        className="col-span-3"
                       />
                     </div>
-                    <div>
-                      <label className="block text-gray-700 font-medium mb-1">
-                        Unidad:
-                      </label>
-                      <select
-                        value={unidadMedida}
-                        onChange={(e) => setUnidadMedida(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                      >
-                        <option value="">Seleccione una unidad</option>
-                        <option value="Litros">Litros</option>
-                        <option value="Kilogramos">Kilogramos</option>
-                        <option value="Gramos">Gramos</option>
-                        <option value="Mililitros">Mililitros</option>
-                        <option value="Unidades">Unidades</option>
-                      </select>
-                    </div>
-                  </div>
 
-                  <div className="grid grid-cols-2 gap-4 mb-4">
-                    <div>
-                      <label className="block text-gray-700 font-medium mb-1">
-                        Prioridad:
-                      </label>
-                      <select
-                        value={prioridad}
-                        onChange={(e) => setPrioridad(Number(e.target.value))}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="unidad" className="text-right">
+                        Unidad
+                      </Label>
+                      <Select
+                        value={unidadMedida}
+                        onValueChange={(value) => setUnidadMedida(value)}
                       >
-                        <option value={1}>Baja</option>
-                        <option value={2}>Media</option>
-                        <option value={3}>Alta</option>
-                      </select>
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Seleccionar unidad" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Litros">Litros</SelectItem>
+                          <SelectItem value="Kilogramos">Kilogramos</SelectItem>
+                          <SelectItem value="Gramos">Gramos</SelectItem>
+                          <SelectItem value="Mililitros">Mililitros</SelectItem>
+                          <SelectItem value="Unidades">Unidades</SelectItem>
+                        </SelectContent>
+                      </Select>
                     </div>
-                    <div>
-                      <label className="block text-gray-700 font-medium mb-1">
-                        Fecha Límite:
-                      </label>
-                      <input
+
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="prioridad" className="text-right">
+                        Prioridad
+                      </Label>
+                      <Select
+                        value={prioridad.toString()}
+                        onValueChange={(value) => setPrioridad(Number(value))}
+                      >
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Seleccionar prioridad" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">Baja</SelectItem>
+                          <SelectItem value="2">Media</SelectItem>
+                          <SelectItem value="3">Alta</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="tipoDonacion" className="text-right">
+                        Tipo de donación
+                      </Label>
+                      <Select
+                        value={tipoDonacion?.id.toString() || ""}
+                        onValueChange={(value) => settipoDonacion(Number(value))}
+                      >
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Seleccionar tipo de donación" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {tipoDonaciones.map((tipo) => (
+                            <SelectItem key={tipo.id} value={tipo.id.toString()}>
+                              {tipo.tipo}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="fechaLimite" className="text-right">
+                        Fecha Límite
+                      </Label>
+                      <Input
+                        id="fechaLimite"
+                        type="date"
                         value={fechaLimite}
                         onChange={(e) => setFechaLimite(e.target.value)}
-                        className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                        type="date"
+                        className="col-span-3"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="estado" className="text-right">
+                        Estado
+                      </Label>
+                      <Select
+                        value={estado}
+                        onValueChange={(value) => setEstado(value)}
+                      >
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Seleccionar estado" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Pendiente">Pendiente</SelectItem>
+                          <SelectItem value="En Proceso">En Proceso</SelectItem>
+                          <SelectItem value="Completada">Completada</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="beneficiarios" className="text-right">
+                        Beneficiarios
+                      </Label>
+                      <Input
+                        id="beneficiarios"
+                        value={beneficiariosObjetivo}
+                        onChange={(e) => setBeneficiariosObjetivo(e.target.value)}
+                        className="col-span-3"
                       />
                     </div>
                   </div>
-
-                  <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Estado:
-                    </label>
-                    <select
-                      value={estado}
-                      onChange={(e) => setEstado(e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                    >
-                      <option value="Pendiente">Pendiente</option>
-                      <option value="En Proceso">En Proceso</option>
-                      <option value="Completada">Completada</option>
-                    </select>
+                  <div className="flex justify-end space-x-2">
+                    <Button variant="outline" onClick={handleCreateCancel}>
+                      Cancelar
+                    </Button>
+                    <Button onClick={addNecesidad} disabled={loading}>
+                      {loading ? "Registrando..." : "Registrar"}
+                    </Button>
                   </div>
+                </DialogContent>
+              </Dialog>
 
-                  <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Beneficiarios:
-                    </label>
-                    <input
-                      value={beneficiariosObjetivo}
-                      onChange={(e) => setBeneficiariosObjetivo(e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                      type="text"
-                    />
+              <Dialog open={isEditDialogOpen} onOpenChange={handleEditDialogChange}>
+                <DialogContent className="sm:max-w-[600px]">
+                  <DialogHeader>
+                    <DialogTitle>Editar Necesidad</DialogTitle>
+                    <DialogDescription>
+                      Modifique los datos de la necesidad
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="categoria-edit" className="text-right">
+                        Categoría
+                      </Label>
+                      <Select
+                        value={categoriaId?.toString() || ""}
+                        onValueChange={(value) => setCategoriaId(Number(value))}
+                      >
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Seleccionar categoría" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {categorias.map((categoria) => (
+                            <SelectItem key={categoria.id} value={categoria.id.toString()}>
+                              {categoria.categoria}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="nombre-edit" className="text-right">
+                        Nombre
+                      </Label>
+                      <Input
+                        id="nombre-edit"
+                        value={nombreNecesidad}
+                        onChange={(e) => setNombreNecesidad(e.target.value)}
+                        className="col-span-3"
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="tipoDonacion" className="text-right">
+                        Tipo de donación
+                      </Label>
+                      <Select
+                        value={tipoDonacion?.id.toString() || ""}
+                        onValueChange={(value) => settipoDonacion(Number(value))}
+                      >
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Seleccionar tipo de donación" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {tipoDonaciones.map((tipo) => (
+                            <SelectItem key={tipo.id} value={tipo.id.toString()}>
+                              {tipo.tipo}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="descripcion-edit" className="text-right">
+                        Descripción
+                      </Label>
+                      <Textarea
+                        id="descripcion-edit"
+                        value={descripcion}
+                        onChange={(e) => setDescripcion(e.target.value)}
+                        className="col-span-3"
+                        rows={3}
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="cantidad-edit" className="text-right">
+                        Cantidad
+                      </Label>
+                      <Input
+                        id="cantidad-edit"
+                        type="number"
+                        min="0"
+                        value={cantidadNecesaria}
+                        onChange={(e) => setCantidadNecesaria(Number(e.target.value))}
+                        className="col-span-3"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="unidad-edit" className="text-right">
+                        Unidad
+                      </Label>
+                      <Select
+                        value={unidadMedida}
+                        onValueChange={(value) => setUnidadMedida(value)}
+                      >
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Seleccionar unidad" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Litros">Litros</SelectItem>
+                          <SelectItem value="Kilogramos">Kilogramos</SelectItem>
+                          <SelectItem value="Gramos">Gramos</SelectItem>
+                          <SelectItem value="Mililitros">Mililitros</SelectItem>
+                          <SelectItem value="Unidades">Unidades</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="prioridad-edit" className="text-right">
+                        Prioridad
+                      </Label>
+                      <Select
+                        value={prioridad.toString()}
+                        onValueChange={(value) => setPrioridad(Number(value))}
+                      >
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Seleccionar prioridad" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="1">Baja</SelectItem>
+                          <SelectItem value="2">Media</SelectItem>
+                          <SelectItem value="3">Alta</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="fechaLimite-edit" className="text-right">
+                        Fecha Límite
+                      </Label>
+                      <Input
+                        id="fechaLimite-edit"
+                        type="date"
+                        value={fechaLimite}
+                        onChange={(e) => setFechaLimite(e.target.value)}
+                        className="col-span-3"
+                      />
+                    </div>
+
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="estado-edit" className="text-right">
+                        Estado
+                      </Label>
+                      <Select
+                        value={estado}
+                        onValueChange={(value) => setEstado(value)}
+                      >
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Seleccionar estado" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Pendiente">Pendiente</SelectItem>
+                          <SelectItem value="En Proceso">En Proceso</SelectItem>
+                          <SelectItem value="Completada">Completada</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="beneficiarios-edit" className="text-right">
+                        Beneficiarios
+                      </Label>
+                      <Input
+                        id="beneficiarios-edit"
+                        value={beneficiariosObjetivo}
+                        onChange={(e) => setBeneficiariosObjetivo(e.target.value)}
+                        className="col-span-3"
+                      />
+                    </div>
                   </div>
+                  <div className="flex justify-end space-x-2">
+                    <Button variant="outline" onClick={handleEditCancel}>
+                      Cancelar
+                    </Button>
+                    <Button onClick={updateNecesidad} disabled={loading}>
+                      {loading ? "Actualizando..." : "Actualizar"}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
 
-                  <div>
-                    {editar ? (
-                      <div className="flex flex-col gap-1.5">
-                        <button
-                          type="button"
-                          onClick={updateNecesidad}
-                          className="w-full bg-orange-400 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg"
+              <Button variant="outline" onClick={getNecesidades} disabled={loading}>
+                {loading ? "Cargando..." : "Actualizar Lista"}
+              </Button>
+            </div>
+          </CardHeader>
+          <CardContent>
+            {loading && (
+              <div className="flex justify-center items-center py-8">
+                <div className="text-lg">Cargando...</div>
+              </div>
+            )}
+            {error && (
+              <div className="bg-red-100 border border-red-400 text-red-700 px-4 py-3 rounded mb-4">
+                {error}
+              </div>
+            )}
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>ID</TableHead>
+                  <TableHead>Categoría</TableHead>
+                  <TableHead>Nombre</TableHead>
+                  <TableHead>Descripción</TableHead>
+                  <TableHead>Cantidad</TableHead>
+                  <TableHead>Prioridad</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Fecha Límite</TableHead>
+                  <TableHead>Beneficiarios</TableHead>
+                  <TableHead>Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {necesidades.map((necesidad) => (
+                  <TableRow key={necesidad.id}>
+                    <TableCell>{necesidad.id}</TableCell>
+                    <TableCell>{necesidad.categoriaInventario?.categoria}</TableCell>
+                    <TableCell className="font-medium">{necesidad.nombreNecesidad}</TableCell>
+                    <TableCell className="max-w-xs truncate">{necesidad.descripcion}</TableCell>
+                    <TableCell>
+                      {necesidad.cantidadNecesaria} {necesidad.unidadMedida}
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getPrioridadBadgeVariant(necesidad.prioridad)}>
+                        {getPrioridadText(necesidad.prioridad)}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant={getEstadoBadgeVariant(necesidad.estado)}>
+                        {necesidad.estado}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>{necesidad.fechaLimite}</TableCell>
+                    <TableCell className="max-w-xs truncate">{necesidad.beneficiariosObjetivo}</TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => editarNecesidad(necesidad)}
                         >
-                          Actualizar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={limpiarCampos}
-                          className="w-full bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
+                          Editar
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => eliminarNecesidad(necesidad.id)}
                         >
-                          Cancelar
-                        </button>
+                          Eliminar
+                        </Button>
                       </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={addNecesidad}
-                        className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg"
-                      >
-                        Registrar
-                      </button>
-                    )}
-                  </div>
-                </form>
-              </div>
-            </div>
-          </div>
-        </div>
-
-        {/* Tabla de Necesidades */}
-        <div className="flex justify-center">
-          <div className="w-full max-w-[1080px]">
-            <div className="bg-white rounded-xl shadow-2xl border border-blue-200">
-              <div className="bg-gradient-to-r from-blue-700 to-blue-400 text-white rounded-t-xl flex justify-between items-center px-6 py-4">
-                <h5 className="mb-0 text-lg font-semibold">
-                  Lista de Necesidades
-                </h5>
-                <button
-                  onClick={getNecesidades}
-                  className="bg-white text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-50"
-                >
-                  Actualizar
-                </button>
-              </div>
-              <div className="p-6 overflow-x-auto">
-                <table className="min-w-full bg-white">
-                  <thead>
-                    <tr className="bg-blue-100">
-                      <th className="px-4 py-2">ID</th>
-                      <th className="px-4 py-2">Categoría</th>
-                      <th className="px-4 py-2">Nombre</th>
-                      <th className="px-4 py-2">Cantidad</th>
-                      <th className="px-4 py-2">Prioridad</th>
-                      <th className="px-4 py-2">Estado</th>
-                      <th className="px-4 py-2">Acciones</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    {necesidades.map((necesidad) => (
-                      <tr
-                        key={necesidad.id}
-                        className="border-b hover:bg-gray-50"
-                      >
-                        <td className="px-4 py-2">{necesidad.id}</td>
-                        <td className="px-4 py-2">
-                          {necesidad.categoriaInventario?.categoria}
-                        </td>
-                        <td className="px-4 py-2">
-                          {necesidad.nombreNecesidad}
-                        </td>
-                        <td className="px-4 py-2">
-                          {necesidad.cantidadNecesaria} {necesidad.unidadMedida}
-                        </td>
-                        <td className="px-4 py-2">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs ${necesidad.prioridad === 3
-                                ? "bg-red-100 text-red-800"
-                                : necesidad.prioridad === 2
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : "bg-green-100 text-green-800"
-                              }`}
-                          >
-                            {necesidad.prioridad === 3
-                              ? "Alta"
-                              : necesidad.prioridad === 2
-                                ? "Media"
-                                : "Baja"}
-                          </span>
-                        </td>
-                        <td className="px-4 py-2">
-                          <span
-                            className={`px-2 py-1 rounded-full text-xs ${necesidad.estado === "Completada"
-                                ? "bg-green-100 text-green-800"
-                                : necesidad.estado === "En Proceso"
-                                  ? "bg-yellow-100 text-yellow-800"
-                                  : "bg-red-100 text-red-800"
-                              }`}
-                          >
-                            {necesidad.estado}
-                          </span>
-                        </td>
-                        <td className="px-4 py-2">
-                          <div className="flex gap-2">
-                            <button
-                              onClick={() => editarNecesidad(necesidad)}
-                              className="bg-orange-400 text-white px-2 py-1 rounded hover:bg-orange-500"
-                            >
-                              Editar
-                            </button>
-                            <button
-                              onClick={() => eliminarNecesidad(necesidad.id)}
-                              className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                            >
-                              Eliminar
-                            </button>
-                          </div>
-                        </td>
-                      </tr>
-                    ))}
-                  </tbody>
-                </table>
-              </div>
-            </div>
-          </div>
-        </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </CardContent>
+        </Card>
       </div>
     </>
   );

@@ -2,6 +2,29 @@ import React, { useState, useEffect, useCallback } from "react";
 import Axios from "axios";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
+import { Textarea } from "@/components/ui/textarea";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableHead,
+  TableHeader,
+  TableRow,
+} from "@/components/ui/table";
+import { Badge } from "@/components/ui/badge";
 
 const MySwal = withReactContent(Swal);
 
@@ -23,6 +46,9 @@ function GestionDonaciones() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
   const [selectedDonacion, setSelectedDonacion] = useState(null);
+  const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
+  const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
   // Cargar datos iniciales
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -74,6 +100,18 @@ function GestionDonaciones() {
     }
   }, []);
 
+  // Función para limpiar campos
+  const limpiarCampos = useCallback(() => {
+    setDonacionId(0);
+    setMonto(0);
+    setEstado("");
+    setDetallesEspecie("");
+    setTipoDonacionId(null);
+    setDonadorId(null);
+    setUsuarioId(null);
+    setEditar(false);
+  }, []);
+
   const addDonacion = async () => {
     try {
       setLoading(true);
@@ -88,6 +126,7 @@ function GestionDonaciones() {
 
       await getDonaciones();
       limpiarCampos();
+      setIsCreateDialogOpen(false);
       MySwal.fire({
         title: "Éxito",
         text: "Donación registrada correctamente",
@@ -121,6 +160,7 @@ function GestionDonaciones() {
 
       await getDonaciones();
       limpiarCampos();
+      setIsEditDialogOpen(false);
       MySwal.fire({
         title: "Actualizado",
         text: "Donación actualizada correctamente",
@@ -138,9 +178,9 @@ function GestionDonaciones() {
       setLoading(false);
     }
   };
+
   const confirmarDonacion = async (id) => {
     try {
-      // Primero obtener la donación específica
       const donacionToConfirm = donaciones.find(d => d.id === id);
       setSelectedDonacion(donacionToConfirm);
 
@@ -161,10 +201,8 @@ function GestionDonaciones() {
       });
 
       if (result.isConfirmed) {
-        // Confirmar la donación
         await Axios.post(`http://localhost:8080/donation/confirm/${id}`);
 
-        // Si es una donación en especie, actualizar la cantidad
         if (donacionToConfirm.tipoDonacion?.tipo === 'En especie') {
           await Axios.post(
             `http://localhost:8080/donation/updateQuantity/${id}`,
@@ -191,6 +229,7 @@ function GestionDonaciones() {
       });
     }
   };
+
   const eliminarDonacion = async (id) => {
     const result = await MySwal.fire({
       title: "¿Estás seguro?",
@@ -225,17 +264,6 @@ function GestionDonaciones() {
     }
   };
 
-  const limpiarCampos = () => {
-    setDonacionId(0);
-    setMonto(0);
-    setEstado("");
-    setDetallesEspecie("");
-    setTipoDonacionId(null);
-    setDonadorId(null);
-    setUsuarioId(null);
-    setEditar(false);
-  };
-
   const editarDonacion = (donacion) => {
     setEditar(true);
     setDonacionId(donacion.id);
@@ -245,245 +273,379 @@ function GestionDonaciones() {
     setTipoDonacionId(donacion.tipoDonacion?.id);
     setDonadorId(donacion.donador?.id);
     setUsuarioId(donacion.usuario?.id);
+    setIsEditDialogOpen(true);
+  };
+
+  // Manejo de diálogos
+  const handleOpenCreateDialog = () => {
+    limpiarCampos();
+    setIsCreateDialogOpen(true);
+  };
+
+  const handleCreateDialogChange = (open) => {
+    setIsCreateDialogOpen(open);
+    if (!open) {
+      limpiarCampos();
+    }
+  };
+
+  const handleEditDialogChange = (open) => {
+    setIsEditDialogOpen(open);
+    if (!open) {
+      limpiarCampos();
+    }
+  };
+
+  const handleCreateCancel = () => {
+    limpiarCampos();
+    setIsCreateDialogOpen(false);
+  };
+
+  const handleEditCancel = () => {
+    limpiarCampos();
+    setIsEditDialogOpen(false);
+  };
+
+  const getEstadoBadgeVariant = (estado) => {
+    switch (estado) {
+      case "Confirmada":
+        return "default"; // Verde
+      case "Pendiente":
+        return "secondary"; // Amarillo
+      case "Cancelada":
+        return "destructive"; // Rojo
+      default:
+        return "outline";
+    }
   };
 
   return (
     <>
-      {loading && <div>Cargando...</div>}
-      {error && <div className="error">{error}</div>}
-      <div className="max-w-7xl mx-auto py-8 px-4">
-        <h1 className="text-center mb-8 text-3xl font-bold text-blue-600">
-          Gestión de Donaciones
-        </h1>
-
-        {/* Formulario */}
-        <div className="flex justify-center">
-          <div className="w-full max-w-md">
-            <div className="bg-white rounded-lg shadow-lg mb-8">
-              <div className="bg-blue-600 text-white rounded-t-lg px-6 py-4">
-                <h5 className="mb-0 text-lg font-semibold">
-                  {editar ? "Editar Donación" : "Registrar Donación"}
-                </h5>
-              </div>
-              <div className="px-6 py-4">
-                <form>
-                  <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Donador:
-                    </label>
-                    <select
-                      value={donadorId || ""}
-                      onChange={(e) => setDonadorId(Number(e.target.value))}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                    >
-                      <option value="">Seleccionar Donador</option>
-                      {donadores.map((donador) => (
-                        <option key={donador.id} value={donador.id}>
-                          {donador.usuario?.id == null ? donador.nombreDonador : donador.usuario?.nombreUsuario}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Tipo de Donación:
-                    </label>
-                    <select
-                      value={tipoDonacionId || ""}
-                      onChange={(e) =>
-                        setTipoDonacionId(Number(e.target.value))
-                      }
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                    >
-                      <option value="">Seleccionar Tipo</option>
-                      {tiposDonacion.map((val) => (
-                        <option key={val.id} value={val.id}>
-                          {val.tipo}
-                        </option>
-                      ))}
-                    </select>
-                  </div>
-
-                  <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Monto:
-                    </label>
-                    <input
-                      type="number"
-                      value={monto}
-                      onChange={(e) => setMonto(Number(e.target.value))}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                    />
-                  </div>
-
-                  <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Estado:
-                    </label>
-                    <select
-                      value={estado}
-                      onChange={(e) => setEstado(e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                    >
-                      <option value="">Seleccionar Estado</option>
-                      <option value="Pendiente">Pendiente</option>
-                      <option value="Confirmada">Confirmada</option>
-                      <option value="Cancelada">Cancelada</option>
-                    </select>
-                  </div>
-
-                  <div className="mb-4">
-                    <label className="block text-gray-700 font-medium mb-1">
-                      Detalles (si es en especie):
-                    </label>
-                    <textarea
-                      value={detallesEspecie}
-                      onChange={(e) => setDetallesEspecie(e.target.value)}
-                      className="w-full border border-gray-300 rounded-lg px-3 py-2"
-                      rows="3"
-                    />
-                  </div>
-
-                  <div>
-                    {editar ? (
-                      <div className="flex flex-col gap-1.5">
-                        <button
-                          type="button"
-                          onClick={updateDonacion}
-                          className="w-full bg-orange-400 hover:bg-orange-600 text-white font-bold py-2 px-4 rounded-lg"
-                        >
-                          Actualizar
-                        </button>
-                        <button
-                          type="button"
-                          onClick={limpiarCampos}
-                          className="w-full bg-gray-400 hover:bg-gray-600 text-white font-bold py-2 px-4 rounded-lg"
-                        >
-                          Cancelar
-                        </button>
-                      </div>
-                    ) : (
-                      <button
-                        type="button"
-                        onClick={addDonacion}
-                        className="w-full bg-green-500 hover:bg-green-600 text-white font-bold py-2 px-4 rounded-lg"
+      <div className="container mx-auto py-8 px-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Gestión de Donaciones</CardTitle>
+            <div className="flex space-x-2">
+              <Dialog open={isCreateDialogOpen} onOpenChange={handleCreateDialogChange}>
+                <DialogTrigger asChild>
+                  <Button onClick={handleOpenCreateDialog}>Registrar Donación</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle>Registrar Nueva Donación</DialogTitle>
+                    <DialogDescription>
+                      Ingrese los datos de la nueva donación
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="donador" className="text-right">
+                        Donador
+                      </Label>
+                      <Select
+                        value={donadorId?.toString() || ""}
+                        onValueChange={(value) => setDonadorId(Number(value))}
                       >
-                        Registrar
-                      </button>
-                    )}
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Seleccionar donador" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {donadores.map((donador) => (
+                            <SelectItem key={donador.id} value={donador.id.toString()}>
+                              {donador.usuario?.id == null ? donador.nombreDonador : donador.usuario?.nombreUsuario}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="tipoDonacion" className="text-right">
+                        Tipo
+                      </Label>
+                      <Select
+                        value={tipoDonacionId?.toString() || ""}
+                        onValueChange={(value) => setTipoDonacionId(Number(value))}
+                      >
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Seleccionar tipo" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {tiposDonacion.map((tipo) => (
+                            <SelectItem key={tipo.id} value={tipo.id.toString()}>
+                              {tipo.tipo}
+                            </SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="monto" className="text-right">
+                        Monto
+                      </Label>
+                      <Input
+                        id="monto"
+                        type="number"
+                        className="col-span-3"
+                        placeholder="Ingrese el monto"
+                        value={monto}
+                        onChange={(e) => setMonto(Number(e.target.value))}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="estado" className="text-right">
+                        Estado
+                      </Label>
+                      <Select
+                        value={estado}
+                        onValueChange={(value) => setEstado(value)}
+                      >
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Seleccionar estado" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          <SelectItem value="Pendiente">Pendiente</SelectItem>
+                          <SelectItem value="Confirmada">Confirmada</SelectItem>
+                          <SelectItem value="Cancelada">Cancelada</SelectItem>
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="detalles" className="text-right">
+                        Detalles
+                      </Label>
+                      <Textarea
+                        id="detalles"
+                        className="col-span-3"
+                        placeholder="Detalles (si es en especie)"
+                        value={detallesEspecie}
+                        onChange={(e) => setDetallesEspecie(e.target.value)}
+                        rows={3}
+                      />
+                    </div>
                   </div>
-                </form>
-              </div>
+                  <div className="flex justify-end space-x-2">
+                    <Button variant="outline" onClick={handleCreateCancel}>
+                      Cancelar
+                    </Button>
+                    <Button onClick={addDonacion} disabled={loading}>
+                      {loading ? "Registrando..." : "Registrar"}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              <Button variant="outline" onClick={getDonaciones} disabled={loading}>
+                Actualizar Lista
+              </Button>
             </div>
-          </div>
-        </div>
-
-        {/* Tabla de Donaciones */}
-        <div className="flex justify-center">
-          <div className="w-full max-w-[1080px]">
-            <div className="bg-white rounded-xl shadow-2xl border border-blue-200">
-              <div className="bg-gradient-to-r from-blue-700 to-blue-400 text-white rounded-t-xl flex justify-between items-center px-6 py-4">
-                <h5 className="mb-0 text-lg font-semibold">
-                  Lista de Donaciones
-                </h5>
-                <button
-                  onClick={getDonaciones}
-                  className="bg-white text-blue-700 px-4 py-2 rounded-lg hover:bg-blue-50"
-                >
-                  Actualizar
-                </button>
-              </div>
-
-              <div className="p-6">
-                <div className="overflow-x-auto">
-                  <table className="min-w-full bg-white">
-                    <thead>
-                      <tr className="bg-blue-100">
-                        <th className="px-4 py-2">ID</th>
-                        <th className="px-4 py-2">Donador</th>
-                        <th className="px-4 py-2">Tipo</th>
-                        <th className="px-4 py-2">Monto/Detalles</th>
-                        <th className="px-4 py-2">Estado</th>
-                        <th className="px-4 py-2">Ubicación</th>
-                        <th className="px-4 py-2">Fecha</th>
-                        <th className="px-4 py-2">Acciones</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      {donaciones.map((donacion) => (
-                        <tr key={donacion.id} className="border-b hover:bg-gray-50">
-                          <td className="px-4 py-2">{donacion.id}</td>
-                          <td className="px-4 py-2">
-                            {donacion.donador?.usuario?.nombreUsuario || donacion.donador?.nombreDonador}
-                          </td>
-                          <td className="px-4 py-2">{donacion.tipoDonacion?.tipo}</td>
-                          <td className="px-4 py-2">
-                            {donacion.tipoDonacion?.tipo === 'Monetaria' ? (
-                              `$${donacion.monto}`
-                            ) : (
-                              <div className="text-sm">
-                                <p className="font-medium">{donacion.monto} {donacion.unidadMedida}</p>
-                                <p className="text-gray-600">{donacion.detallesEspecie}</p>
-                              </div>
-                            )}
-                          </td>
-                          <td className="px-4 py-2">
-                            <span className={`px-2 py-1 rounded-full text-xs ${donacion.estado === "Confirmada"
-                              ? "bg-green-100 text-green-800"
-                              : donacion.estado === "Pendiente"
-                                ? "bg-yellow-100 text-yellow-800"
-                                : "bg-red-100 text-red-800"
-                              }`}>
-                              {donacion.estado}
-                            </span>
-                          </td>
-                          <td className="px-4 py-2">
-                            {donacion.direccionRecojo && (
-                              <div className="text-sm">
-                                <p className="text-gray-600">{donacion.direccionRecojo}</p>
-                                {donacion.referenciaRecojo && (
-                                  <p className="text-xs text-gray-500">Ref: {donacion.referenciaRecojo}</p>
-                                )}
-                              </div>
-                            )}
-                          </td>
-                          <td className="px-4 py-2">
-                            {new Date(donacion.fechaDonacion).toLocaleDateString()}
-                          </td>
-                          <td className="px-4 py-2">
-                            <div className="flex gap-2">
-                              {donacion.estado === "Pendiente" && (
-                                <button
-                                  onClick={() => confirmarDonacion(donacion.id)}
-                                  className="bg-green-500 text-white px-2 py-1 rounded hover:bg-green-600"
-                                >
-                                  Confirmar
-                                </button>
-                              )}
-                              <button
-                                onClick={() => editarDonacion(donacion)}
-                                className="bg-orange-400 text-white px-2 py-1 rounded hover:bg-orange-500"
-                              >
-                                Editar
-                              </button>
-                              <button
-                                onClick={() => eliminarDonacion(donacion.id)}
-                                className="bg-red-500 text-white px-2 py-1 rounded hover:bg-red-600"
-                              >
-                                Eliminar
-                              </button>
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <p className="text-center">Cargando donaciones...</p>
+            ) : donaciones.length === 0 ? (
+              <p className="text-center text-muted-foreground">
+                No hay donaciones registradas.
+              </p>
+            ) : (
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead className="w-12">#</TableHead>
+                      <TableHead>Donador</TableHead>
+                      <TableHead>Tipo</TableHead>
+                      <TableHead>Monto/Detalles</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead>Ubicación</TableHead>
+                      <TableHead>Fecha</TableHead>
+                      <TableHead>Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {donaciones.map((donacion) => (
+                      <TableRow key={donacion.id}>
+                        <TableCell>{donacion.id}</TableCell>
+                        <TableCell>
+                          {donacion.donador?.usuario?.nombreUsuario || donacion.donador?.nombreDonador}
+                        </TableCell>
+                        <TableCell>{donacion.tipoDonacion?.tipo}</TableCell>
+                        <TableCell>
+                          {donacion.tipoDonacion?.tipo === 'Monetaria' ? (
+                            `$${donacion.monto}`
+                          ) : (
+                            <div className="text-sm">
+                              <p className="font-medium">{donacion.monto} {donacion.unidadMedida}</p>
+                              <p className="text-muted-foreground">{donacion.detallesEspecie}</p>
                             </div>
-                          </td>
-                        </tr>
-                      ))}
-                    </tbody>
-                  </table>
-                </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge
+                            className={`
+    ${donacion.estado === 'Confirmada' ? 'bg-green-500 hover:bg-green-600 text-white' : ''}
+    ${donacion.estado === 'Pendiente' ? 'bg-yellow-500 hover:bg-yellow-600 text-white' : ''}
+    ${donacion.estado === 'Cancelada' ? 'bg-red-500 hover:bg-red-600 text-white' : ''}
+    ${!['Confirmada', 'Pendiente', 'Cancelada'].includes(donacion.estado) ? 'bg-gray-500 text-white' : ''}
+    font-medium px-2 py-1 rounded-full text-xs
+  `}
+                          >
+                            {donacion.estado}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {donacion.direccionRecojo && (
+                            <div className="text-sm">
+                              <p className="text-muted-foreground">{donacion.direccionRecojo}</p>
+                              {donacion.referenciaRecojo && (
+                                <p className="text-xs text-muted-foreground">Ref: {donacion.referenciaRecojo}</p>
+                              )}
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          {new Date(donacion.fechaDonacion).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            {donacion.estado === "Pendiente" && (
+                              <Button
+                                size="sm"
+                                onClick={() => confirmarDonacion(donacion.id)}
+                                className="bg-green-500 hover:bg-green-600"
+                              >
+                                Confirmar
+                              </Button>
+                            )}
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => editarDonacion(donacion)}
+                            >
+                              Editar
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => eliminarDonacion(donacion.id)}
+                              disabled={loading}
+                            >
+                              Eliminar
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+          </CardContent>
+        </Card>
+
+        {/* Dialog de Edición */}
+        <Dialog open={isEditDialogOpen} onOpenChange={handleEditDialogChange}>
+          <DialogContent className="sm:max-w-[500px]">
+            <DialogHeader>
+              <DialogTitle>Editar Donación</DialogTitle>
+              <DialogDescription>
+                Modifique los datos de la donación
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-donador" className="text-right">
+                  Donador
+                </Label>
+                <Select
+                  value={donadorId?.toString() || ""}
+                  onValueChange={(value) => setDonadorId(Number(value))}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccionar donador" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {donadores.map((donador) => (
+                      <SelectItem key={donador.id} value={donador.id.toString()}>
+                        {donador.usuario?.id == null ? donador.nombreDonador : donador.usuario?.nombreUsuario}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-tipoDonacion" className="text-right">
+                  Tipo
+                </Label>
+                <Select
+                  value={tipoDonacionId?.toString() || ""}
+                  onValueChange={(value) => setTipoDonacionId(Number(value))}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccionar tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {tiposDonacion.map((tipo) => (
+                      <SelectItem key={tipo.id} value={tipo.id.toString()}>
+                        {tipo.tipo}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-monto" className="text-right">
+                  Monto
+                </Label>
+                <Input
+                  id="edit-monto"
+                  type="number"
+                  className="col-span-3"
+                  placeholder="Ingrese el monto"
+                  value={monto}
+                  onChange={(e) => setMonto(Number(e.target.value))}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-estado" className="text-right">
+                  Estado
+                </Label>
+                <Select
+                  value={estado}
+                  onValueChange={(value) => setEstado(value)}
+                >
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccionar estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="Pendiente">Pendiente</SelectItem>
+                    <SelectItem value="Confirmada">Confirmada</SelectItem>
+                    <SelectItem value="Cancelada">Cancelada</SelectItem>
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="edit-detalles" className="text-right">
+                  Detalles
+                </Label>
+                <Textarea
+                  id="edit-detalles"
+                  className="col-span-3"
+                  placeholder="Detalles (si es en especie)"
+                  value={detallesEspecie}
+                  onChange={(e) => setDetallesEspecie(e.target.value)}
+                  rows={3}
+                />
               </div>
             </div>
-          </div>
-        </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={handleEditCancel}>
+                Cancelar
+              </Button>
+              <Button onClick={updateDonacion} disabled={loading}>
+                {loading ? "Actualizando..." : "Actualizar"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </>
   );
