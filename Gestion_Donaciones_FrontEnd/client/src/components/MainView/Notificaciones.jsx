@@ -1,5 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import Axios from 'axios';
+import { Card, CardHeader, CardContent } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Badge } from '@/components/ui/badge';
 
 function Notificaciones({ usuarioId, onClose }) {
   const [notificaciones, setNotificaciones] = useState([]);
@@ -31,14 +34,14 @@ function Notificaciones({ usuarioId, onClose }) {
   };
 
   return (
-<div className="fixed right-0 top-16 w-80 bg-white shadow-xl rounded-l-lg overflow-hidden z-[1000]">
-      <div className="bg-blue-600 text-white p-4 flex justify-between items-center">
+    <Card className="fixed right-0 top-16 w-80 shadow-xl rounded-l-lg overflow-hidden z-[1000]">
+      <CardHeader className="bg-blue-600 text-white p-4 flex justify-between items-center">
         <h3 className="text-lg font-semibold">Notificaciones</h3>
-        <button onClick={onClose} className="text-white hover:text-gray-200">
+        <Button onClick={onClose} variant="ghost" className="text-white hover:text-gray-200">
           ×
-        </button>
-      </div>
-      <div className="max-h-[calc(100vh-8rem)] overflow-y-auto">
+        </Button>
+      </CardHeader>
+      <CardContent className="max-h-[calc(100vh-8rem)] overflow-y-auto">
         {loading ? (
           <div className="p-4 text-center">Cargando...</div>
         ) : notificaciones.length === 0 ? (
@@ -56,18 +59,19 @@ function Notificaciones({ usuarioId, onClose }) {
               >
                 <h4 className="text-lg font-semibold">{notificacion.titulo}</h4>
                 <p className="text-gray-600">{notificacion.mensaje}</p>
-                <button
+                <Button
                   onClick={() => marcarComoLeida(notificacion.id)}
+                  variant="link"
                   className="text-blue-600 hover:text-blue-800"
                 >
                   Marcar como leída
-                </button>
+                </Button>
               </div>
             ))}
           </div>
         )}
-      </div>
-    </div>
+      </CardContent>
+    </Card>
   );
 }
 

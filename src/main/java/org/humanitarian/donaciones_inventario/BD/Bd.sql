@@ -1,6 +1,20 @@
 -- WARNING: This schema is for context only and is not meant to be run.
 -- Table order and constraints may not be valid for execution.
 
+CREATE TABLE public.asignaciones_recojo (
+  id bigint NOT NULL DEFAULT nextval('asignaciones_recojo_id_seq'::regclass),
+  donacion_id bigint NOT NULL,
+  voluntario_id bigint NOT NULL,
+  fecha_asignacion timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+  fecha_aceptacion timestamp without time zone,
+  fecha_rechazo timestamp without time zone,
+  motivo_rechazo text,
+  estado character varying DEFAULT 'PENDIENTE'::character varying,
+  observaciones text,
+  CONSTRAINT asignaciones_recojo_pkey PRIMARY KEY (id),
+  CONSTRAINT asignaciones_recojo_donacion_fkey FOREIGN KEY (donacion_id) REFERENCES public.donaciones(id),
+  CONSTRAINT asignaciones_recojo_voluntario_fkey FOREIGN KEY (voluntario_id) REFERENCES public.voluntarios(id)
+);
 CREATE TABLE public.beneficiarios (
   id bigint NOT NULL DEFAULT nextval('beneficiarios_id_seq'::regclass),
   tipo bigint,
@@ -40,8 +54,8 @@ CREATE TABLE public.distribuciones (
   observaciones text,
   CONSTRAINT distribuciones_pkey PRIMARY KEY (id),
   CONSTRAINT distribuciones_responsable_id_fkey FOREIGN KEY (responsable_id) REFERENCES public.usuarios(id),
-  CONSTRAINT distribuciones_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id),
-  CONSTRAINT distribuciones_beneficiario_id_fkey FOREIGN KEY (beneficiario_id) REFERENCES public.beneficiarios(id)
+  CONSTRAINT distribuciones_beneficiario_id_fkey FOREIGN KEY (beneficiario_id) REFERENCES public.beneficiarios(id),
+  CONSTRAINT distribuciones_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id)
 );
 CREATE TABLE public.donaciones (
   id bigint NOT NULL DEFAULT nextval('donaciones_id_seq'::regclass),
@@ -129,8 +143,8 @@ CREATE TABLE public.necesidades_actuales (
   tipo_donacion_id bigint,
   CONSTRAINT necesidades_actuales_pkey PRIMARY KEY (id),
   CONSTRAINT necesidades_actuales_categoria_id_fkey FOREIGN KEY (categoria_id) REFERENCES public.categorias_inventario(id),
-  CONSTRAINT necesidades_actuales_creado_por_id_fkey FOREIGN KEY (creado_por_id) REFERENCES public.usuarios(id),
-  CONSTRAINT necesidades_actuales_tipo_donacion_id_fkey FOREIGN KEY (tipo_donacion_id) REFERENCES public.tipos_donacion(id)
+  CONSTRAINT necesidades_actuales_tipo_donacion_id_fkey FOREIGN KEY (tipo_donacion_id) REFERENCES public.tipos_donacion(id),
+  CONSTRAINT necesidades_actuales_creado_por_id_fkey FOREIGN KEY (creado_por_id) REFERENCES public.usuarios(id)
 );
 CREATE TABLE public.notificaciones (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
@@ -153,8 +167,8 @@ CREATE TABLE public.reportes_actividad (
   fecha_reporte timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
   ubicacion_gps character varying,
   CONSTRAINT reportes_actividad_pkey PRIMARY KEY (id),
-  CONSTRAINT reportes_actividad_voluntario_id_fkey FOREIGN KEY (voluntario_id) REFERENCES public.voluntarios(id),
-  CONSTRAINT reportes_actividad_tarea_id_fkey FOREIGN KEY (tarea_id) REFERENCES public.tareas_voluntarios(id)
+  CONSTRAINT reportes_actividad_tarea_id_fkey FOREIGN KEY (tarea_id) REFERENCES public.tareas_voluntarios(id),
+  CONSTRAINT reportes_actividad_voluntario_id_fkey FOREIGN KEY (voluntario_id) REFERENCES public.voluntarios(id)
 );
 CREATE TABLE public.roles (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
@@ -183,8 +197,8 @@ CREATE TABLE public.tareas_voluntarios (
   observaciones text,
   evidencia text,
   CONSTRAINT tareas_voluntarios_pkey PRIMARY KEY (id),
-  CONSTRAINT tareas_voluntarios_voluntario_id_fkey FOREIGN KEY (voluntario_id) REFERENCES public.voluntarios(id),
-  CONSTRAINT tareas_voluntarios_distribucion_id_fkey FOREIGN KEY (distribucion_id) REFERENCES public.distribuciones(id)
+  CONSTRAINT tareas_voluntarios_distribucion_id_fkey FOREIGN KEY (distribucion_id) REFERENCES public.distribuciones(id),
+  CONSTRAINT tareas_voluntarios_voluntario_id_fkey FOREIGN KEY (voluntario_id) REFERENCES public.voluntarios(id)
 );
 CREATE TABLE public.tipos_beneficiario (
   id bigint NOT NULL DEFAULT nextval('tipos_beneficiario_id_seq'::regclass),

@@ -9,6 +9,7 @@ import GestionDistribuciones from './components/GestionDistribuciones';
 import GestionNecesidades from './components/GestionNecesidades';
 import Necesidades from './components/Necesidades';
 import GestionVoluntarios from './components/GestionVoluntarios';
+import GestionAsignacionRecojo from './components/GestionAsignacionRecojo';
 export default function AppRoutes() {
   return (
     <Routes>
@@ -22,6 +23,7 @@ export default function AppRoutes() {
       <Route path="/gestion-necesidades" element={<GestionNecesidades />} />
       <Route path="/necesidades" element={<Necesidades />} />
       <Route path="/gestion-voluntarios" element={<GestionVoluntarios />} />
+      <Route path="/asignacion-voluntarios" element={<GestionAsignacionRecojo />} />
     </Routes>
   );
 }

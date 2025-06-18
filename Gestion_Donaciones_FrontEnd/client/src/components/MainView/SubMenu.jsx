@@ -27,6 +27,8 @@ export function SubMenu() {
                         </Button>
                         <Button variant="ghost" className="w-full justify-start" asChild>
                             <Link to="/gestion-necesidades">Necesidades</Link>
+                        </Button>                        <Button variant="ghost" className="w-full justify-start" asChild>
+                            <Link to="/asignacion-voluntarios">Tarea Recojo</Link>
                         </Button>
                     </nav>
                 </div>

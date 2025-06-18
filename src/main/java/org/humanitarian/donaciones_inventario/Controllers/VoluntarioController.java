@@ -1,7 +1,10 @@
 package org.humanitarian.donaciones_inventario.Controllers;
 
 import jakarta.transaction.Transactional;
+import org.humanitarian.donaciones_inventario.Entities.Rol;
+import org.humanitarian.donaciones_inventario.Entities.Usuario;
 import org.humanitarian.donaciones_inventario.Entities.Voluntario;
+import org.humanitarian.donaciones_inventario.Services.IUsuarioService;
 import org.humanitarian.donaciones_inventario.Services.IVoluntarioService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -19,10 +22,12 @@ import java.util.logging.Logger;
 @CrossOrigin(origins = "http://localhost:5173")
 public class VoluntarioController {
     private final IVoluntarioService voluntarioService;
-
+    private final IUsuarioService usuarioService;
     Logger logger = Logger.getLogger(NecesidadesActualesController.class.getName());
-    public VoluntarioController(IVoluntarioService voluntarioService) {
+
+    public VoluntarioController(IVoluntarioService voluntarioService, IUsuarioService usuarioService) {
         this.voluntarioService = voluntarioService;
+        this.usuarioService = usuarioService;
     }
 
     @GetMapping("/volunteers")
@@ -41,6 +46,12 @@ public class VoluntarioController {
     @Transactional
     public ResponseEntity<?> createVoluntario(@RequestBody Voluntario voluntario){
         try {
+            Usuario usuarioBuscado = usuarioService.findById(voluntario.getUsuario().getId());
+            Usuario usuarioModificado = usuarioBuscado;
+            Rol rolVolunario = new Rol();
+            rolVolunario.setId(3L); //asignar rol de voluntario
+            usuarioModificado.setRol(rolVolunario);
+            usuarioService.update(usuarioModificado);
             voluntario.setFechaRegistro(LocalDateTime.now());
             Voluntario createdVoluntario = voluntarioService.save(voluntario);
             return ResponseEntity.status(HttpStatus.CREATED).body(voluntario);
