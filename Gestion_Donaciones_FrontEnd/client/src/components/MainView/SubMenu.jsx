@@ -37,7 +37,7 @@ export function SubMenu() {
                     <h3 className="text-2xl font-bold text-primary">Reportes</h3>
                     <nav className="space-y-4">
                         <Button variant="ghost" className="w-full justify-start" asChild>
-                            <Link to="#">Generar reportes</Link>
+                            <Link to="/dashboard">Vista reportes</Link>
                         </Button>
                         <Button variant="ghost" className="w-full justify-start" asChild>
                             <Link to="#">Estadísticas</Link>

@@ -35,6 +35,7 @@ public class NotificacionService implements INotificacionService {
         notificacionRepository.save(notificacion);
     }
 
+    @Override
     @Transactional
     public void crearNotificacionAsignacionTarea(AsignacionRecojo asignacion) {
         Notificacion notificacion = new Notificacion();

@@ -10,6 +10,7 @@ import GestionNecesidades from './components/GestionNecesidades';
 import Necesidades from './components/Necesidades';
 import GestionVoluntarios from './components/GestionVoluntarios';
 import GestionAsignacionRecojo from './components/GestionAsignacionRecojo';
+import Dashboard from './components/Dashboard/Dashboard';
 export default function AppRoutes() {
   return (
     <Routes>
@@ -24,6 +25,7 @@ export default function AppRoutes() {
       <Route path="/necesidades" element={<Necesidades />} />
       <Route path="/gestion-voluntarios" element={<GestionVoluntarios />} />
       <Route path="/asignacion-voluntarios" element={<GestionAsignacionRecojo />} />
+      <Route path='/dashboard' element={<Dashboard />} />
     </Routes>
   );
 }

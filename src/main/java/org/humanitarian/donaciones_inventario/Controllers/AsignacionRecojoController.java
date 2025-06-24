@@ -9,6 +9,7 @@ import java.util.Map;
 
 import org.humanitarian.donaciones_inventario.Entities.AsignacionRecojo;
 import org.humanitarian.donaciones_inventario.Services.IAsignacionRecojoService;
+import org.humanitarian.donaciones_inventario.Services.INotificacionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -29,11 +30,15 @@ public class AsignacionRecojoController {
     
     private final IAsignacionRecojoService
     asignacionRecojoService;
+    private final INotificacionService notificacionService;
 
-    public AsignacionRecojoController(IAsignacionRecojoService asignacionRecojoService) {
-        this.asignacionRecojoService = asignacionRecojoService;
-    }
     
+     public AsignacionRecojoController(IAsignacionRecojoService asignacionRecojoService,
+            INotificacionService notificacionService) {
+        this.asignacionRecojoService = asignacionRecojoService;
+        this.notificacionService = notificacionService;
+    }
+
      /**
      * Obtiene todas las asignaciones de recojo registradas.
      */
@@ -68,6 +73,8 @@ public class AsignacionRecojoController {
             asignacion.setFechaAsignacion(LocalDateTime.now());
             asignacion.setEstado("Pendiente");
             AsignacionRecojo nuevaAsignacion = asignacionRecojoService.save(asignacion);
+            //Crear la notificación de asignación
+            notificacionService.crearNotificacionAsignacionTarea(nuevaAsignacion);
             return ResponseEntity.status(HttpStatus.CREATED).body(nuevaAsignacion);
         } catch (Exception e) {
             Map<String, String> response = new HashMap<>();
