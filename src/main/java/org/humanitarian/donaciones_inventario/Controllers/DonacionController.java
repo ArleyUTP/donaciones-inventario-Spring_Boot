@@ -232,4 +232,15 @@ public class DonacionController {
                     .body(response);
         }
     }
+
+    @GetMapping("/donaciones-por-mes")
+    public ResponseEntity<List<Map<String, Object>>> getDonacionesPorMes() {
+        List<Map<String, Object>> data = donacionService.getDonacionesPorMes();
+        return ResponseEntity.ok(data);
+    }
+
+    @GetMapping("/donaciones-por-categoria")
+    public ResponseEntity<List<Map<String, Object>>> getDonacionesPorCategoria() {
+        return ResponseEntity.ok(donacionService.getDonacionesPorCategoria());
+    }
 }

@@ -1,6 +1,9 @@
 package org.humanitarian.donaciones_inventario.Services;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 
 import org.humanitarian.donaciones_inventario.DAO.IDonacionesRepository;
 import org.humanitarian.donaciones_inventario.Entities.Donacion;
@@ -8,10 +11,11 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 @Service
-public class DonacionService implements IDonacionService{
+public class DonacionService implements IDonacionService {
 
     @Autowired
     private IDonacionesRepository donacionesRepository;
+
     @Override
     public void deleteById(Long id) {
         donacionesRepository.deleteById(id);
@@ -36,5 +40,29 @@ public class DonacionService implements IDonacionService{
     public Donacion update(Donacion donacion) {
         return donacionesRepository.save(donacion);
     }
-    
+    @Override
+    public List<Map<String, Object>> getDonacionesPorMes() {
+        List<Object[]> results = donacionesRepository.countDonacionesByMonth("YYYY-MM");
+        List<Map<String, Object>> response = new ArrayList<>();
+        for (Object[] row : results) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("mes", row[0]);
+            map.put("total", row[1]);
+            response.add(map);
+        }
+        return response;
+    }
+
+    @Override
+    public List<Map<String, Object>> getDonacionesPorCategoria() {
+        List<Object[]> results = donacionesRepository.countDonacionesByCategoria();
+        List<Map<String, Object>> response = new ArrayList<>();
+        for (Object[] row : results) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("categoria", row[0]);
+            map.put("total", row[1]);
+            response.add(map);
+        }
+        return response;
+    }
 }

@@ -68,6 +68,9 @@ public class Donacion implements Serializable {
     @Column(name = "fecha_modificacion")
     private LocalDateTime fechaModificacion;
 
+    @ManyToOne
+    @JoinColumn(name = "categoria_inventario_id")
+    private CategoriaInventario categoria;
     @JsonIgnore
     @Column(columnDefinition = "geography(Point,4326)")
     private Point ubicacionRecojo;
@@ -84,6 +87,7 @@ public class Donacion implements Serializable {
         }
         return null;
     }
+
     @Column(name = "direccion_recojo")
     private String direccionRecojo;
 

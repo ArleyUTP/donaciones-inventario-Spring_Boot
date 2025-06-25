@@ -120,3 +120,7 @@
     @apply bg-background text-foreground;
   }
 }
+:root {
+  --color-desktop: #2563eb; /* azul ejemplo */
+  --color-mobile: #22c55e;  /* verde ejemplo */
+}
