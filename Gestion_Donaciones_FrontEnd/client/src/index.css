@@ -76,6 +76,10 @@
   --sidebar-accent-foreground: oklch(0.205 0 0);
   --sidebar-border: oklch(0.922 0 0);
   --sidebar-ring: oklch(0.708 0 0);
+  --color-desktop: #2563eb;
+  /* azul ejemplo */
+  --color-mobile: #22c55e;
+  /* verde ejemplo */
 }
 
 .dark {
@@ -110,17 +114,16 @@
   --sidebar-accent-foreground: oklch(0.985 0 0);
   --sidebar-border: oklch(1 0 0 / 10%);
   --sidebar-ring: oklch(0.556 0 0);
+  --color-desktop: #2563eb;
+  --color-mobile: #22c55e;
 }
 
 @layer base {
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
-}
-:root {
-  --color-desktop: #2563eb; /* azul ejemplo */
-  --color-mobile: #22c55e;  /* verde ejemplo */
 }

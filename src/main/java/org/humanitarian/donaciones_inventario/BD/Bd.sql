@@ -39,8 +39,8 @@ CREATE TABLE public.detalle_distribucion (
   cantidad integer CHECK (cantidad > 0),
   estado character varying DEFAULT 'PENDIENTE'::character varying,
   CONSTRAINT detalle_distribucion_pkey PRIMARY KEY (id),
-  CONSTRAINT detalle_distribucion_inventario_id_fkey FOREIGN KEY (inventario_id) REFERENCES public.inventario(id),
-  CONSTRAINT detalle_distribucion_distribucion_id_fkey FOREIGN KEY (distribucion_id) REFERENCES public.distribuciones(id)
+  CONSTRAINT detalle_distribucion_distribucion_id_fkey FOREIGN KEY (distribucion_id) REFERENCES public.distribuciones(id),
+  CONSTRAINT detalle_distribucion_inventario_id_fkey FOREIGN KEY (inventario_id) REFERENCES public.inventario(id)
 );
 CREATE TABLE public.distribuciones (
   id bigint NOT NULL DEFAULT nextval('distribuciones_id_seq'::regclass),
@@ -74,11 +74,11 @@ CREATE TABLE public.donaciones (
   referencia_recojo text,
   necesidad_id bigint,
   CONSTRAINT donaciones_pkey PRIMARY KEY (id),
-  CONSTRAINT donaciones_donador_id_fkey FOREIGN KEY (donador_id) REFERENCES public.donadores(id),
-  CONSTRAINT donaciones_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id),
   CONSTRAINT donaciones_tipo_donacion_fkey FOREIGN KEY (tipo_donacion) REFERENCES public.tipos_donacion(id),
+  CONSTRAINT donaciones_categoria_inventario_id_fkey FOREIGN KEY (categoria_inventario_id) REFERENCES public.categorias_inventario(id),
+  CONSTRAINT donaciones_donador_id_fkey FOREIGN KEY (donador_id) REFERENCES public.donadores(id),
   CONSTRAINT donaciones_necesidad_id_fkey FOREIGN KEY (necesidad_id) REFERENCES public.necesidades_actuales(id),
-  CONSTRAINT donaciones_categoria_inventario_id_fkey FOREIGN KEY (categoria_inventario_id) REFERENCES public.categorias_inventario(id)
+  CONSTRAINT donaciones_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id)
 );
 CREATE TABLE public.donadores (
   id bigint NOT NULL DEFAULT nextval('donadores_id_seq'::regclass),
@@ -93,8 +93,8 @@ CREATE TABLE public.donadores (
   telefono text UNIQUE,
   email text UNIQUE,
   CONSTRAINT donadores_pkey PRIMARY KEY (id),
-  CONSTRAINT donadores_tipo_id_fkey FOREIGN KEY (tipo_id) REFERENCES public.tipos_donador(id),
-  CONSTRAINT donadores_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id)
+  CONSTRAINT donadores_usuario_id_fkey FOREIGN KEY (usuario_id) REFERENCES public.usuarios(id),
+  CONSTRAINT donadores_tipo_id_fkey FOREIGN KEY (tipo_id) REFERENCES public.tipos_donador(id)
 );
 CREATE TABLE public.incidencias (
   id bigint NOT NULL DEFAULT nextval('incidencias_id_seq'::regclass),
@@ -124,8 +124,8 @@ CREATE TABLE public.inventario (
   fecha_creacion timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
   fecha_modificacion timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
   CONSTRAINT inventario_pkey PRIMARY KEY (id),
-  CONSTRAINT inventario_donacion_id_fkey FOREIGN KEY (donacion_id) REFERENCES public.donaciones(id),
-  CONSTRAINT inventario_categoria_id_fkey FOREIGN KEY (categoria_id) REFERENCES public.categorias_inventario(id)
+  CONSTRAINT inventario_categoria_id_fkey FOREIGN KEY (categoria_id) REFERENCES public.categorias_inventario(id),
+  CONSTRAINT inventario_donacion_id_fkey FOREIGN KEY (donacion_id) REFERENCES public.donaciones(id)
 );
 CREATE TABLE public.necesidades_actuales (
   id bigint NOT NULL DEFAULT nextval('necesidades_actuales_id_seq'::regclass),
@@ -143,8 +143,8 @@ CREATE TABLE public.necesidades_actuales (
   tipo_donacion_id bigint,
   CONSTRAINT necesidades_actuales_pkey PRIMARY KEY (id),
   CONSTRAINT necesidades_actuales_categoria_id_fkey FOREIGN KEY (categoria_id) REFERENCES public.categorias_inventario(id),
-  CONSTRAINT necesidades_actuales_tipo_donacion_id_fkey FOREIGN KEY (tipo_donacion_id) REFERENCES public.tipos_donacion(id),
-  CONSTRAINT necesidades_actuales_creado_por_id_fkey FOREIGN KEY (creado_por_id) REFERENCES public.usuarios(id)
+  CONSTRAINT necesidades_actuales_creado_por_id_fkey FOREIGN KEY (creado_por_id) REFERENCES public.usuarios(id),
+  CONSTRAINT necesidades_actuales_tipo_donacion_id_fkey FOREIGN KEY (tipo_donacion_id) REFERENCES public.tipos_donacion(id)
 );
 CREATE TABLE public.notificaciones (
   id bigint GENERATED ALWAYS AS IDENTITY NOT NULL,
@@ -197,8 +197,8 @@ CREATE TABLE public.tareas_voluntarios (
   observaciones text,
   evidencia text,
   CONSTRAINT tareas_voluntarios_pkey PRIMARY KEY (id),
-  CONSTRAINT tareas_voluntarios_distribucion_id_fkey FOREIGN KEY (distribucion_id) REFERENCES public.distribuciones(id),
-  CONSTRAINT tareas_voluntarios_voluntario_id_fkey FOREIGN KEY (voluntario_id) REFERENCES public.voluntarios(id)
+  CONSTRAINT tareas_voluntarios_voluntario_id_fkey FOREIGN KEY (voluntario_id) REFERENCES public.voluntarios(id),
+  CONSTRAINT tareas_voluntarios_distribucion_id_fkey FOREIGN KEY (distribucion_id) REFERENCES public.distribuciones(id)
 );
 CREATE TABLE public.tipos_beneficiario (
   id bigint NOT NULL DEFAULT nextval('tipos_beneficiario_id_seq'::regclass),
