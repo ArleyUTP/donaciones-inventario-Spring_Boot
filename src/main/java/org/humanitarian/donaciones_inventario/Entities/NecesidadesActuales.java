@@ -46,7 +46,7 @@ public class NecesidadesActuales implements Serializable {
     private int prioridad;
 
     @Column(name = "fecha_limite")
-    private LocalDate fechaLimite;
+    private LocalDateTime fechaLimite;
 
     private String estado;
 

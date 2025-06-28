@@ -43,10 +43,6 @@ public class Donacion implements Serializable {
     @JoinColumn(name = "donador_id")
     private Donador donador;
 
-    @ManyToOne
-    @JoinColumn(name = "usuario_id")
-    private Usuario usuario;
-
     @Column(name = "monto")
     private BigDecimal monto;
 
