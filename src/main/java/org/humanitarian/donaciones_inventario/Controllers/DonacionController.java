@@ -243,4 +243,14 @@ public class DonacionController {
     public ResponseEntity<List<Map<String, Object>>> getDonacionesPorCategoria() {
         return ResponseEntity.ok(donacionService.getDonacionesPorCategoria());
     }
+
+    @GetMapping("/donaciones-por-estado")
+    public ResponseEntity<List<Map<String, Object>>> getDonacionesPorEstado() {
+        return ResponseEntity.ok(donacionService.countDonacionesPorEstado());
+    }
+
+    @GetMapping("/donaciones-por-tipo")
+    public ResponseEntity<List<Map<String, Object>>> getDonacionesPorTipo() {
+        return ResponseEntity.ok(donacionService.countDonacionesPorTipo());
+    }
 }

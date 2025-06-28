@@ -1,6 +1,6 @@
 import React from 'react';
 import { TrendingUp } from "lucide-react";
-import { CartesianGrid, Line, LineChart, XAxis, YAxis, BarChart, Bar } from "recharts";
+import { CartesianGrid, Line, LineChart, XAxis, YAxis, BarChart, Bar, PieChart, Pie, Cell, Legend } from "recharts";
 import { useEffect, useState } from "react";
 import axios from "axios";
 import {
@@ -31,7 +31,29 @@ const chartConfig = {
 function Dashboard() {
     const [donacionesPorMes, setDonacionesPorMes] = useState([]);
     const [donacionesPorCategoria, setDonacionesPorCategoria] = useState([]);
+    const [donacionesPorEstado, setDonacionesPorEstado] = useState([]);
+    const [donacionesPorTipo, setDonacionesPorTipo] = useState([]);
 
+    useEffect(() => {
+        axios.get("http://localhost:8080/donation/donaciones-por-tipo")
+            .then(res => setDonacionesPorTipo(res.data))
+            .catch(() => setDonacionesPorTipo([]));
+    }, []);
+
+    const dataDonacionesPorTipo = donacionesPorTipo.map(item => ({
+        tipo: item.tipo.tipo,
+        total: item.total
+    }));
+    useEffect(() => {
+        axios.get("http://localhost:8080/donation/donaciones-por-estado")
+            .then(res => setDonacionesPorEstado(res.data))
+            .catch(() => setDonacionesPorEstado([]));
+    }, []);
+
+    const dataDonacionesPorEstado = donacionesPorEstado.map(item => ({
+        estado: item.estado,
+        total: item.total
+    }));
     useEffect(() => {
         axios.get("http://localhost:8080/donation/donaciones-por-categoria")
             .then(res => setDonacionesPorCategoria(res.data))
@@ -53,7 +75,7 @@ function Dashboard() {
         month: item.mes,
         donacion: item.total // Cambia 'desktop' por 'donacion'
     }));
-
+const COLORS = ["#2563eb", "#22c55e", "#f59e42", "#e11d48"];
     return (
         <>
             <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
@@ -192,6 +214,72 @@ function Dashboard() {
                             </CardFooter>
                         </Card>
                         {/* Aquí puedes agregar más gráficos en el futuro */}
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Donaciones por Estado</CardTitle>
+                                <CardDescription>Total agrupado por estado</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <ChartContainer config={chartConfig} style={{ width: "100%", height: 320 }}>
+                                    <BarChart
+                                        width={500}
+                                        height={300}
+                                        data={dataDonacionesPorEstado}
+                                        margin={{ left: 12, right: 12 }}
+                                    >
+                                        <CartesianGrid vertical={false} />
+                                        <XAxis dataKey="estado" />
+                                        <YAxis />
+                                        <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                                        <Bar dataKey="total" fill="hsl(var(--chart-1))" radius={5} />
+                                    </BarChart>
+                                </ChartContainer>
+                            </CardContent>
+                            <CardFooter className="flex-col items-start gap-2 text-sm">
+                                <div className="flex gap-2 leading-none font-medium">
+                                    Estados de donaciones <TrendingUp className="h-4 w-4" />
+                                </div>
+                                <div className="text-muted-foreground leading-none">
+                                    Mostrando total de donaciones por estado
+                                </div>
+                            </CardFooter>
+                        </Card>
+                        <Card>
+                            <CardHeader>
+                                <CardTitle>Donaciones por Tipo</CardTitle>
+                                <CardDescription>Distribución de tipos de donación</CardDescription>
+                            </CardHeader>
+                            <CardContent>
+                                <ChartContainer config={chartConfig} style={{ width: "100%", height: 320 }}>
+                                    <PieChart width={400} height={300}>
+                                        <Pie
+                                            data={dataDonacionesPorTipo}
+                                            dataKey="total"
+                                            nameKey="tipo"
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={60}
+                                            outerRadius={100}
+                                            fill="#8884d8"
+                                            label
+                                        >
+                                            {dataDonacionesPorTipo.map((entry, index) => (
+                                                <Cell key={`cell-${index}`} fill={COLORS[index % COLORS.length]} />
+                                            ))}
+                                        </Pie>
+                                        <Legend />
+                                    </PieChart>
+                                </ChartContainer>
+                            </CardContent>
+                            <CardFooter className="flex-col items-start gap-2 text-sm">
+                                <div className="flex gap-2 leading-none font-medium">
+                                    Tipos de donación <TrendingUp className="h-4 w-4" />
+                                </div>
+                                <div className="text-muted-foreground leading-none">
+                                    Mostrando total de donaciones por tipo
+                                </div>
+                            </CardFooter>
+                        </Card>
                     </div>
                 </div>
             </div>

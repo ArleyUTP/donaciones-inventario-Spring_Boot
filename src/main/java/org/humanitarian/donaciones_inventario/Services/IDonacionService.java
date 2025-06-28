@@ -13,4 +13,6 @@ public interface IDonacionService {
     public Donacion update(Donacion donacion);
     public List<Map<String, Object>> getDonacionesPorMes();
     public List<Map<String, Object>> getDonacionesPorCategoria() ;
+    public List<Map<String, Object>> countDonacionesPorEstado();
+    public List<Map<String, Object>> countDonacionesPorTipo();
 }

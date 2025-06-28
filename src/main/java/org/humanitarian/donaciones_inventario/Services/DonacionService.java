@@ -40,6 +40,7 @@ public class DonacionService implements IDonacionService {
     public Donacion update(Donacion donacion) {
         return donacionesRepository.save(donacion);
     }
+
     @Override
     public List<Map<String, Object>> getDonacionesPorMes() {
         List<Object[]> results = donacionesRepository.countDonacionesByMonth("YYYY-MM");
@@ -60,6 +61,32 @@ public class DonacionService implements IDonacionService {
         for (Object[] row : results) {
             Map<String, Object> map = new HashMap<>();
             map.put("categoria", row[0]);
+            map.put("total", row[1]);
+            response.add(map);
+        }
+        return response;
+    }
+
+    @Override
+    public List<Map<String, Object>> countDonacionesPorEstado() {
+        List<Object[]> results = donacionesRepository.countDonacionesByEstado();
+        List<Map<String, Object>> response = new ArrayList<>();
+        for (Object[] row : results) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("estado", row[0]);
+            map.put("total", row[1]);
+            response.add(map);
+        }
+        return response;
+    }
+
+    @Override
+    public List<Map<String, Object>> countDonacionesPorTipo() {
+        List<Object[]> results = donacionesRepository.countDonacionesByTipo();
+        List<Map<String, Object>> response = new ArrayList<>();
+        for (Object[] row : results) {
+            Map<String, Object> map = new HashMap<>();
+            map.put("tipo", row[0]);
             map.put("total", row[1]);
             response.add(map);
         }
