@@ -24,5 +24,10 @@ public interface IDonacionesRepository extends JpaRepository<Donacion, Long> {
     List<Object[]> countDonacionesByEstado();
 
     @Query("SELECT d.tipoDonacion, COUNT(d) FROM Donacion d GROUP BY d.tipoDonacion ORDER BY d.tipoDonacion")
-List<Object[]> countDonacionesByTipo();
+    List<Object[]> countDonacionesByTipo();
+
+    @Query("SELECT FUNCTION('to_char', d.fechaDonacion, 'YYYY') as anio, FUNCTION('to_char', d.fechaDonacion, 'TMMonth') as mes, COUNT(d) "
+            +
+            "FROM Donacion d GROUP BY anio, mes ORDER BY anio DESC, mes")
+    List<Object[]> countDonacionesPorMes();
 }

@@ -43,12 +43,13 @@ public class DonacionService implements IDonacionService {
 
     @Override
     public List<Map<String, Object>> getDonacionesPorMes() {
-        List<Object[]> results = donacionesRepository.countDonacionesByMonth("YYYY-MM");
+        List<Object[]> results = donacionesRepository.countDonacionesPorMes();
         List<Map<String, Object>> response = new ArrayList<>();
         for (Object[] row : results) {
             Map<String, Object> map = new HashMap<>();
-            map.put("mes", row[0]);
-            map.put("total", row[1]);
+            map.put("anio", row[0]);
+            map.put("mes", row[1]);
+            map.put("total", row[2]);
             response.add(map);
         }
         return response;
