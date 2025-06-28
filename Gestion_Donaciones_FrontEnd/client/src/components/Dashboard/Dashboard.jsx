@@ -38,6 +38,12 @@ const MESES_ORDENADOS = [
     "Julio", "Agosto", "Setiembre", "Octubre", "Noviembre", "Diciembre"
 ];
 
+// Versiones abreviadas para cuando hay poco espacio
+const MESES_ABREV = [
+    "Ene", "Feb", "Mar", "Abr", "May", "Jun",
+    "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"
+];
+
 // Configuración para leyendas
 const chartConfig = {
     donacion: {
@@ -57,6 +63,13 @@ function ordenarMeses(data) {
     );
 }
 
+function normalizarMes(mes) {
+    if (!mes) return "";
+    // Quita espacios y pone la primera letra en mayúscula, el resto en minúscula
+    const limpio = mes.trim().toLowerCase();
+    return limpio.charAt(0).toUpperCase() + limpio.slice(1);
+}
+
 function rellenarMeses(data, keyExtra = {}) {
     // Rellena los meses faltantes con total 0
     const mesesSet = new Set(data.map(item => item.mes));
@@ -69,6 +82,13 @@ function rellenarMeses(data, keyExtra = {}) {
     });
     return base;
 }
+
+// Función personalizada para formatear etiquetas del eje X
+const formatXAxisLabel = (tickItem) => {
+    // Usar abreviaciones para ahorrar espacio
+    const indexMes = MESES_ORDENADOS.indexOf(tickItem);
+    return indexMes !== -1 ? MESES_ABREV[indexMes] : tickItem;
+};
 
 function Dashboard() {
     // Estados para los datos
@@ -110,9 +130,14 @@ function Dashboard() {
     // --- Donaciones por Mes ---
     const aniosUnicos = [...new Set(donacionesPorMes.map(item => item.anio))];
     // Filtrado por año
-    const donacionesFiltradas = filtroAnio === "Todos"
+    const donacionesFiltradas = (filtroAnio === "Todos"
         ? donacionesPorMes
-        : donacionesPorMes.filter(item => item.anio === filtroAnio);
+        : donacionesPorMes.filter(item => item.anio === filtroAnio)
+    ).map(item => ({
+        ...item,
+        mes: normalizarMes(item.mes), // <-- normaliza aquí
+        donacion: item.total
+    }));
 
     // Rellenar y ordenar meses
     const dataDonacionesPorMesFiltrado = ordenarMeses(
@@ -126,9 +151,13 @@ function Dashboard() {
 
     // --- Distribuciones por Estado y Mes ---
     const aniosDistrib = [...new Set(distribucionesPorEstadoMes.map(item => item.anio))];
-    const distribucionesFiltradas = filtroAnioDistrib === "Todos"
+    const distribucionesFiltradas = (filtroAnioDistrib === "Todos"
         ? distribucionesPorEstadoMes
-        : distribucionesPorEstadoMes.filter(item => item.anio === filtroAnioDistrib);
+        : distribucionesPorEstadoMes.filter(item => item.anio === filtroAnioDistrib)
+    ).map(item => ({
+        ...item,
+        mes: normalizarMes(item.mes) // <-- normaliza aquí
+    }));
 
     // Agrupar por mes y estado, rellenar meses y estados
     const estados = ["PROGRAMADA", "ENTREGADA", "CANCELADA"];
@@ -235,11 +264,11 @@ function Dashboard() {
                                 <CardDescription>Últimos meses</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <ChartContainer config={chartConfig} style={{ width: "100%", height: 320 }}>
-                                    <ResponsiveContainer width="100%" height={300}>
+                                <ChartContainer config={chartConfig} style={{ width: "100%", height: 360 }}>
+                                    <ResponsiveContainer width="100%" height={340}>
                                         <LineChart
                                             data={dataDonacionesPorMesFiltrado}
-                                            margin={{ left: 12, right: 12 }}
+                                            margin={{ left: 12, right: 12, bottom: 50, top: 10 }}
                                         >
                                             <CartesianGrid vertical={false} />
                                             <XAxis
@@ -247,16 +276,29 @@ function Dashboard() {
                                                 tickLine={false}
                                                 axisLine={false}
                                                 tickMargin={8}
+                                                angle={-45}
+                                                textAnchor="end"
+                                                height={70}
+                                                interval={0}
+                                                tickFormatter={formatXAxisLabel}
+                                                fontSize={11}
                                             />
                                             <YAxis />
-                                            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                                            <ChartTooltip 
+                                                cursor={false} 
+                                                content={<ChartTooltipContent hideLabel />} 
+                                                labelFormatter={(value) => {
+                                                    // Mostrar nombre completo en tooltip
+                                                    return value;
+                                                }}
+                                            />
                                             <Line
                                                 dataKey="donacion"
                                                 type="monotone"
                                                 stroke="#f59e42"
                                                 strokeWidth={3}
-                                                dot={{ fill: "#f59e42", r: 5 }}
-                                                activeDot={{ r: 8 }}
+                                                dot={{ fill: "#f59e42", r: 4 }}
+                                                activeDot={{ r: 6 }}
                                             />
                                         </LineChart>
                                     </ResponsiveContainer>
@@ -295,19 +337,35 @@ function Dashboard() {
                                 <CardDescription>Barras apiladas por mes</CardDescription>
                             </CardHeader>
                             <CardContent>
-                                <ChartContainer config={chartConfig} style={{ width: "100%", height: 320 }}>
-                                    <ResponsiveContainer width="100%" height={300}>
+                                <ChartContainer config={chartConfig} style={{ width: "100%", height: 360 }}>
+                                    <ResponsiveContainer width="100%" height={340}>
                                         <BarChart
                                             data={distribucionesPorMes}
-                                            margin={{ left: 12, right: 12 }}
+                                            margin={{ left: 12, right: 12, bottom: 50, top: 10 }}
                                         >
                                             <CartesianGrid vertical={false} />
-                                            <XAxis dataKey="mes" />
+                                            <XAxis 
+                                                dataKey="mes" 
+                                                angle={-45}
+                                                textAnchor="end"
+                                                height={70}
+                                                interval={0}
+                                                tickFormatter={formatXAxisLabel}
+                                                fontSize={11}
+                                                tickLine={false}
+                                                axisLine={false}
+                                                tickMargin={8}
+                                            />
                                             <YAxis />
-                                            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                                            <ChartTooltip 
+                                                cursor={false} 
+                                                content={<ChartTooltipContent hideLabel />}
+                                                labelFormatter={(value) => value}
+                                            />
                                             <Bar dataKey="PROGRAMADA" stackId="a" fill="#2563eb" />
                                             <Bar dataKey="ENTREGADA" stackId="a" fill="#22c55e" />
                                             <Bar dataKey="CANCELADA" stackId="a" fill="#f59e42" />
+                                            <Legend />
                                         </BarChart>
                                     </ResponsiveContainer>
                                 </ChartContainer>
