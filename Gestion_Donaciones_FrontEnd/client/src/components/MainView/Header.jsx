@@ -61,7 +61,7 @@ export function Header({
                 <Link to="#" className="text-foreground hover:text-primary">Transparencia</Link>
                 <Link to="#" className="text-foreground hover:text-primary">Contacto</Link>
                 <Link to="/necesidades" className="text-foreground hover:text-primary">Necesidades</Link>
-                {isAuthenticated && user.rol?.nombreRol === 'Administrador' && (
+                {isAuthenticated && user.rol?.nombreRol === 'ADMINISTRADOR' && (
                   <Link to="#" className="text-foreground hover:text-warning">Administración</Link>
                 )}
               </nav>
@@ -100,7 +100,7 @@ export function Header({
                   <Link to="/necesidades" className="text-sm font-medium hover:text-primary">Necesidades</Link>
                 </NavigationMenuLink>
               </NavigationMenuItem>
-              {isAuthenticated && user.rol?.nombreRol === 'Administrador' && (
+              {isAuthenticated && user.rol?.nombreRol === 'ADMINISTRADOR' && (
                 <NavigationMenuItem className="relative group">
                   <NavigationMenuLink asChild>
                     <Link to="#" className="text-sm font-medium hover:text-warning">
