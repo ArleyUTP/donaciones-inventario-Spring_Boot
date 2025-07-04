@@ -1,6 +1,6 @@
 import React from "react";
 import { Link } from 'react-router-dom';
-import { Button } from "@/components/ui/button"
+
 export function HeroSeccion() {
     return (
         <section className="w-full py-20 bg-gradient-to-b from-white to-gray-50">
@@ -27,15 +27,10 @@ export function HeroSeccion() {
                         <button className="border-2 border-blue-600 text-blue-600 px-8 py-4 rounded-lg hover:bg-blue-50 transition-all duration-300 font-semibold text-lg">
                             Conocer más
                         </button>
-                        <div className="flex min-h-svh flex-col items-center justify-center">
-                            <Button>Click me</Button>
-                        </div>
                     </div>
                 </div>
                 {/* Columna de imagen */}
                 <div className="flex-1 relative overflow-hidden">
-                    {/* Imagen real: reemplaza el src si tienes una imagen */}
-                    {/* Placeholder de imagen */}
                     <img
                         src="/images/donando.jpg"
                         alt="Personas ayudando"

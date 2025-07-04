@@ -3,40 +3,44 @@ import { ImpactSeccion } from './components/MainView/ImpactSeccion';
 import { AboutSeccion } from './components/MainView/AboutSeccion';
 import { Header } from './components/MainView/Header';
 import { HeroSeccion } from './components/MainView/HeroSeccion';
-import { CampaignsSeccion } from './components/MainView/CampaignsSeccion';
-import { PublicationsSeccion } from './components/MainView/PublicationsSeccion'
+import { PublicationsSeccion } from './components/MainView/PublicationsSeccion';
 import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from './AuthContext';
-import { Button } from '@heroui/react';
+
 function App() {
   const navigate = useNavigate();
   const { user, logout, isAuthenticated } = useAuth();
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-gray-100 app">
-      {/*Header */}
+    <div className="min-h-screen w-full flex flex-col bg-gray-100">
+      {/* Header */}
       <Header isAuthenticated={isAuthenticated} user={user} logout={logout} navigate={navigate} />
+
       {/* Main */}
       <main className="flex-1 w-full">
         {/* Hero Section */}
         <HeroSeccion />
+
         {/* About Section */}
         <AboutSeccion />
+
         {/* Impact Section */}
         <ImpactSeccion />
-        <CampaignsSeccion />
-        <PublicationsSeccion />
+
+        {/* Distribuciones de Donaciones */}
+        <section id="distribuciones" className="py-20 bg-white">
+          <div className="max-w-7xl mx-auto px-4">
+            <h2 className="text-4xl font-bold text-blue-800 mb-8 text-center">
+              Distribuciones de Donaciones
+            </h2>
+            <PublicationsSeccion />
+          </div>
+        </section>
+
         {/* How to Help Section */}
         <HelpSeccion />
+
         {/* Testimonials Section */}
-        {/* Nueva sección de prueba */}
-        <div className="min-h-screen w-full flex flex-col bg-gray-100 app">
-      {/* ... existing code ... */}
-      <main className="flex-1 w-full">
-        <Button color="primary">Prueba HeroUI</Button>
-        {/* ... rest of your code ... */}
-      </main>
-    </div>
         <section id="testimonials" className="py-16 bg-gray-50">
           <div className="max-w-7xl mx-auto px-4">
             <h2 className="text-3xl font-bold text-blue-800 mb-8 text-center">
@@ -122,10 +126,11 @@ function App() {
       </main>
 
       {/* Footer */}
-      <footer className="bg-blue-900 text-white py-6 mt-12 w-full">
+      <footer className="bg-blue-900 text-white py-6 mt-12 w-full text-center">
+        &copy; 2025 Ayuda Perú &middot; Todos los derechos reservados
       </footer>
     </div>
   );
 }
 
-export default App
+export default App;

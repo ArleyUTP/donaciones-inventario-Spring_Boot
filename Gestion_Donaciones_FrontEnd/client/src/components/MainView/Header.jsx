@@ -40,7 +40,7 @@ export function Header({
   }, [user]);
 
   return (
-    <header className="fixed z-50 w-full bg-background border-b">
+    <header className="fixed z-50 w-full bg-white border-b shadow-sm">
       <div className="max-w-7xl mx-auto flex justify-between items-center px-8 py-4">
         <div className="flex items-center space-x-8">
           <div className="font-bold tracking-wide">
@@ -140,15 +140,18 @@ export function Header({
               <div className="text-sm font-medium">
                 ¡Hola! {user.nombreCompleto}
               </div>
-              <Button
-                variant="warning"
-                onClick={() => {
-                  logout();
-                  navigate('/');
-                }}
-              >
-                Cerrar Sesión
-              </Button>
+              <div>
+                <Button
+                  variant="outline"
+                  className="bg-gradient-to-r from-yellow-400 to-amber-500 text-white font-semibold rounded-full px-6 py-2 shadow-md hover:from-yellow-500 hover:to-amber-600 transition-colors border-none"
+                  onClick={() => {
+                    logout();
+                    navigate('/');
+                  }}
+                >
+                  Cerrar Sesión
+                </Button>
+              </div>
             </>
           ) : (
             <Button asChild variant="default">

@@ -1,5 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { TrendingUp } from "lucide-react";
+
 import {
     CartesianGrid,
     Line,
@@ -28,6 +29,9 @@ import {
     ChartTooltip,
     ChartTooltipContent,
 } from "@/components/ui/chart";
+import EvolucionInventarioCategoria from "./EvolucionInventarioCategoria";
+import DonacionesHeatmap from "./DonacionesHeatmap";
+import RadarVoluntarios from "./RadarVolunetarios";
 
 // Configuración de colores para los gráficos
 const COLORS = ["#2563eb", "#22c55e", "#f59e42", "#e11d48", "#f43f5e", "#a21caf", "#0ea5e9", "#facc15", "#14b8a6", "#64748b", "#f472b6", "#b91c1c"];
@@ -74,7 +78,7 @@ function rellenarMeses(data, keyExtra = {}) {
     // Rellena los meses faltantes con total 0
     const mesesSet = new Set(data.map(item => item.mes));
     const anio = data.length > 0 ? data[0].anio : "";
-    const base = MESES_ORDENADOS.map(mes => {   
+    const base = MESES_ORDENADOS.map(mes => {
         const found = data.find(item => item.mes === mes);
         return found
             ? { ...found, ...keyExtra }
@@ -99,7 +103,22 @@ function Dashboard() {
     const [distribucionesPorEstadoMes, setDistribucionesPorEstadoMes] = useState([]);
     const [filtroAnio, setFiltroAnio] = useState("Todos");
     const [filtroAnioDistrib, setFiltroAnioDistrib] = useState("Todos");
-
+    const [kpis, setKpis] = useState({
+        totalDonaciones: 0,
+        valorTotal: 0,
+        totalBeneficiarios: 0,
+        voluntariosActivos: 0,
+    });
+    useEffect(() => {
+        axios.get("http://localhost:8080/dashboard/kpis")
+            .then(res => setKpis(res.data))
+            .catch(() => setKpis({
+                totalDonaciones: 0,
+                valorTotal: 0,
+                totalBeneficiarios: 0,
+                voluntariosActivos: 0,
+            }));
+    }, []);
     // Cargar datos
     useEffect(() => {
         axios.get("http://localhost:8080/donation/donaciones-por-mes")
@@ -187,7 +206,6 @@ function Dashboard() {
         categoria: item.categoria,
         total: item.total,
     }));
-
     return (
         <div className="min-h-screen bg-gray-50 p-6">
             <div className="max-w-7xl mx-auto">
@@ -204,8 +222,7 @@ function Dashboard() {
                             </h3>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-bold text-gray-900">1,247</p>
-                            <p className="text-sm text-green-600">+12% vs mes anterior</p>
+                            <p className="text-2xl font-bold text-gray-900">{kpis.totalDonaciones}</p>
                         </CardContent>
                     </Card>
                     <Card>
@@ -213,8 +230,9 @@ function Dashboard() {
                             <h3 className="text-sm font-medium text-gray-500">Valor Total</h3>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-bold text-gray-900">$103,500</p>
-                            <p className="text-sm text-green-600">+8% vs mes anterior</p>
+                            <p className="text-2xl font-bold text-gray-900">
+                                ${kpis.valorTotal?.toLocaleString("en-US", { minimumFractionDigits: 2 })}
+                            </p>
                         </CardContent>
                     </Card>
                     <Card>
@@ -222,8 +240,7 @@ function Dashboard() {
                             <h3 className="text-sm font-medium text-gray-500">Beneficiarios</h3>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-bold text-gray-900">3,456</p>
-                            <p className="text-sm text-blue-600">+15% vs mes anterior</p>
+                            <p className="text-2xl font-bold text-gray-900">{kpis.totalBeneficiarios}</p>
                         </CardContent>
                     </Card>
                     <Card>
@@ -233,8 +250,7 @@ function Dashboard() {
                             </h3>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-bold text-gray-900">89</p>
-                            <p className="text-sm text-green-600">+5% vs mes anterior</p>
+                            <p className="text-2xl font-bold text-gray-900">{kpis.voluntariosActivos}</p>
                         </CardContent>
                     </Card>
                 </div>
@@ -284,9 +300,9 @@ function Dashboard() {
                                                 fontSize={11}
                                             />
                                             <YAxis />
-                                            <ChartTooltip 
-                                                cursor={false} 
-                                                content={<ChartTooltipContent hideLabel />} 
+                                            <ChartTooltip
+                                                cursor={false}
+                                                content={<ChartTooltipContent hideLabel />}
                                                 labelFormatter={(value) => {
                                                     // Mostrar nombre completo en tooltip
                                                     return value;
@@ -344,8 +360,8 @@ function Dashboard() {
                                             margin={{ left: 12, right: 12, bottom: 50, top: 10 }}
                                         >
                                             <CartesianGrid vertical={false} />
-                                            <XAxis 
-                                                dataKey="mes" 
+                                            <XAxis
+                                                dataKey="mes"
                                                 angle={-45}
                                                 textAnchor="end"
                                                 height={70}
@@ -357,8 +373,8 @@ function Dashboard() {
                                                 tickMargin={8}
                                             />
                                             <YAxis />
-                                            <ChartTooltip 
-                                                cursor={false} 
+                                            <ChartTooltip
+                                                cursor={false}
                                                 content={<ChartTooltipContent hideLabel />}
                                                 labelFormatter={(value) => value}
                                             />
@@ -500,6 +516,9 @@ function Dashboard() {
                             </CardFooter>
                         </Card>
                     </div>
+                    <EvolucionInventarioCategoria />
+                    <DonacionesHeatmap />
+                    <RadarVoluntarios />
                 </div>
             </div>
         </div>
