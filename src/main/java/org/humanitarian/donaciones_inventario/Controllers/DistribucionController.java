@@ -3,12 +3,16 @@ package org.humanitarian.donaciones_inventario.Controllers;
 import java.util.List;
 import java.util.Map;
 
+import org.humanitarian.donaciones_inventario.Entities.Distribucion;
 import org.humanitarian.donaciones_inventario.Services.IDistribucionService;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 @RestController
 @RequestMapping("/distribucion")
@@ -24,5 +28,9 @@ public class DistribucionController {
     @GetMapping("/distribuciones-por-estado-mes")
     public ResponseEntity<List<Map<String, Object>>> getDistribucionesPorEstadoPorMes() {
         return ResponseEntity.ok(distribucionService.countDistribucionesPorEstadoPorMes());
+    }
+        @GetMapping("/page")
+    public Page<Distribucion> getDistribucionesPage(@PageableDefault(size = 10) Pageable pageable) {
+        return distribucionService.findAll(pageable);
     }
 }

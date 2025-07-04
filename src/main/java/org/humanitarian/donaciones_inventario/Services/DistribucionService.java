@@ -4,7 +4,8 @@ import org.humanitarian.donaciones_inventario.DAO.IDistribucionRepository;
 import org.humanitarian.donaciones_inventario.Entities.Distribucion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
-
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -55,4 +56,8 @@ public class DistribucionService implements IDistribucionService {
         return response;
     }
 
+    @Override
+public Page<Distribucion> findAll(Pageable pageable) {
+    return distribucionRepository.findAll(pageable);
+}
 }

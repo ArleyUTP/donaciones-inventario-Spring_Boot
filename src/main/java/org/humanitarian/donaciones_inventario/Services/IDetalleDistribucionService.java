@@ -9,4 +9,5 @@ public interface IDetalleDistribucionService {
     void deleteById(Long id);
     DetalleDistribucion findById(Long id);
     List<DetalleDistribucion> findAll();
+        List<DetalleDistribucion> findByDistribucionId(Long distribucionId);
 }

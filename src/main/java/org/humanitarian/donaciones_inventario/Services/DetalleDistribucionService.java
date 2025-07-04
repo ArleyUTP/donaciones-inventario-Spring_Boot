@@ -37,4 +37,9 @@ public class DetalleDistribucionService implements IDetalleDistribucionService {
     public List<DetalleDistribucion> findAll() {
         return repository.findAll();
     }
+
+    @Override
+    public List<DetalleDistribucion> findByDistribucionId( Long distribucionId) {
+        return repository.findByDistribucionId(distribucionId);
+    }
 }
