@@ -11,6 +11,7 @@ import Necesidades from './components/Necesidades';
 import GestionVoluntarios from './components/GestionVoluntarios';
 import GestionAsignacionRecojo from './components/GestionAsignacionRecojo';
 import Dashboard from './components/Dashboard/Dashboard';
+import GestionInventario from './components/GestionInventario';
 export default function AppRoutes() {
   return (
     <Routes>
@@ -26,6 +27,7 @@ export default function AppRoutes() {
       <Route path="/gestion-voluntarios" element={<GestionVoluntarios />} />
       <Route path="/asignacion-voluntarios" element={<GestionAsignacionRecojo />} />
       <Route path='/dashboard' element={<Dashboard />} />
+      <Route path="/gestion-inventario" element={<GestionInventario />} />
     </Routes>
   );
 }

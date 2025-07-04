@@ -3,6 +3,8 @@ package org.humanitarian.donaciones_inventario.Services;
 import org.humanitarian.donaciones_inventario.DAO.IInventarioRepository;
 import org.humanitarian.donaciones_inventario.Entities.Inventario;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.List;
@@ -37,4 +39,8 @@ public class InventarioService implements IInventarioService {
     public List<Inventario> findAll() {
         return inventarioRepository.findAll();
     }
+    @Override
+public Page<Inventario> findAll(Pageable pageable) {
+    return inventarioRepository.findAll(pageable);
+}
 }

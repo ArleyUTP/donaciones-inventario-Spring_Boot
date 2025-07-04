@@ -1,0 +1,158 @@
+@startuml
+left to right direction
+skinparam backgroundColor #f8f9fa
+skinparam actorStyle awesome
+
+' Estilos para los actores
+skinparam actor {
+  BackgroundColor #ffffff
+  BorderColor #343a40
+  FontColor #343a40
+  FontSize 12
+  FontStyle bold
+}
+
+' Estilos para casos de uso por categoría
+skinparam usecase {
+  BackgroundColor<<Admin>> #28a745
+  BorderColor<<Admin>> #1e7e34
+  FontColor<<Admin>> #ffffff
+  FontSize 10
+  
+  BackgroundColor<<Donador>> #007bff
+  BorderColor<<Donador>> #0056b3
+  FontColor<<Donador>> #ffffff
+  FontSize 10
+  
+  BackgroundColor<<Voluntario>> #ffc107
+  BorderColor<<Voluntario>> #e0a800
+  FontColor<<Voluntario>> #000000
+  FontSize 10
+  
+  BackgroundColor #6c757d
+  BorderColor #495057
+  FontColor #ffffff
+  FontSize 10
+}
+
+' Estilos para packages
+skinparam package {
+  BackgroundColor #e9ecef
+  BorderColor #adb5bd
+  FontColor #495057
+  FontSize 11
+  FontStyle bold
+}
+
+' Actores con iconos más descriptivos
+actor "👨‍💼\nAdministrador\n(Gestor del Sistema)" as Administrador #lightgreen
+actor "💝\nDonador\n(Persona/Empresa\nque Dona)" as Donador #lightblue  
+actor "🤝\nVoluntario\n(Ayudante en\nDistribución)" as Voluntario #lightyellow
+
+rectangle "🏢 Sistema de Gestión de Donaciones e Inventario" {
+  
+  package "🔧 Funciones del Administrador" {
+    usecase "📋 Registrar donación" as UC1 <<Admin>>
+    usecase "✅ Confirmar recepción" as UC2 <<Admin>>
+    usecase "📦 Asignar al inventario" as UC3 <<Admin>>
+    usecase "➕ Agregar artículo" as UC4 <<Admin>>
+    usecase "🔄 Actualizar datos" as UC5 <<Admin>>
+    usecase "📊 Control de stock" as UC6 <<Admin>>
+    usecase "⚠️ Alertas de vencimiento" as UC7 <<Admin>>
+    usecase "🚛 Planificar entrega" as UC8 <<Admin>>
+    usecase "⚡ Registrar incidencias" as UC9 <<Admin>>
+    usecase "💬 Ver comentarios" as UC10 <<Admin>>
+    usecase "👤 Registrar usuario" as UC11 <<Admin>>
+    usecase "🎭 Asignar roles" as UC12 <<Admin>>
+    usecase "🔑 Restablecer contraseñas" as UC13 <<Admin>>
+    usecase "📈 Generar reportes" as UC14 <<Admin>>
+    usecase "📚 Ver bitácora" as UC15 <<Admin>>
+    usecase "🔮 Analítica predictiva" as UC16 <<Admin>>
+    usecase "🔔 Enviar alertas" as UC17 <<Admin>>
+    usecase "📢 Gestionar campañas" as UC18 <<Admin>>
+  }
+  
+  package "💝 Funciones del Donador" {
+    usecase "🔍 Consultar necesidades actuales" as UC19 <<Donador>>
+    usecase "🎯 Seleccionar una necesidad" as UC20 <<Donador>>
+    usecase "📝 Completar formulario de donación" as UC21 <<Donador>>
+    usecase "📤 Confirmar envío" as UC22 <<Donador>>
+    usecase "✉️ Recibir confirmación" as UC23 <<Donador>>
+    usecase "📋 Visualizar historial de donaciones" as UC24 <<Donador>>
+    usecase "🔔 Recibir notificaciones de seguimiento" as UC25 <<Donador>>
+  }
+  
+  package "🤝 Funciones del Voluntario" {
+    usecase "📋 Visualizar tareas asignadas" as UC26 <<Voluntario>>
+    usecase "✅❌ Aceptar o rechazar tarea" as UC27 <<Voluntario>>
+    usecase "🏃‍♂️ Realizar actividad asignada" as UC28 <<Voluntario>>
+    usecase "📊 Registrar avance o entrega" as UC29 <<Voluntario>>
+    usecase "📄 Completar reporte de actividad" as UC30 <<Voluntario>>
+    usecase "📚 Visualizar historial de voluntariado" as UC31 <<Voluntario>>
+  }
+
+  package "🌍 Funciones para Todos" {
+    usecase "📸 Ver evidencias de distribución" as UC32
+    usecase "🔐 Iniciar sesión" as UC33
+    usecase "🚪 Cerrar sesión" as UC34
+  }
+}
+
+' Relaciones del Administrador
+Administrador --> UC1
+Administrador --> UC2
+Administrador --> UC3
+Administrador --> UC4
+Administrador --> UC5
+Administrador --> UC6
+Administrador --> UC7
+Administrador --> UC8
+Administrador --> UC9
+Administrador --> UC10
+Administrador --> UC11
+Administrador --> UC12
+Administrador --> UC13
+Administrador --> UC14
+Administrador --> UC15
+Administrador --> UC16
+Administrador --> UC17
+Administrador --> UC18
+
+' Relaciones del Donador
+Donador --> UC19
+Donador --> UC20
+Donador --> UC21
+Donador --> UC22
+Donador --> UC23
+Donador --> UC24
+Donador --> UC25
+
+' Relaciones del Voluntario
+Voluntario --> UC26
+Voluntario --> UC27
+Voluntario --> UC28
+Voluntario --> UC29
+Voluntario --> UC30
+Voluntario --> UC31
+
+' Relaciones compartidas
+Administrador --> UC32
+Donador --> UC32
+Voluntario --> UC32
+Administrador --> UC33
+Donador --> UC33
+Voluntario --> UC33
+Administrador --> UC34
+Donador --> UC34
+Voluntario --> UC34
+
+' Relaciones de dependencia
+UC20 ..> UC19 : <<include>>
+UC21 ..> UC20 : <<include>>
+UC22 ..> UC21 : <<include>>
+UC23 ..> UC22 : <<include>>
+UC3 ..> UC2 : <<include>>
+UC29 ..> UC28 : <<include>>
+UC30 ..> UC29 : <<include>>
+
+@enduml
