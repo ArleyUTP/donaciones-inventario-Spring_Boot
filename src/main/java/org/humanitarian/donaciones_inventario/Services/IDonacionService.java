@@ -4,6 +4,8 @@ import java.util.List;
 import java.util.Map;
 
 import org.humanitarian.donaciones_inventario.Entities.Donacion;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 
 public interface IDonacionService {
     public Donacion save(Donacion donacion);
@@ -15,4 +17,5 @@ public interface IDonacionService {
     public List<Map<String, Object>> getDonacionesPorCategoria() ;
     public List<Map<String, Object>> countDonacionesPorEstado();
     public List<Map<String, Object>> countDonacionesPorTipo();
+        Page<Donacion> findAll(Pageable pageable);
 }

@@ -271,145 +271,168 @@ function GestionInventario() {
     );
   };
 
-  return (
-    <div className="container mx-auto py-8 px-4">
-      <Card>
-        <CardHeader className="flex flex-row items-center justify-between">
-          <CardTitle>Gestión de Inventario</CardTitle>
-          <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
-            <DialogTrigger asChild>
-              <Button onClick={handleOpenDialog}>Agregar Artículo</Button>
-            </DialogTrigger>
-            <DialogContent>
-              <DialogHeader>
-                <DialogTitle>{editId ? "Editar Artículo" : "Nuevo Artículo"}</DialogTitle>
-                <DialogDescription>
-                  {editId
-                    ? "Modifique los datos del artículo de inventario"
-                    : "Ingrese los datos del artículo de inventario"}
-                </DialogDescription>
-              </DialogHeader>
-              <div className="grid gap-4 py-4">
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="nombre" className="text-right">
-                    Nombre
-                  </Label>
-                  <Input
-                    id="nombre"
-                    className="col-span-3"
-                    value={nombre}
-                    onChange={(e) => setNombre(e.target.value)}
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="cantidad" className="text-right">
-                    Cantidad
-                  </Label>
-                  <Input
-                    id="cantidad"
-                    type="number"
-                    className="col-span-3"
-                    value={cantidad}
-                    onChange={(e) => setCantidad(Number(e.target.value))}
-                  />
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="unidad" className="text-right">Unidad de Medida</Label>
-                  <Select value={unidadMedida} onValueChange={setUnidadMedida}>
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Seleccionar unidad" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {UNIDADES.map((u) => (
-                        <SelectItem key={u} value={u}>{u}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-                <div className="grid grid-cols-4 items-center gap-4">
-                  <Label htmlFor="estado" className="text-right">Estado</Label>
-                  <Select value={estado} onValueChange={setEstado}>
-                    <SelectTrigger className="col-span-3">
-                      <SelectValue placeholder="Seleccionar estado" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {ESTADOS.map((e) => (
-                        <SelectItem key={e} value={e}>{e}</SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
+return (
+  <div className="container mx-auto py-8 px-4">
+    <Card>
+      <CardHeader className="flex flex-row items-center justify-between">
+        <CardTitle>Gestión de Donaciones</CardTitle>
+        <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
+          <DialogTrigger asChild>
+            <Button onClick={handleOpenDialog}>Agregar Donación</Button>
+          </DialogTrigger>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>{editId ? "Editar Donación" : "Nueva Donación"}</DialogTitle>
+              <DialogDescription>
+                {editId
+                  ? "Modifique los datos de la donación"
+                  : "Ingrese los datos de la donación"}
+              </DialogDescription>
+            </DialogHeader>
+            <div className="grid gap-4 py-4">
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="monto" className="text-right">Monto</Label>
+                <Input
+                  id="monto"
+                  type="number"
+                  className="col-span-3"
+                  value={monto}
+                  onChange={(e) => setMonto(Number(e.target.value))}
+                />
               </div>
-              <div className="flex justify-end space-x-2">
-                <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                  Cancelar
-                </Button>
-                <Button onClick={addOrUpdateInventario} disabled={loading}>
-                  {editId ? "Actualizar" : "Guardar"}
-                </Button>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="tipoDonacion" className="text-right">Tipo de Donación</Label>
+                <Select value={tipoDonacion} onValueChange={setTipoDonacion}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccionar tipo" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {TIPOS_DONACION.map((tipo) => (
+                      <SelectItem key={tipo} value={tipo}>{tipo}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
               </div>
-            </DialogContent>
-          </Dialog>
-        </CardHeader>
-        <CardContent>
-          {loading ? (
-            <p className="text-center">Cargando inventario...</p>
-          ) : inventario.length === 0 ? (
-            <p className="text-center text-muted-foreground">
-              No hay artículos registrados.
-            </p>
-          ) : (
-            <div className="rounded-md border overflow-x-auto">
-              <Table>
-                <TableHeader>
-                  <TableRow>
-                    <TableHead>#</TableHead>
-                    <TableHead>Nombre</TableHead>
-                    <TableHead>Cantidad</TableHead>
-                    <TableHead>Unidad</TableHead>
-                    <TableHead>Estado</TableHead>
-                    <TableHead>Acciones</TableHead>
-                  </TableRow>
-                </TableHeader>
-                <TableBody>
-                  {inventario.map((item, idx) => (
-                    <TableRow key={item.id}>
-                      <TableCell>{page * pageSize + idx + 1}</TableCell>
-                      <TableCell>{item.nombre}</TableCell>
-                      <TableCell>{item.cantidad}</TableCell>
-                      <TableCell>{item.unidadMedida}</TableCell>
-                      <TableCell>{item.estado}</TableCell>
-                      <TableCell>
-                        <div className="flex space-x-2">
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            onClick={() => handleEdit(item)}
-                          >
-                            Editar
-                          </Button>
-                          <Button
-                            variant="destructive"
-                            size="sm"
-                            onClick={() => deleteInventario(item.id)}
-                          >
-                            Eliminar
-                          </Button>
-                        </div>
-                      </TableCell>
-                    </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="detallesEspecie" className="text-right">Detalles</Label>
+                <Textarea
+                  id="detallesEspecie"
+                  className="col-span-3"
+                  value={detallesEspecie}
+                  onChange={(e) => setDetallesEspecie(e.target.value)}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="estado" className="text-right">Estado</Label>
+                <Select value={estado} onValueChange={setEstado}>
+                  <SelectTrigger className="col-span-3">
+                    <SelectValue placeholder="Seleccionar estado" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    {ESTADOS.map((e) => (
+                      <SelectItem key={e} value={e}>{e}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="direccionRecojo" className="text-right">Dirección Recojo</Label>
+                <Input
+                  id="direccionRecojo"
+                  className="col-span-3"
+                  value={direccionRecojo}
+                  onChange={(e) => setDireccionRecojo(e.target.value)}
+                />
+              </div>
+              <div className="grid grid-cols-4 items-center gap-4">
+                <Label htmlFor="referenciaRecojo" className="text-right">Referencia Recojo</Label>
+                <Textarea
+                  id="referenciaRecojo"
+                  className="col-span-3"
+                  value={referenciaRecojo}
+                  onChange={(e) => setReferenciaRecojo(e.target.value)}
+                />
+              </div>
             </div>
-          )}
-        </CardContent>
-      </Card>
-      <div className="flex justify-center mt-4">
-        {renderPagination()}
-      </div>
+            <div className="flex justify-end space-x-2">
+              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
+                Cancelar
+              </Button>
+              <Button onClick={addOrUpdateDonacion} disabled={loading}>
+                {editId ? "Actualizar" : "Guardar"}
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+      </CardHeader>
+      <CardContent>
+        {loading ? (
+          <p className="text-center">Cargando donaciones...</p>
+        ) : donaciones.length === 0 ? (
+          <p className="text-center text-muted-foreground">
+            No hay donaciones registradas.
+          </p>
+        ) : (
+          <div className="rounded-md border overflow-x-auto">
+            <Table>
+              <TableHeader>
+                <TableRow>
+                  <TableHead>#</TableHead>
+                  <TableHead>Donador</TableHead>
+                  <TableHead>Tipo Donación</TableHead>
+                  <TableHead>Monto</TableHead>
+                  <TableHead>Detalles</TableHead>
+                  <TableHead>Categoría</TableHead>
+                  <TableHead>Necesidad</TableHead>
+                  <TableHead>Dirección</TableHead>
+                  <TableHead>Estado</TableHead>
+                  <TableHead>Acciones</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                {donaciones.map((item, idx) => (
+                  <TableRow key={item.id}>
+                    <TableCell>{page * pageSize + idx + 1}</TableCell>
+                    <TableCell>{item.donador?.usuario?.nombreCompleto || "N/A"}</TableCell>
+                    <TableCell>{item.tipoDonacion?.tipo || "N/A"}</TableCell>
+                    <TableCell>{item.monto?.toFixed(2) || "-"}</TableCell>
+                    <TableCell>{item.detallesEspecie || "-"}</TableCell>
+                    <TableCell>{item.categoria?.categoria || "-"}</TableCell>
+                    <TableCell>{item.necesidadAsociada?.nombreNecesidad || "-"}</TableCell>
+                    <TableCell>{item.direccionRecojo || "-"}</TableCell>
+                    <TableCell>{item.estado}</TableCell>
+                    <TableCell>
+                      <div className="flex space-x-2">
+                        <Button
+                          variant="outline"
+                          size="sm"
+                          onClick={() => handleEdit(item)}
+                        >
+                          Editar
+                        </Button>
+                        <Button
+                          variant="destructive"
+                          size="sm"
+                          onClick={() => deleteDonacion(item.id)}
+                        >
+                          Eliminar
+                        </Button>
+                      </div>
+                    </TableCell>
+                  </TableRow>
+                ))}
+              </TableBody>
+            </Table>
+          </div>
+        )}
+      </CardContent>
+    </Card>
+    <div className="flex justify-center mt-4">
+      {renderPagination()}
     </div>
-  );
+  </div>
+);
+
 }
 
 export default GestionInventario;

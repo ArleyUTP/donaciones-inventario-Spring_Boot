@@ -14,6 +14,9 @@ import org.humanitarian.donaciones_inventario.Services.IDonacionService;
 import org.humanitarian.donaciones_inventario.Services.INecesidadesActualesService;
 import org.humanitarian.donaciones_inventario.Services.ITipoDonacionService;
 import org.humanitarian.donaciones_inventario.Services.NotificacionService;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;
@@ -252,5 +255,10 @@ public class DonacionController {
     @GetMapping("/donaciones-por-tipo")
     public ResponseEntity<List<Map<String, Object>>> getDonacionesPorTipo() {
         return ResponseEntity.ok(donacionService.countDonacionesPorTipo());
+    }
+    
+    @GetMapping("/page")
+    public Page<Donacion> getDonacionesPage(@PageableDefault(size = 10) Pageable pageable) {
+        return donacionService.findAll(pageable);
     }
 }

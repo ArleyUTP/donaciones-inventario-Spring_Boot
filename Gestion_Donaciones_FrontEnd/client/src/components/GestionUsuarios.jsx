@@ -25,6 +25,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const notificacion = withReactContent(Swal);
 
@@ -40,6 +49,16 @@ function GestionUsuarios() {
   const [usuariosLista, setUsuariosLista] = useState([]);
   const [loading, setLoading] = useState(false);
 
+
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const usuariosPorPagina = 8;
+  const usuariosFiltrados = usuariosLista.filter((u) => u.rol !== "eliminado");
+  const totalPaginas = Math.ceil(usuariosFiltrados.length / usuariosPorPagina);
+
+  const usuariosPaginados = usuariosFiltrados
+    .sort((a, b) => a.id - b.id)
+    .slice((currentPage - 1) * usuariosPorPagina, currentPage * usuariosPorPagina);
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
@@ -218,129 +237,163 @@ function GestionUsuarios() {
     setRolId(val.rol?.id);
     setEmail(val.email);
     setIdUsuario(val.id);
+    setTelefono(val.telefono);
   };
 
+  // Generar los links de paginación
+  const renderPaginationLinks = () => {
+    const links = [];
+    // Mostrar máximo 5 páginas en la paginación
+    let start = Math.max(1, currentPage - 2);
+    let end = Math.min(totalPaginas, currentPage + 2);
+
+    if (currentPage <= 3) {
+      end = Math.min(5, totalPaginas);
+    }
+    if (currentPage >= totalPaginas - 2) {
+      start = Math.max(1, totalPaginas - 4);
+    }
+
+    for (let i = start; i <= end; i++) {
+      links.push(
+        <PaginationItem key={i}>
+          <PaginationLink
+            href="#"
+            isActive={i === currentPage}
+            onClick={e => {
+              e.preventDefault();
+              setCurrentPage(i);
+            }}
+          >
+            {i}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+    return links;
+  };
   return (
-    <>
-      <div className="container mx-auto py-8 px-4">
-        <Card>
-          <CardHeader className="flex flex-row items-center justify-between">
-            <CardTitle>Gestión de Usuarios</CardTitle>
-            <div className="flex space-x-2">
-              <Dialog>
-                <DialogTrigger asChild>
-                  <Button>Crear Usuario</Button>
-                </DialogTrigger>
-                <DialogContent className="sm:max-w-[500px]">
-                  <DialogHeader>
-                    <DialogTitle>Crear Nuevo Usuario</DialogTitle>
-                    <DialogDescription>
-                      Ingrese los datos del nuevo usuario
-                    </DialogDescription>
-                  </DialogHeader>
-                  <div className="grid gap-4 py-4">
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="name" className="text-right">
-                        Nombre
-                      </label>
-                      <input
-                        id="name"
-                        className="col-span-3 px-3 py-2 border rounded-md"
-                        placeholder="Ingrese el nombre"
-                        value={nombreUsuario}
-                        onChange={(e) => setNombreUsuario(e.target.value)}
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="password" className="text-right">
-                        Contraseña
-                      </label>
-                      <input
-                        id="password"
-                        type="password"
-                        className="col-span-3 px-3 py-2 border rounded-md"
-                        placeholder="Ingrese la contraseña"
-                        value={contrasena}
-                        onChange={(e) => setContrasena(e.target.value)}
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="fullName" className="text-right">
-                        Nombre Completo
-                      </label>
-                      <input
-                        id="fullName"
-                        className="col-span-3 px-3 py-2 border rounded-md"
-                        placeholder="Ingrese el nombre completo"
-                        value={nombreCompleto}
-                        onChange={(e) => setNombreCompleto(e.target.value)}
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="email" className="text-right">
-                        Email
-                      </label>
-                      <input
-                        id="email"
-                        type="email"
-                        className="col-span-3 px-3 py-2 border rounded-md"
-                        placeholder="Ingrese el email"
-                        value={email}
-                        onChange={(e) => setEmail(e.target.value)}
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="phone" className="text-right">
-                        Teléfono
-                      </label>
-                      <input
-                        id="phone"
-                        className="col-span-3 px-3 py-2 border rounded-md"
-                        placeholder="Ingrese el teléfono"
-                        value={telefono}
-                        onChange={(e) => setTelefono(e.target.value)}
-                      />
-                    </div>
-                    <div className="grid grid-cols-4 items-center gap-4">
-                      <label htmlFor="role" className="text-right">
-                        Rol
-                      </label>
-                      <select
-                        id="role"
-                        className="col-span-3 px-3 py-2 border rounded-md"
-                        value={rolId || ""}
-                        onChange={(e) => setRolId(Number(e.target.value))}
-                      >
-                        <option value="">Seleccionar rol</option>
-                        {roles.map((rol) => (
-                          <option key={rol.id} value={rol.id}>
-                            {rol.nombreRol}
-                          </option>
-                        ))}
-                      </select>
-                    </div>
+  <>
+    <div className="container mx-auto py-8 px-4">
+      <Card>
+        <CardHeader className="flex flex-row items-center justify-between">
+          <CardTitle>Gestión de Usuarios</CardTitle>
+          <div className="flex space-x-2">
+            <Dialog>
+              <DialogTrigger asChild>
+                <Button>Crear Usuario</Button>
+              </DialogTrigger>
+              <DialogContent className="sm:max-w-[500px]">
+                <DialogHeader>
+                  <DialogTitle>Crear Nuevo Usuario</DialogTitle>
+                  <DialogDescription>
+                    Ingrese los datos del nuevo usuario
+                  </DialogDescription>
+                </DialogHeader>
+                <div className="grid gap-4 py-4">
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <label htmlFor="name" className="text-right">
+                      Nombre
+                    </label>
+                    <input
+                      id="name"
+                      className="col-span-3 px-3 py-2 border rounded-md"
+                      placeholder="Ingrese el nombre"
+                      value={nombreUsuario}
+                      onChange={(e) => setNombreUsuario(e.target.value)}
+                    />
                   </div>
-                  <div className="flex justify-end space-x-2">
-                    <DialogTrigger asChild>
-                      <Button variant="outline">Cancelar</Button>
-                    </DialogTrigger>
-                    <Button onClick={addUsuario}>Guardar</Button>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <label htmlFor="password" className="text-right">
+                      Contraseña
+                    </label>
+                    <input
+                      id="password"
+                      type="password"
+                      className="col-span-3 px-3 py-2 border rounded-md"
+                      placeholder="Ingrese la contraseña"
+                      value={contrasena}
+                      onChange={(e) => setContrasena(e.target.value)}
+                    />
                   </div>
-                </DialogContent>
-              </Dialog>
-              <Button variant="outline" onClick={getUsuarios}>
-                Actualizar Lista
-              </Button>
-            </div>
-          </CardHeader>
-          <CardContent>
-            {loading ? (
-              <p className="text-center">Cargando usuarios...</p>
-            ) : usuariosLista.filter((u) => u.rol !== "eliminado").length === 0 ? (
-              <p className="text-center text-muted-foreground">
-                No hay usuarios registrados.
-              </p>
-            ) : (
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <label htmlFor="fullName" className="text-right">
+                      Nombre Completo
+                    </label>
+                    <input
+                      id="fullName"
+                      className="col-span-3 px-3 py-2 border rounded-md"
+                      placeholder="Ingrese el nombre completo"
+                      value={nombreCompleto}
+                      onChange={(e) => setNombreCompleto(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <label htmlFor="email" className="text-right">
+                      Email
+                    </label>
+                    <input
+                      id="email"
+                      type="email"
+                      className="col-span-3 px-3 py-2 border rounded-md"
+                      placeholder="Ingrese el email"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <label htmlFor="phone" className="text-right">
+                      Teléfono
+                    </label>
+                    <input
+                      id="phone"
+                      className="col-span-3 px-3 py-2 border rounded-md"
+                      placeholder="Ingrese el teléfono"
+                      value={telefono}
+                      onChange={(e) => setTelefono(e.target.value)}
+                    />
+                  </div>
+                  <div className="grid grid-cols-4 items-center gap-4">
+                    <label htmlFor="role" className="text-right">
+                      Rol
+                    </label>
+                    <select
+                      id="role"
+                      className="col-span-3 px-3 py-2 border rounded-md"
+                      value={rolId || ""}
+                      onChange={(e) => setRolId(Number(e.target.value))}
+                    >
+                      <option value="">Seleccionar rol</option>
+                      {roles.map((rol) => (
+                        <option key={rol.id} value={rol.id}>
+                          {rol.nombreRol}
+                        </option>
+                      ))}
+                    </select>
+                  </div>
+                </div>
+                <div className="flex justify-end space-x-2">
+                  <DialogTrigger asChild>
+                    <Button variant="outline">Cancelar</Button>
+                  </DialogTrigger>
+                  <Button onClick={addUsuario}>Guardar</Button>
+                </div>
+              </DialogContent>
+            </Dialog>
+            <Button variant="outline" onClick={getUsuarios}>
+              Actualizar Lista
+            </Button>
+          </div>
+        </CardHeader>
+        <CardContent>
+          {loading ? (
+            <p className="text-center">Cargando usuarios...</p>
+          ) : usuariosFiltrados.length === 0 ? (
+            <p className="text-center text-muted-foreground">
+              No hay usuarios registrados.
+            </p>
+          ) : (
+            <>
               <div className="rounded-md border">
                 <Table>
                   <TableHeader>
@@ -355,145 +408,228 @@ function GestionUsuarios() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {usuariosLista
-                      .filter((val) => val.rol !== "eliminado")
-                      .sort((a, b) => a.id - b.id)
-                      .map((val) => (
-                        <TableRow key={val.id}>
-                          <TableCell>{val.id}</TableCell>
-                          <TableCell>{val.nombreUsuario}</TableCell>
-                          <TableCell>{val.nombreCompleto}</TableCell>
-                          <TableCell>{val.rol?.nombreRol}</TableCell>
-                          <TableCell>{val.email}</TableCell>
-                          <TableCell>{val.telefono || '-'}</TableCell>
-                          <TableCell>
-                            <div className="flex space-x-2">
-                              <Dialog>
-                                <DialogTrigger asChild>
-                                  <Button 
-                                    variant="outline" 
-                                    size="sm"
-                                    onClick={() => editarUsuario(val)}
-                                  >
-                                    Editar
-                                  </Button>
-                                </DialogTrigger>
-                                <DialogContent>
-                                  <DialogHeader>
-                                    <DialogTitle>Editar Usuario</DialogTitle>
-                                    <DialogDescription>
-                                      Modifique los datos del usuario
-                                    </DialogDescription>
-                                  </DialogHeader>
-                                  <div className="grid gap-4 py-4">
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                      <label htmlFor="name" className="text-right">
-                                        Nombre
-                                      </label>
-                                      <input
-                                        id="name"
-                                        className="col-span-3 px-3 py-2 border rounded-md"
-                                        placeholder="Ingrese el nombre"
-                                        value={nombreUsuario}
-                                        onChange={(e) => setNombreUsuario(e.target.value)}
-                                      />
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                      <label htmlFor="password" className="text-right">
-                                        Contraseña
-                                      </label>
-                                      <input
-                                        id="password"
-                                        type="password"
-                                        className="col-span-3 px-3 py-2 border rounded-md"
-                                        placeholder="Ingrese la contraseña"
-                                        value={contrasena}
-                                        onChange={(e) => setContrasena(e.target.value)}
-                                      />
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                      <label htmlFor="fullName" className="text-right">
-                                        Nombre Completo
-                                      </label>
-                                      <input
-                                        id="fullName"
-                                        className="col-span-3 px-3 py-2 border rounded-md"
-                                        placeholder="Ingrese el nombre completo"
-                                        value={nombreCompleto}
-                                        onChange={(e) => setNombreCompleto(e.target.value)}
-                                      />
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                      <label htmlFor="email" className="text-right">
-                                        Email
-                                      </label>
-                                      <input
-                                        id="email"
-                                        type="email"
-                                        className="col-span-3 px-3 py-2 border rounded-md"
-                                        placeholder="Ingrese el email"
-                                        value={email}
-                                        onChange={(e) => setEmail(e.target.value)}
-                                      />
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                      <label htmlFor="phone" className="text-right">
-                                        Teléfono
-                                      </label>
-                                      <input
-                                        id="phone"
-                                        className="col-span-3 px-3 py-2 border rounded-md"
-                                        placeholder="Ingrese el teléfono"
-                                        value={telefono}
-                                        onChange={(e) => setTelefono(e.target.value)}
-                                      />
-                                    </div>
-                                    <div className="grid grid-cols-4 items-center gap-4">
-                                      <label htmlFor="role" className="text-right">
-                                        Rol
-                                      </label>
-                                      <select
-                                        id="role"
-                                        className="col-span-3 px-3 py-2 border rounded-md"
-                                        value={rolId || ""}
-                                        onChange={(e) => setRolId(Number(e.target.value))}
-                                      >
-                                        <option value="">Seleccionar rol</option>
-                                        {roles.map((rol) => (
-                                          <option key={rol.id} value={rol.id}>
-                                            {rol.nombreRol}
-                                          </option>
-                                        ))}
-                                      </select>
-                                    </div>
+                    {usuariosPaginados.map((val) => (
+                      <TableRow key={val.id}>
+                        <TableCell>{val.id}</TableCell>
+                        <TableCell>{val.nombreUsuario}</TableCell>
+                        <TableCell>{val.nombreCompleto}</TableCell>
+                        <TableCell>{val.rol?.nombreRol}</TableCell>
+                        <TableCell>{val.email}</TableCell>
+                        <TableCell>{val.telefono || '-'}</TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Dialog>
+                              <DialogTrigger asChild>
+                                <Button
+                                  variant="outline"
+                                  size="sm"
+                                  onClick={() => editarUsuario(val)}
+                                >
+                                  Editar
+                                </Button>
+                              </DialogTrigger>
+                              <DialogContent>
+                                <DialogHeader>
+                                  <DialogTitle>Editar Usuario</DialogTitle>
+                                  <DialogDescription>
+                                    Modifique los datos del usuario
+                                  </DialogDescription>
+                                </DialogHeader>
+                                <div className="grid gap-4 py-4">
+                                  <div className="grid grid-cols-4 items-center gap-4">
+                                    <label htmlFor="name" className="text-right">
+                                      Nombre
+                                    </label>
+                                    <input
+                                      id="name"
+                                      className="col-span-3 px-3 py-2 border rounded-md"
+                                      placeholder="Ingrese el nombre"
+                                      value={nombreUsuario}
+                                      onChange={(e) => setNombreUsuario(e.target.value)}
+                                    />
                                   </div>
-                                  <div className="flex justify-end space-x-2">
-                                    <DialogTrigger asChild>
-                                      <Button variant="outline">Cancelar</Button>
-                                    </DialogTrigger>
-                                    <Button onClick={updateUsuario}>Guardar</Button>
+                                  <div className="grid grid-cols-4 items-center gap-4">
+                                    <label htmlFor="password" className="text-right">
+                                      Contraseña
+                                    </label>
+                                    <input
+                                      id="password"
+                                      type="password"
+                                      className="col-span-3 px-3 py-2 border rounded-md"
+                                      placeholder="Ingrese la contraseña"
+                                      value={contrasena}
+                                      onChange={(e) => setContrasena(e.target.value)}
+                                    />
                                   </div>
-                                </DialogContent>
-                              </Dialog>
-                              <Button
-                                variant="destructive"
-                                size="sm"
-                                onClick={() => eliminarUsuario(val.id)}
-                              >
-                                Eliminar
-                              </Button>
-                            </div>
-                          </TableCell>
-                        </TableRow>
-                      ))}
+                                  <div className="grid grid-cols-4 items-center gap-4">
+                                    <label htmlFor="fullName" className="text-right">
+                                      Nombre Completo
+                                    </label>
+                                    <input
+                                      id="fullName"
+                                      className="col-span-3 px-3 py-2 border rounded-md"
+                                      placeholder="Ingrese el nombre completo"
+                                      value={nombreCompleto}
+                                      onChange={(e) => setNombreCompleto(e.target.value)}
+                                    />
+                                  </div>
+                                  <div className="grid grid-cols-4 items-center gap-4">
+                                    <label htmlFor="email" className="text-right">
+                                      Email
+                                    </label>
+                                    <input
+                                      id="email"
+                                      type="email"
+                                      className="col-span-3 px-3 py-2 border rounded-md"
+                                      placeholder="Ingrese el email"
+                                      value={email}
+                                      onChange={(e) => setEmail(e.target.value)}
+                                    />
+                                  </div>
+                                  <div className="grid grid-cols-4 items-center gap-4">
+                                    <label htmlFor="phone" className="text-right">
+                                      Teléfono
+                                    </label>
+                                    <input
+                                      id="phone"
+                                      className="col-span-3 px-3 py-2 border rounded-md"
+                                      placeholder="Ingrese el teléfono"
+                                      value={telefono}
+                                      onChange={(e) => setTelefono(e.target.value)}
+                                    />
+                                  </div>
+                                  <div className="grid grid-cols-4 items-center gap-4">
+                                    <label htmlFor="role" className="text-right">
+                                      Rol
+                                    </label>
+                                    <select
+                                      id="role"
+                                      className="col-span-3 px-3 py-2 border rounded-md"
+                                      value={rolId || ""}
+                                      onChange={(e) => setRolId(Number(e.target.value))}
+                                    >
+                                      <option value="">Seleccionar rol</option>
+                                      {roles.map((rol) => (
+                                        <option key={rol.id} value={rol.id}>
+                                          {rol.nombreRol}
+                                        </option>
+                                      ))}
+                                    </select>
+                                  </div>
+                                </div>
+                                <div className="flex justify-end space-x-2">
+                                  <DialogTrigger asChild>
+                                    <Button variant="outline">Cancelar</Button>
+                                  </DialogTrigger>
+                                  <Button onClick={updateUsuario}>Guardar</Button>
+                                </div>
+                              </DialogContent>
+                            </Dialog>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => eliminarUsuario(val.id)}
+                            >
+                              Eliminar
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
                   </TableBody>
                 </Table>
               </div>
-            )}
-          </CardContent>
-        </Card>
-      </div>
-    </>
-  );
+              {/* Paginación */}
+              <div className="flex justify-center mt-6">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        href="#"
+                        onClick={e => {
+                          e.preventDefault();
+                          if (currentPage > 1) setCurrentPage(currentPage - 1);
+                        }}
+                        aria-disabled={currentPage === 1}
+                      />
+                    </PaginationItem>
+                    {/* Mostrar primer página y ellipsis si es necesario */}
+                    {(() => {
+                      let start = Math.max(1, currentPage - 2);
+                      let end = Math.min(totalPaginas, currentPage + 2);
+                      if (currentPage <= 3) end = Math.min(5, totalPaginas);
+                      if (currentPage >= totalPaginas - 2) start = Math.max(1, totalPaginas - 4);
+
+                      const items = [];
+                      if (start > 1) {
+                        items.push(
+                          <PaginationItem key={1}>
+                            <PaginationLink
+                              href="#"
+                              onClick={e => {
+                                e.preventDefault();
+                                setCurrentPage(1);
+                              }}
+                            >
+                              1
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
+                        if (start > 2) items.push(<PaginationEllipsis key="start-ellipsis" />);
+                      }
+                      for (let i = start; i <= end; i++) {
+                        items.push(
+                          <PaginationItem key={i}>
+                            <PaginationLink
+                              href="#"
+                              isActive={i === currentPage}
+                              onClick={e => {
+                                e.preventDefault();
+                                setCurrentPage(i);
+                              }}
+                            >
+                              {i}
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
+                      }
+                      if (end < totalPaginas) {
+                        if (end < totalPaginas - 1) items.push(<PaginationEllipsis key="end-ellipsis" />);
+                        items.push(
+                          <PaginationItem key={totalPaginas}>
+                            <PaginationLink
+                              href="#"
+                              onClick={e => {
+                                e.preventDefault();
+                                setCurrentPage(totalPaginas);
+                              }}
+                            >
+                              {totalPaginas}
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
+                      }
+                      return items;
+                    })()}
+                    <PaginationItem>
+                      <PaginationNext
+                        href="#"
+                        onClick={e => {
+                          e.preventDefault();
+                          if (currentPage < totalPaginas) setCurrentPage(currentPage + 1);
+                        }}
+                        aria-disabled={currentPage === totalPaginas}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            </>
+          )}
+        </CardContent>
+      </Card>
+    </div>
+  </>
+);
 }
 export default GestionUsuarios;

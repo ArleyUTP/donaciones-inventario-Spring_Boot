@@ -8,6 +8,8 @@ import java.util.Map;
 import org.humanitarian.donaciones_inventario.DAO.IDonacionesRepository;
 import org.humanitarian.donaciones_inventario.Entities.Donacion;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 @Service
@@ -92,5 +94,9 @@ public class DonacionService implements IDonacionService {
             response.add(map);
         }
         return response;
+    }
+        @Override
+    public Page<Donacion> findAll(Pageable pageable) {
+        return donacionesRepository.findAll(pageable);
     }
 }

@@ -44,48 +44,50 @@ public class DashboardController {
     }
 
     @GetMapping("/evolucion-inventario-categoria")
-public List<Map<String, Object>> getEvolucionInventarioPorCategoria() {
-    String sql = """
-        SELECT 
-            EXTRACT(YEAR FROM i.fecha_creacion) as anio,
-            EXTRACT(MONTH FROM i.fecha_creacion) as mes,
-            c.categoria,
-            SUM(i.cantidad) as total_cantidad
-        FROM inventario i
-        JOIN categorias_inventario c ON i.categoria_id = c.id
-        WHERE i.fecha_creacion >= CURRENT_DATE - INTERVAL '12 months'
-        GROUP BY anio, mes, c.categoria
-        ORDER BY anio, mes, c.categoria
-    """;
-    return jdbcTemplate.queryForList(sql);
-}
-@GetMapping("/actividad-donaciones-heatmap")
-public List<Map<String, Object>> getActividadDonacionesHeatmap() {
-    String sql = """
-        SELECT 
-            EXTRACT(DOW FROM fecha_donacion) as dia_semana,
-            EXTRACT(HOUR FROM fecha_donacion) as hora,
-            COUNT(*) as total_donaciones
-        FROM donaciones
-        WHERE fecha_donacion >= CURRENT_DATE - INTERVAL '3 months'
-        GROUP BY dia_semana, hora
-        ORDER BY dia_semana, hora
-    """;
-    return jdbcTemplate.queryForList(sql);
-}
-@GetMapping("/rendimiento-voluntarios-especialidad")
-public List<Map<String, Object>> getRendimientoVoluntariosPorEspecialidad() {
-    String sql = """
-        SELECT 
-            v.especialidad,
-            COUNT(tv.id) as tareas_completadas,
-            AVG(EXTRACT(EPOCH FROM (tv.fecha_completada - tv.fecha_asignacion))/3600) as tiempo_promedio_horas,
-            COUNT(DISTINCT tv.voluntario_id) as voluntarios_activos
-        FROM voluntarios v
-        JOIN tareas_voluntarios tv ON v.id = tv.voluntario_id
-        WHERE tv.estado = 'COMPLETADA'
-        GROUP BY v.especialidad
-    """;
-    return jdbcTemplate.queryForList(sql);
-}
+    public List<Map<String, Object>> getEvolucionInventarioPorCategoria() {
+        String sql = """
+                    SELECT
+                        EXTRACT(YEAR FROM i.fecha_creacion) as anio,
+                        EXTRACT(MONTH FROM i.fecha_creacion) as mes,
+                        c.categoria,
+                        SUM(i.cantidad) as total_cantidad
+                    FROM inventario i
+                    JOIN categorias_inventario c ON i.categoria_id = c.id
+                    WHERE i.fecha_creacion >= CURRENT_DATE - INTERVAL '12 months'
+                    GROUP BY anio, mes, c.categoria
+                    ORDER BY anio, mes, c.categoria
+                """;
+        return jdbcTemplate.queryForList(sql);
+    }
+
+    @GetMapping("/actividad-donaciones-heatmap")
+    public List<Map<String, Object>> getActividadDonacionesHeatmap() {
+        String sql = """
+                    SELECT
+                        EXTRACT(DOW FROM fecha_donacion) as dia_semana,
+                        EXTRACT(HOUR FROM fecha_donacion) as hora,
+                        COUNT(*) as total_donaciones
+                    FROM donaciones
+                    WHERE fecha_donacion >= CURRENT_DATE - INTERVAL '3 months'
+                    GROUP BY dia_semana, hora
+                    ORDER BY dia_semana, hora
+                """;
+        return jdbcTemplate.queryForList(sql);
+    }
+
+    @GetMapping("/rendimiento-voluntarios-especialidad")
+    public List<Map<String, Object>> getRendimientoVoluntariosPorEspecialidad() {
+        String sql = """
+                    SELECT
+                        v.especialidad,
+                        COUNT(tv.id) as tareas_completadas,
+                        AVG(EXTRACT(EPOCH FROM (tv.fecha_completada - tv.fecha_asignacion))/3600) as tiempo_promedio_horas,
+                        COUNT(DISTINCT tv.voluntario_id) as voluntarios_activos
+                    FROM voluntarios v
+                    JOIN tareas_voluntarios tv ON v.id = tv.voluntario_id
+                    WHERE tv.estado = 'COMPLETADA'
+                    GROUP BY v.especialidad
+                """;
+        return jdbcTemplate.queryForList(sql);
+    }
 }

@@ -206,323 +206,330 @@ function Dashboard() {
         categoria: item.categoria,
         total: item.total,
     }));
-    return (
-        <div className="min-h-screen bg-gray-50 p-6">
-            <div className="max-w-7xl mx-auto">
-                <h1 className="text-3xl font-bold text-gray-900 mb-8">
+return (
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 to-blue-50 p-4">
+        <div className="max-w-7xl mx-auto">
+            {/* Header */}
+            <div className="mb-8">
+                <h1 className="text-4xl font-bold text-gray-900 mb-2">
                     Dashboard de Donaciones
                 </h1>
+                <p className="text-gray-600">Panel de control y análisis de donaciones</p>
+            </div>
 
-                {/* ================= KPIs ================= */}
-                <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
-                    <Card>
-                        <CardHeader>
-                            <h3 className="text-sm font-medium text-gray-500">
-                                Total Donaciones
-                            </h3>
+            {/* KPIs Section */}
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-6 mb-8">
+                <Card className="bg-gradient-to-r from-blue-500 to-blue-600 text-white border-0 shadow-lg">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-blue-100 text-sm font-medium">Total Donaciones</p>
+                                <p className="text-3xl font-bold mt-1">{kpis.totalDonaciones}</p>
+                            </div>
+                            <div className="bg-blue-400 bg-opacity-30 p-3 rounded-full">
+                                <TrendingUp className="h-6 w-6" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-r from-green-500 to-green-600 text-white border-0 shadow-lg">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-green-100 text-sm font-medium">Beneficiarios</p>
+                                <p className="text-3xl font-bold mt-1">{kpis.totalBeneficiarios}</p>
+                            </div>
+                            <div className="bg-green-400 bg-opacity-30 p-3 rounded-full">
+                                <TrendingUp className="h-6 w-6" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-r from-purple-500 to-purple-600 text-white border-0 shadow-lg">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-purple-100 text-sm font-medium">Voluntarios Activos</p>
+                                <p className="text-3xl font-bold mt-1">{kpis.voluntariosActivos}</p>
+                            </div>
+                            <div className="bg-purple-400 bg-opacity-30 p-3 rounded-full">
+                                <TrendingUp className="h-6 w-6" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+
+                <Card className="bg-gradient-to-r from-orange-500 to-orange-600 text-white border-0 shadow-lg">
+                    <CardContent className="p-6">
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <p className="text-orange-100 text-sm font-medium">Valor Total</p>
+                                <p className="text-3xl font-bold mt-1">{kpis.valorTotal}</p>
+                            </div>
+                            <div className="bg-orange-400 bg-opacity-30 p-3 rounded-full">
+                                <TrendingUp className="h-6 w-6" />
+                            </div>
+                        </div>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Main Charts Section */}
+            <div className="grid grid-cols-1 xl:grid-cols-3 gap-6 mb-8">
+                {/* Donaciones por Mes - Span 2 columns */}
+                <div className="xl:col-span-2">
+                    <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+                        <CardHeader className="pb-4">
+                            <div className="flex items-center justify-between">
+                                <div>
+                                    <CardTitle className="text-xl font-bold text-gray-900">
+                                        Donaciones por Mes
+                                    </CardTitle>
+                                    <CardDescription className="text-gray-600">
+                                        Tendencia mensual de donaciones
+                                    </CardDescription>
+                                </div>
+                                <div className="flex items-center gap-2">
+                                    <label htmlFor="filtroAnio" className="text-sm font-medium text-gray-700">
+                                        Año:
+                                    </label>
+                                    <select
+                                        id="filtroAnio"
+                                        value={filtroAnio}
+                                        onChange={e => setFiltroAnio(e.target.value)}
+                                        className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                    >
+                                        <option value="Todos">Todos</option>
+                                        {aniosUnicos.map(anio => (
+                                            <option key={anio} value={anio}>{anio}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                            </div>
                         </CardHeader>
                         <CardContent>
-                            <p className="text-2xl font-bold text-gray-900">{kpis.totalDonaciones}</p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <h3 className="text-sm font-medium text-gray-500">Valor Total</h3>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-2xl font-bold text-gray-900">
-                                ${kpis.valorTotal?.toLocaleString("en-US", { minimumFractionDigits: 2 })}
-                            </p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <h3 className="text-sm font-medium text-gray-500">Beneficiarios</h3>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-2xl font-bold text-gray-900">{kpis.totalBeneficiarios}</p>
-                        </CardContent>
-                    </Card>
-                    <Card>
-                        <CardHeader>
-                            <h3 className="text-sm font-medium text-gray-500">
-                                Voluntarios Activos
-                            </h3>
-                        </CardHeader>
-                        <CardContent>
-                            <p className="text-2xl font-bold text-gray-900">{kpis.voluntariosActivos}</p>
+                            <ChartContainer config={chartConfig} style={{ width: "100%", height: 360 }}>
+                                <ResponsiveContainer width="100%" height={340}>
+                                    <LineChart
+                                        data={dataDonacionesPorMesFiltrado}
+                                        margin={{ left: 12, right: 12, bottom: 50, top: 10 }}
+                                    >
+                                        <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#e2e8f0" />
+                                        <XAxis
+                                            dataKey="mes"
+                                            tickLine={false}
+                                            axisLine={false}
+                                            tickMargin={8}
+                                            angle={-45}
+                                            textAnchor="end"
+                                            height={70}
+                                            interval={0}
+                                            tickFormatter={formatXAxisLabel}
+                                            fontSize={11}
+                                        />
+                                        <YAxis tickLine={false} axisLine={false} />
+                                        <ChartTooltip
+                                            cursor={false}
+                                            content={<ChartTooltipContent hideLabel />}
+                                        />
+                                        <Line
+                                            dataKey="donacion"
+                                            type="monotone"
+                                            stroke="#3b82f6"
+                                            strokeWidth={3}
+                                            dot={{ fill: "#3b82f6", r: 5, strokeWidth: 2, stroke: "#fff" }}
+                                            activeDot={{ r: 7, stroke: "#3b82f6", strokeWidth: 2, fill: "#fff" }}
+                                        />
+                                    </LineChart>
+                                </ResponsiveContainer>
+                            </ChartContainer>
                         </CardContent>
                     </Card>
                 </div>
 
-                {/* ================= Gráficos ================= */}
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-
-                    {/* ----------- Donaciones por Mes (Línea) ----------- */}
-                    <div>
-                        <div className="flex items-center gap-4 mb-2">
-                            <label htmlFor="filtroAnio" className="font-medium">Año:</label>
-                            <select
-                                id="filtroAnio"
-                                value={filtroAnio}
-                                onChange={e => setFiltroAnio(e.target.value)}
-                                className="border rounded px-2 py-1"
-                            >
-                                <option value="Todos">Todos</option>
-                                {aniosUnicos.map(anio => (
-                                    <option key={anio} value={anio}>{anio}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Donaciones por Mes</CardTitle>
-                                <CardDescription>Últimos meses</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <ChartContainer config={chartConfig} style={{ width: "100%", height: 360 }}>
-                                    <ResponsiveContainer width="100%" height={340}>
-                                        <LineChart
-                                            data={dataDonacionesPorMesFiltrado}
-                                            margin={{ left: 12, right: 12, bottom: 50, top: 10 }}
+                {/* Donaciones por Tipo - Donut */}
+                <div>
+                    <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+                        <CardHeader>
+                            <CardTitle className="text-xl font-bold text-gray-900">
+                                Donaciones por Tipo
+                            </CardTitle>
+                            <CardDescription className="text-gray-600">
+                                Distribución por tipo
+                            </CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                            <ChartContainer config={chartConfig} style={{ width: "100%", height: 320 }}>
+                                <ResponsiveContainer width="100%" height={300}>
+                                    <PieChart>
+                                        <Pie
+                                            data={dataDonacionesPorTipo}
+                                            dataKey="total"
+                                            nameKey="tipo"
+                                            cx="50%"
+                                            cy="50%"
+                                            innerRadius={60}
+                                            outerRadius={100}
+                                            label
                                         >
-                                            <CartesianGrid vertical={false} />
-                                            <XAxis
-                                                dataKey="mes"
-                                                tickLine={false}
-                                                axisLine={false}
-                                                tickMargin={8}
-                                                angle={-45}
-                                                textAnchor="end"
-                                                height={70}
-                                                interval={0}
-                                                tickFormatter={formatXAxisLabel}
-                                                fontSize={11}
-                                            />
-                                            <YAxis />
-                                            <ChartTooltip
-                                                cursor={false}
-                                                content={<ChartTooltipContent hideLabel />}
-                                                labelFormatter={(value) => {
-                                                    // Mostrar nombre completo en tooltip
-                                                    return value;
-                                                }}
-                                            />
-                                            <Line
-                                                dataKey="donacion"
-                                                type="monotone"
-                                                stroke="#f59e42"
-                                                strokeWidth={3}
-                                                dot={{ fill: "#f59e42", r: 4 }}
-                                                activeDot={{ r: 6 }}
-                                            />
-                                        </LineChart>
-                                    </ResponsiveContainer>
-                                </ChartContainer>
-                            </CardContent>
-                            <CardFooter className="flex-col items-start gap-2 text-sm">
-                                <div className="flex gap-2 font-medium leading-none">
-                                    Trending up by 5.2% this month <TrendingUp className="h-4 w-4" />
-                                </div>
-                                <div className="leading-none text-muted-foreground">
-                                    Mostrando total de donaciones por mes
-                                </div>
-                            </CardFooter>
-                        </Card>
-                    </div>
+                                            {dataDonacionesPorTipo.map((entry, index) => (
+                                                <Cell
+                                                    key={`cell-${index}`}
+                                                    fill={COLORS[index % COLORS.length]}
+                                                />
+                                            ))}
+                                        </Pie>
+                                        <Legend />
+                                    </PieChart>
+                                </ResponsiveContainer>
+                            </ChartContainer>
+                        </CardContent>
+                    </Card>
+                </div>
+            </div>
 
-                    {/* ----------- Distribuciones por Estado y Mes (Barras apiladas) ----------- */}
-                    <div>
-                        <div className="flex items-center gap-4 mb-2">
-                            <label htmlFor="filtroAnioDistrib" className="font-medium">Año:</label>
-                            <select
-                                id="filtroAnioDistrib"
-                                value={filtroAnioDistrib}
-                                onChange={e => setFiltroAnioDistrib(e.target.value)}
-                                className="border rounded px-2 py-1"
-                            >
-                                <option value="Todos">Todos</option>
-                                {aniosDistrib.map(anio => (
-                                    <option key={anio} value={anio}>{anio}</option>
-                                ))}
-                            </select>
-                        </div>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Distribuciones por Estado y Mes</CardTitle>
-                                <CardDescription>Barras apiladas por mes</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <ChartContainer config={chartConfig} style={{ width: "100%", height: 360 }}>
-                                    <ResponsiveContainer width="100%" height={340}>
-                                        <BarChart
-                                            data={distribucionesPorMes}
-                                            margin={{ left: 12, right: 12, bottom: 50, top: 10 }}
-                                        >
-                                            <CartesianGrid vertical={false} />
-                                            <XAxis
-                                                dataKey="mes"
-                                                angle={-45}
-                                                textAnchor="end"
-                                                height={70}
-                                                interval={0}
-                                                tickFormatter={formatXAxisLabel}
-                                                fontSize={11}
-                                                tickLine={false}
-                                                axisLine={false}
-                                                tickMargin={8}
-                                            />
-                                            <YAxis />
-                                            <ChartTooltip
-                                                cursor={false}
-                                                content={<ChartTooltipContent hideLabel />}
-                                                labelFormatter={(value) => value}
-                                            />
-                                            <Bar dataKey="PROGRAMADA" stackId="a" fill="#2563eb" />
-                                            <Bar dataKey="ENTREGADA" stackId="a" fill="#22c55e" />
-                                            <Bar dataKey="CANCELADA" stackId="a" fill="#f59e42" />
-                                            <Legend />
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </ChartContainer>
-                            </CardContent>
-                            <CardFooter className="flex-col items-start gap-2 text-sm">
-                                <div className="flex gap-2 leading-none font-medium">
-                                    Distribuciones por estado y mes <TrendingUp className="h-4 w-4" />
-                                </div>
-                                <div className="text-muted-foreground leading-none">
-                                    Mostrando total de distribuciones por estado y mes
-                                </div>
-                            </CardFooter>
-                        </Card>
-                    </div>
-
-                    {/* ----------- Donaciones por Categoría (Barras horizontales) ----------- */}
-                    <div>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Donaciones por Categoría</CardTitle>
-                                <CardDescription>Totales por tipo de categoría</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <ChartContainer config={chartConfig} style={{ width: "100%", height: 320 }}>
-                                    <ResponsiveContainer width="100%" height={300}>
-                                        <BarChart
-                                            data={dataDonacionesPorCategoria}
-                                            layout="vertical"
-                                            margin={{ left: -20 }}
-                                        >
-                                            <XAxis type="number" dataKey="total" hide />
-                                            <YAxis
-                                                dataKey="categoria"
-                                                type="category"
-                                                tickLine={false}
-                                                tickMargin={10}
-                                                axisLine={false}
-                                            />
-                                            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                                            <Bar dataKey="total" fill="#2563eb" radius={5} />
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </ChartContainer>
-                            </CardContent>
-                            <CardFooter className="flex-col items-start gap-2 text-sm">
-                                <div className="flex gap-2 leading-none font-medium">
-                                    Top categorías de donaciones <TrendingUp className="h-4 w-4" />
-                                </div>
-                                <div className="text-muted-foreground leading-none">
-                                    Mostrando total de donaciones por categoría
-                                </div>
-                            </CardFooter>
-                        </Card>
-                    </div>
-
-                    {/* ----------- Donaciones por Estado (Barras) ----------- */}
-                    <div>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Donaciones por Estado</CardTitle>
-                                <CardDescription>Total agrupado por estado</CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <ChartContainer config={chartConfig} style={{ width: "100%", height: 320 }}>
-                                    <ResponsiveContainer width="100%" height={300}>
-                                        <BarChart
-                                            data={dataDonacionesPorEstado}
-                                            margin={{ left: 12, right: 12 }}
-                                        >
-                                            <CartesianGrid vertical={false} />
-                                            <XAxis dataKey="estado" />
-                                            <YAxis />
-                                            <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
-                                            <Bar dataKey="total" fill="#22c55e" radius={5} />
-                                        </BarChart>
-                                    </ResponsiveContainer>
-                                </ChartContainer>
-                            </CardContent>
-                            <CardFooter className="flex-col items-start gap-2 text-sm">
-                                <div className="flex gap-2 leading-none font-medium">
-                                    Estados de donaciones <TrendingUp className="h-4 w-4" />
-                                </div>
-                                <div className="text-muted-foreground leading-none">
-                                    Mostrando total de donaciones por estado
-                                </div>
-                            </CardFooter>
-                        </Card>
-                    </div>
-
-                    {/* ----------- Donaciones por Tipo (Donut) ----------- */}
-                    <div>
-                        <Card>
-                            <CardHeader>
-                                <CardTitle>Donaciones por Tipo</CardTitle>
-                                <CardDescription>
-                                    Distribución de tipos de donación
+            {/* Secondary Charts Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 mb-8">
+                {/* Distribuciones por Estado */}
+                <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+                    <CardHeader>
+                        <div className="flex items-center justify-between">
+                            <div>
+                                <CardTitle className="text-xl font-bold text-gray-900">
+                                    Distribuciones por Estado
+                                </CardTitle>
+                                <CardDescription className="text-gray-600">
+                                    Estado de las distribuciones
                                 </CardDescription>
-                            </CardHeader>
-                            <CardContent>
-                                <ChartContainer config={chartConfig} style={{ width: "100%", height: 320 }}>
-                                    <ResponsiveContainer width="100%" height={300}>
-                                        <PieChart>
-                                            <Pie
-                                                data={dataDonacionesPorTipo}
-                                                dataKey="total"
-                                                nameKey="tipo"
-                                                cx="50%"
-                                                cy="50%"
-                                                innerRadius={60}
-                                                outerRadius={100}
-                                                label
-                                            >
-                                                {dataDonacionesPorTipo.map((entry, index) => (
-                                                    <Cell
-                                                        key={`cell-${index}`}
-                                                        fill={COLORS[index % COLORS.length]}
-                                                    />
-                                                ))}
-                                            </Pie>
-                                            <Legend />
-                                        </PieChart>
-                                    </ResponsiveContainer>
-                                </ChartContainer>
-                            </CardContent>
-                            <CardFooter className="flex-col items-start gap-2 text-sm">
-                                <div className="flex gap-2 leading-none font-medium">
-                                    Tipos de donación <TrendingUp className="h-4 w-4" />
-                                </div>
-                                <div className="text-muted-foreground leading-none">
-                                    Mostrando total de donaciones por tipo
-                                </div>
-                            </CardFooter>
-                        </Card>
-                    </div>
+                            </div>
+                            <div className="flex items-center gap-2">
+                                <label htmlFor="filtroAnioDistrib" className="text-sm font-medium text-gray-700">
+                                    Año:
+                                </label>
+                                <select
+                                    id="filtroAnioDistrib"
+                                    value={filtroAnioDistrib}
+                                    onChange={e => setFiltroAnioDistrib(e.target.value)}
+                                    className="border border-gray-300 rounded-lg px-3 py-1 text-sm focus:ring-2 focus:ring-blue-500 focus:border-blue-500"
+                                >
+                                    <option value="Todos">Todos</option>
+                                    {aniosDistrib.map(anio => (
+                                        <option key={anio} value={anio}>{anio}</option>
+                                    ))}
+                                </select>
+                            </div>
+                        </div>
+                    </CardHeader>
+                    <CardContent>
+                        <ChartContainer config={chartConfig} style={{ width: "100%", height: 360 }}>
+                            <ResponsiveContainer width="100%" height={340}>
+                                <BarChart
+                                    data={distribucionesPorMes}
+                                    margin={{ left: 12, right: 12, bottom: 50, top: 10 }}
+                                >
+                                    <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#e2e8f0" />
+                                    <XAxis
+                                        dataKey="mes"
+                                        angle={-45}
+                                        textAnchor="end"
+                                        height={70}
+                                        interval={0}
+                                        tickFormatter={formatXAxisLabel}
+                                        fontSize={11}
+                                        tickLine={false}
+                                        axisLine={false}
+                                        tickMargin={8}
+                                    />
+                                    <YAxis tickLine={false} axisLine={false} />
+                                    <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                                    <Bar dataKey="PROGRAMADA" stackId="a" fill="#3b82f6" radius={[0, 0, 0, 0]} />
+                                    <Bar dataKey="ENTREGADA" stackId="a" fill="#10b981" radius={[0, 0, 0, 0]} />
+                                    <Bar dataKey="CANCELADA" stackId="a" fill="#f59e0b" radius={[4, 4, 0, 0]} />
+                                    <Legend />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+
+                {/* Donaciones por Estado */}
+                <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+                    <CardHeader>
+                        <CardTitle className="text-xl font-bold text-gray-900">
+                            Donaciones por Estado
+                        </CardTitle>
+                        <CardDescription className="text-gray-600">
+                            Estados de las donaciones
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <ChartContainer config={chartConfig} style={{ width: "100%", height: 320 }}>
+                            <ResponsiveContainer width="100%" height={300}>
+                                <BarChart
+                                    data={dataDonacionesPorEstado}
+                                    margin={{ left: 12, right: 12 }}
+                                >
+                                    <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#e2e8f0" />
+                                    <XAxis dataKey="estado" tickLine={false} axisLine={false} />
+                                    <YAxis tickLine={false} axisLine={false} />
+                                    <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                                    <Bar dataKey="total" fill="#10b981" radius={[4, 4, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+            </div>
+
+            {/* Bottom Section */}
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+                {/* Donaciones por Categoría */}
+                <Card className="shadow-lg border-0 bg-white/70 backdrop-blur-sm">
+                    <CardHeader>
+                        <CardTitle className="text-xl font-bold text-gray-900">
+                            Donaciones por Categoría
+                        </CardTitle>
+                        <CardDescription className="text-gray-600">
+                            Categorías más populares
+                        </CardDescription>
+                    </CardHeader>
+                    <CardContent>
+                        <ChartContainer config={chartConfig} style={{ width: "100%", height: 320 }}>
+                            <ResponsiveContainer width="100%" height={300}>
+                                <BarChart 
+                                    data={dataDonacionesPorCategoria} 
+                                    margin={{ left: 12, right: 12, bottom: 50 }}
+                                >
+                                    <CartesianGrid vertical={false} strokeDasharray="3 3" stroke="#e2e8f0" />
+                                    <XAxis
+                                        dataKey="categoria"
+                                        angle={-45}
+                                        textAnchor="end"
+                                        interval={0}
+                                        height={70}
+                                        tickMargin={8}
+                                        tickLine={false}
+                                        axisLine={false}
+                                    />
+                                    <YAxis tickLine={false} axisLine={false} />
+                                    <ChartTooltip cursor={false} content={<ChartTooltipContent hideLabel />} />
+                                    <Bar dataKey="total" fill="#8b5cf6" radius={[4, 4, 0, 0]} />
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </ChartContainer>
+                    </CardContent>
+                </Card>
+
+                {/* Componente adicional */}
+                <div>
                     <EvolucionInventarioCategoria />
-                    <DonacionesHeatmap />
-                    <RadarVoluntarios />
                 </div>
             </div>
         </div>
-    );
+    </div>
+);
 }
 
 export default Dashboard;
