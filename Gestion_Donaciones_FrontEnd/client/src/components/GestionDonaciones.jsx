@@ -25,6 +25,21 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipProvider,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 const MySwal = withReactContent(Swal);
 
@@ -44,25 +59,27 @@ function GestionDonaciones() {
 
   const [editar, setEditar] = useState(false);
   const [loading, setLoading] = useState(false);
-  const [error, setError] = useState(null);
   const [selectedDonacion, setSelectedDonacion] = useState(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  // Estados para paginación
+  const [page, setPage] = useState(0); // Spring usa 0-based
+  const [pageSize] = useState(10);
+  const [totalPages, setTotalPages] = useState(1);
 
   // Cargar datos iniciales
   useEffect(() => {
     const fetchInitialData = async () => {
       try {
         setLoading(true);
-        const [donacionesRes, tiposRes, donadoresRes, usuariosRes] =
+        const [tiposRes, donadoresRes, usuariosRes] =
           await Promise.all([
-            Axios.get("http://localhost:8080/donation/donations"),
             Axios.get("http://localhost:8080/donation/types"),
             Axios.get("http://localhost:8080/donor/donors"),
             Axios.get("http://localhost:8080/user/users"),
           ]);
 
-        setDonaciones(donacionesRes.data);
         setTiposDonacion(tiposRes.data);
         setDonadores(donadoresRes.data);
         setUsuarios(usuariosRes.data);
@@ -85,9 +102,10 @@ function GestionDonaciones() {
     try {
       setLoading(true);
       const response = await Axios.get(
-        "http://localhost:8080/donation/donations"
+        `http://localhost:8080/donation/page?page=${page}&size=${pageSize}`
       );
-      setDonaciones(response.data);
+      setDonaciones(response.data.content);
+      setTotalPages(response.data.totalPages);
     } catch (error) {
       console.error("Error al obtener donaciones:", error);
       MySwal.fire({
@@ -98,7 +116,12 @@ function GestionDonaciones() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [page, pageSize]);
+
+  // Efecto para cargar donaciones cuando cambie la página
+  useEffect(() => {
+    getDonaciones();
+  }, [getDonaciones]);
 
   // Función para limpiar campos
   const limpiarCampos = useCallback(() => {
@@ -306,17 +329,98 @@ function GestionDonaciones() {
     setIsEditDialogOpen(false);
   };
 
-  const getEstadoBadgeVariant = (estado) => {
-    switch (estado) {
-      case "Confirmada":
-        return "default"; // Verde
-      case "Pendiente":
-        return "secondary"; // Amarillo
-      case "Cancelada":
-        return "destructive"; // Rojo
-      default:
-        return "outline";
+  // Variables utilizadas en el código pero marcadas como no usadas por el linter
+  // usuarios, editar, selectedDonacion se usan en funciones específicas
+
+  // Paginación visual tipo demo Shadcn/UI (máx 5 links)
+  const renderPagination = () => {
+    if (totalPages <= 1) return null;
+    const maxLinks = 5;
+    let start = Math.max(0, page - Math.floor(maxLinks / 2));
+    let end = start + maxLinks;
+    if (end > totalPages) {
+      end = totalPages;
+      start = Math.max(0, end - maxLinks);
     }
+    const pageLinks = [];
+    for (let i = start; i < end; i++) {
+      pageLinks.push(
+        <PaginationItem key={i}>
+          <PaginationLink
+            href="#"
+            isActive={page === i}
+            onClick={e => {
+              e.preventDefault();
+              setPage(i);
+            }}
+          >
+            {i + 1}
+          </PaginationLink>
+        </PaginationItem>
+      );
+    }
+
+    return (
+      <Pagination>
+        <PaginationContent>
+          <PaginationItem>
+            <PaginationPrevious
+              href="#"
+              onClick={e => {
+                e.preventDefault();
+                if (page > 0) setPage(page - 1);
+              }}
+              aria-disabled={page === 0}
+              className={page === 0 ? "pointer-events-none opacity-50" : ""}
+            />
+          </PaginationItem>
+          {start > 0 && (
+            <>
+              <PaginationItem>
+                <PaginationLink
+                  href="#"
+                  onClick={e => {
+                    e.preventDefault();
+                    setPage(0);
+                  }}
+                >
+                  1
+                </PaginationLink>
+              </PaginationItem>
+              {start > 1 && <PaginationEllipsis />}
+            </>
+          )}
+          {pageLinks}
+          {end < totalPages && (
+            <>
+              {end < totalPages - 1 && <PaginationEllipsis />}
+              <PaginationItem>
+                <PaginationLink
+                  href="#"
+                  onClick={e => {
+                    e.preventDefault();
+                    setPage(totalPages - 1);
+                  }}
+                >
+                  {totalPages}
+                </PaginationLink>
+              </PaginationItem>
+            </>
+          )}
+          <PaginationItem>
+            <PaginationNext
+              href="#"
+              onClick={e => {
+                e.preventDefault();
+                if (page + 1 < totalPages) setPage(page + 1);
+              }}
+              aria-disabled={page + 1 >= totalPages}
+              className={page + 1 >= totalPages ? "pointer-events-none opacity-50" : ""}
+            />
+          </PaginationItem>
+        </PaginationContent>
+      </Pagination>
+    );
   };
 
   return (
@@ -461,9 +565,9 @@ function GestionDonaciones() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {donaciones.map((donacion) => (
+                    {donaciones.map((donacion, idx) => (
                       <TableRow key={donacion.id}>
-                        <TableCell>{donacion.id}</TableCell>
+                        <TableCell>{page * pageSize + idx + 1}</TableCell>
                         <TableCell>
                           {donacion.donador?.usuario?.nombreUsuario || donacion.donador?.nombreDonador}
                         </TableCell>
@@ -491,14 +595,36 @@ function GestionDonaciones() {
                             {donacion.estado}
                           </Badge>
                         </TableCell>
-                        <TableCell>
+                        <TableCell className="max-w-[200px]">
                           {donacion.direccionRecojo && (
-                            <div className="text-sm">
-                              <p className="text-muted-foreground">{donacion.direccionRecojo}</p>
-                              {donacion.referenciaRecojo && (
-                                <p className="text-xs text-muted-foreground">Ref: {donacion.referenciaRecojo}</p>
-                              )}
-                            </div>
+                            <TooltipProvider>
+                              <Tooltip>
+                                <TooltipTrigger asChild>
+                                  <div className="text-sm cursor-pointer">
+                                    <p className="text-muted-foreground truncate">
+                                      {donacion.direccionRecojo}
+                                    </p>
+                                    {donacion.referenciaRecojo && (
+                                      <p className="text-xs text-muted-foreground truncate">
+                                        Ref: {donacion.referenciaRecojo}
+                                      </p>
+                                    )}
+                                  </div>
+                                </TooltipTrigger>
+                                <TooltipContent className="max-w-[300px]">
+                                  <div className="text-sm">
+                                    <p className="font-medium">Dirección:</p>
+                                    <p className="text-muted-foreground">{donacion.direccionRecojo}</p>
+                                    {donacion.referenciaRecojo && (
+                                      <>
+                                        <p className="font-medium mt-2">Referencia:</p>
+                                        <p className="text-muted-foreground">{donacion.referenciaRecojo}</p>
+                                      </>
+                                    )}
+                                  </div>
+                                </TooltipContent>
+                              </Tooltip>
+                            </TooltipProvider>
                           )}
                         </TableCell>
                         <TableCell>
@@ -540,6 +666,9 @@ function GestionDonaciones() {
             )}
           </CardContent>
         </Card>
+        <div className="flex justify-center mt-4">
+          {renderPagination()}
+        </div>
 
         {/* Dialog de Edición */}
         <Dialog open={isEditDialogOpen} onOpenChange={handleEditDialogChange}>
