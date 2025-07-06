@@ -23,6 +23,15 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const MySwal = withReactContent(Swal);
 
@@ -41,6 +50,16 @@ function GestionDonadores() {
   const [paisOrigen, setPaisOrigen] = useState("");
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const donadoresPorPagina = 8;
+  const donadoresFiltrados = donadoresLista.filter((d) => d.estadoActivo !== false);
+  const totalPaginas = Math.ceil(donadoresFiltrados.length / donadoresPorPagina);
+
+  const donadoresPaginados = donadoresFiltrados
+    .sort((a, b) => a.id - b.id)
+    .slice((currentPage - 1) * donadoresPorPagina, currentPage * donadoresPorPagina);
 
   // Fetch inicial de datos
   useEffect(() => {
@@ -399,7 +418,7 @@ function GestionDonadores() {
                     </TableRow>
                   </TableHeader>
                   <TableBody>
-                    {donadoresLista.map((val) => (
+                    {donadoresPaginados.map((val) => (
                       <TableRow key={val.id}>
                         <TableCell>{val.id}</TableCell>
                         <TableCell>
@@ -440,12 +459,101 @@ function GestionDonadores() {
                         </TableCell>
                       </TableRow>
                     ))}
-                  </TableBody>
+                                    </TableBody>
                 </Table>
               </div>
-            )}
-          </CardContent>
-        </Card>
+              )}
+              {/* Paginación */}
+              {donadoresFiltrados.length > 0 && (
+                <div className="flex justify-center mt-6">
+                  <Pagination>
+                    <PaginationContent>
+                      <PaginationItem>
+                        <PaginationPrevious
+                          href="#"
+                          onClick={e => {
+                            e.preventDefault();
+                            if (currentPage > 1) setCurrentPage(currentPage - 1);
+                          }}
+                          aria-disabled={currentPage === 1}
+                          className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                        />
+                      </PaginationItem>
+                      {/* Mostrar primer página y ellipsis si es necesario */}
+                      {(() => {
+                        let start = Math.max(1, currentPage - 2);
+                        let end = Math.min(totalPaginas, currentPage + 2);
+                        if (currentPage <= 3) end = Math.min(5, totalPaginas);
+                        if (currentPage >= totalPaginas - 2) start = Math.max(1, totalPaginas - 4);
+
+                        const items = [];
+                        if (start > 1) {
+                          items.push(
+                            <PaginationItem key={1}>
+                              <PaginationLink
+                                href="#"
+                                onClick={e => {
+                                  e.preventDefault();
+                                  setCurrentPage(1);
+                                }}
+                              >
+                                1
+                              </PaginationLink>
+                            </PaginationItem>
+                          );
+                          if (start > 2) items.push(<PaginationEllipsis key="start-ellipsis" />);
+                        }
+                        for (let i = start; i <= end; i++) {
+                          items.push(
+                            <PaginationItem key={i}>
+                              <PaginationLink
+                                href="#"
+                                isActive={i === currentPage}
+                                onClick={e => {
+                                  e.preventDefault();
+                                  setCurrentPage(i);
+                                }}
+                              >
+                                {i}
+                              </PaginationLink>
+                            </PaginationItem>
+                          );
+                        }
+                        if (end < totalPaginas) {
+                          if (end < totalPaginas - 1) items.push(<PaginationEllipsis key="end-ellipsis" />);
+                          items.push(
+                            <PaginationItem key={totalPaginas}>
+                              <PaginationLink
+                                href="#"
+                                onClick={e => {
+                                  e.preventDefault();
+                                  setCurrentPage(totalPaginas);
+                                }}
+                              >
+                                {totalPaginas}
+                              </PaginationLink>
+                            </PaginationItem>
+                          );
+                        }
+                        return items;
+                      })()}
+                      <PaginationItem>
+                        <PaginationNext
+                          href="#"
+                          onClick={e => {
+                            e.preventDefault();
+                            if (currentPage < totalPaginas) setCurrentPage(currentPage + 1);
+                          }}
+                          aria-disabled={currentPage === totalPaginas}
+                          className={currentPage === totalPaginas ? "pointer-events-none opacity-50" : ""}
+                        />
+                      </PaginationItem>
+                    </PaginationContent>
+                  </Pagination>
+                </div>
+              )}
+            </CardContent>
+          </Card>
 
         {/* Dialog de Edición */}
         <Dialog open={isEditDialogOpen} onOpenChange={handleEditDialogChange}>

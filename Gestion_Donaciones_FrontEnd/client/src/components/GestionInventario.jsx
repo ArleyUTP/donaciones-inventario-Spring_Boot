@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useCallback } from "react";
 import Axios from "axios";
 import Swal from "sweetalert2";
 import withReactContent from "sweetalert2-react-content";
@@ -6,6 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import {
   Dialog,
   DialogContent,
@@ -22,7 +23,6 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
 import {
   Pagination,
   PaginationContent,
@@ -36,107 +36,84 @@ import {
 const notificacion = withReactContent(Swal);
 
 function GestionInventario() {
-  const [inventario, setInventario] = useState([]);
+  const [inventarioId, setInventarioId] = useState(0);
   const [nombre, setNombre] = useState("");
   const [cantidad, setCantidad] = useState(0);
   const [unidadMedida, setUnidadMedida] = useState("");
   const [estado, setEstado] = useState("");
-  const [isDialogOpen, setIsDialogOpen] = useState(false);
-  const [editId, setEditId] = useState(null);
+  const [fechaVencimiento, setFechaVencimiento] = useState("");
+  const [ubicacionAlmacen, setUbicacionAlmacen] = useState("");
+  
+  const [inventario, setInventario] = useState([]);
+  const [loading, setLoading] = useState(false);
 
-  const ESTADOS = ["DISPONIBLE", "RESERVADO", "ENTREGADO", "RECOGIDO"];
-  const UNIDADES = ["Unidades", "KG", "Saco", "Litros", "Gramos", "Cajas"];
-
+  // Estados para paginación
   const [page, setPage] = useState(0); // Spring usa 0-based
   const [pageSize] = useState(10);
   const [totalPages, setTotalPages] = useState(1);
-  const [loading, setLoading] = useState(false);
 
-  const getInventario = async () => {
-    setLoading(true);
+  // Estados disponibles
+  const ESTADOS = ["DISPONIBLE", "RESERVADO", "ENTREGADO", "RECOGIDO"];
+  const UNIDADES = ["Unidades", "KG", "Saco", "Litros", "Gramos", "Cajas"];
+
+  useEffect(() => {
+    getInventario();
+  }, [page, pageSize]);
+
+  const getInventario = useCallback(async () => {
     try {
-      const res = await Axios.get(
+      setLoading(true);
+      const response = await Axios.get(
         `http://localhost:8080/inventario/page?page=${page}&size=${pageSize}`
       );
-      setInventario(res.data.content);
-      setTotalPages(res.data.totalPages);
+      // Filtrar elementos eliminados
+      const inventarioFiltrado = response.data.content.filter((item) => item.estado !== "ELIMINADO");
+      setInventario(inventarioFiltrado);
+      setTotalPages(response.data.totalPages);
     } catch (error) {
+      console.error("Error al obtener inventario:", error);
       notificacion.fire({
         title: "Error",
-        text: "No se pudo cargar el inventario",
+        text: "No se pudieron cargar el inventario",
         icon: "error",
       });
     } finally {
       setLoading(false);
     }
-  };
-
-  useEffect(() => {
-    getInventario();
-    // eslint-disable-next-line
   }, [page, pageSize]);
 
-  const limpiarFormulario = () => {
+  const limpiarCampos = useCallback(() => {
+    setInventarioId(0);
     setNombre("");
     setCantidad(0);
     setUnidadMedida("");
     setEstado("");
-    setEditId(null);
-  };
+    setFechaVencimiento("");
+    setUbicacionAlmacen("");
+  }, []);
 
-  const handleOpenDialog = () => {
-    limpiarFormulario();
-    setIsDialogOpen(true);
-  };
-
-  const handleEdit = (item) => {
-    setEditId(item.id);
-    setNombre(item.nombre);
-    setCantidad(item.cantidad);
-    setUnidadMedida(item.unidadMedida);
-    setEstado(item.estado);
-    setIsDialogOpen(true);
-  };
-
-  const handleDialogChange = (open) => {
-    setIsDialogOpen(open);
-    if (!open) limpiarFormulario();
-  };
-
-  const addOrUpdateInventario = async () => {
+  const addInventario = async () => {
     try {
       setLoading(true);
-      if (editId) {
-        await Axios.put(`http://localhost:8080/inventario/update/${editId}`, {
-          nombre,
-          cantidad,
-          unidadMedida,
-          estado,
-        });
-        notificacion.fire({
-          title: "Actualizado",
-          text: "El artículo fue actualizado correctamente",
-          icon: "success",
-          timer: 2000,
-        });
-      } else {
-        await Axios.post("http://localhost:8080/inventario/create", {
-          nombre,
-          cantidad,
-          unidadMedida,
-          estado,
-        });
-        notificacion.fire({
-          title: "Guardado",
-          text: "El artículo fue guardado correctamente",
-          icon: "success",
-          timer: 2000,
-        });
-      }
-      setIsDialogOpen(false);
-      getInventario();
-      limpiarFormulario();
+      await Axios.post("http://localhost:8080/inventario/create", {
+        nombre,
+        cantidad,
+        unidadMedida,
+        estado,
+        fechaVencimiento: fechaVencimiento || null,
+        ubicacionAlmacen,
+      });
+
+      await getInventario();
+      limpiarCampos();
+      notificacion.fire({
+        title: "Guardado",
+        text: "El artículo fue guardado correctamente",
+        icon: "success",
+        timer: 2000,
+      });
     } catch (error) {
+      console.error("Error al crear artículo:", error);
       notificacion.fire({
         title: "Error",
         text: "No se pudo guardar el artículo",
@@ -147,7 +124,40 @@ function GestionInventario() {
     }
   };
 
-  const deleteInventario = async (id) => {
+  const updateInventario = async () => {
+    try {
+      setLoading(true);
+      await Axios.put(`http://localhost:8080/inventario/update/${inventarioId}`, {
+        id: inventarioId,
+        nombre,
+        cantidad,
+        unidadMedida,
+        estado,
+        fechaVencimiento: fechaVencimiento || null,
+        ubicacionAlmacen,
+      });
+
+      await getInventario();
+      limpiarCampos();
+      notificacion.fire({
+        title: "Actualizado",
+        text: "El artículo fue actualizado correctamente",
+        icon: "success",
+        timer: 2000,
+      });
+    } catch (error) {
+      console.error("Error al actualizar artículo:", error);
+      notificacion.fire({
+        title: "Error",
+        text: "No se pudo actualizar el artículo",
+        icon: "error",
+      });
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const eliminarInventario = async (id) => {
     const result = await notificacion.fire({
       title: "¿Estás seguro?",
       text: "Esta acción eliminará el artículo del inventario.",
@@ -169,6 +179,7 @@ function GestionInventario() {
           timer: 2000,
         });
       } catch (error) {
+        console.error("Error al eliminar artículo:", error);
         notificacion.fire({
           title: "Error",
           text: "No se pudo eliminar el artículo.",
@@ -178,6 +189,16 @@ function GestionInventario() {
         setLoading(false);
       }
     }
+  };
+
+  const editarInventario = (item) => {
+    setInventarioId(item.id);
+    setNombre(item.nombre);
+    setCantidad(item.cantidad);
+    setUnidadMedida(item.unidadMedida);
+    setEstado(item.estado);
+    setFechaVencimiento(item.fechaVencimiento ? item.fechaVencimiento.split('T')[0] : "");
+    setUbicacionAlmacen(item.ubicacionAlmacen || "");
   };
 
   // Paginación visual tipo demo Shadcn/UI (máx 5 links)
@@ -271,168 +292,269 @@ function GestionInventario() {
     );
   };
 
-return (
-  <div className="container mx-auto py-8 px-4">
-    <Card>
-      <CardHeader className="flex flex-row items-center justify-between">
-        <CardTitle>Gestión de Donaciones</CardTitle>
-        <Dialog open={isDialogOpen} onOpenChange={handleDialogChange}>
-          <DialogTrigger asChild>
-            <Button onClick={handleOpenDialog}>Agregar Donación</Button>
-          </DialogTrigger>
-          <DialogContent>
-            <DialogHeader>
-              <DialogTitle>{editId ? "Editar Donación" : "Nueva Donación"}</DialogTitle>
-              <DialogDescription>
-                {editId
-                  ? "Modifique los datos de la donación"
-                  : "Ingrese los datos de la donación"}
-              </DialogDescription>
-            </DialogHeader>
-            <div className="grid gap-4 py-4">
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="monto" className="text-right">Monto</Label>
-                <Input
-                  id="monto"
-                  type="number"
-                  className="col-span-3"
-                  value={monto}
-                  onChange={(e) => setMonto(Number(e.target.value))}
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="tipoDonacion" className="text-right">Tipo de Donación</Label>
-                <Select value={tipoDonacion} onValueChange={setTipoDonacion}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Seleccionar tipo" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {TIPOS_DONACION.map((tipo) => (
-                      <SelectItem key={tipo} value={tipo}>{tipo}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="detallesEspecie" className="text-right">Detalles</Label>
-                <Textarea
-                  id="detallesEspecie"
-                  className="col-span-3"
-                  value={detallesEspecie}
-                  onChange={(e) => setDetallesEspecie(e.target.value)}
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="estado" className="text-right">Estado</Label>
-                <Select value={estado} onValueChange={setEstado}>
-                  <SelectTrigger className="col-span-3">
-                    <SelectValue placeholder="Seleccionar estado" />
-                  </SelectTrigger>
-                  <SelectContent>
-                    {ESTADOS.map((e) => (
-                      <SelectItem key={e} value={e}>{e}</SelectItem>
-                    ))}
-                  </SelectContent>
-                </Select>
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="direccionRecojo" className="text-right">Dirección Recojo</Label>
-                <Input
-                  id="direccionRecojo"
-                  className="col-span-3"
-                  value={direccionRecojo}
-                  onChange={(e) => setDireccionRecojo(e.target.value)}
-                />
-              </div>
-              <div className="grid grid-cols-4 items-center gap-4">
-                <Label htmlFor="referenciaRecojo" className="text-right">Referencia Recojo</Label>
-                <Textarea
-                  id="referenciaRecojo"
-                  className="col-span-3"
-                  value={referenciaRecojo}
-                  onChange={(e) => setReferenciaRecojo(e.target.value)}
-                />
-              </div>
-            </div>
-            <div className="flex justify-end space-x-2">
-              <Button variant="outline" onClick={() => setIsDialogOpen(false)}>
-                Cancelar
+  return (
+    <>
+      <div className="container mx-auto py-8 px-4">
+        <Card>
+          <CardHeader className="flex flex-row items-center justify-between">
+            <CardTitle>Gestión de Inventario</CardTitle>
+            <div className="flex space-x-2">
+              <Dialog>
+                <DialogTrigger asChild>
+                  <Button>Agregar Artículo</Button>
+                </DialogTrigger>
+                <DialogContent className="sm:max-w-[500px]">
+                  <DialogHeader>
+                    <DialogTitle>Nuevo Artículo</DialogTitle>
+                    <DialogDescription>
+                      Ingrese los datos del artículo
+                    </DialogDescription>
+                  </DialogHeader>
+                  <div className="grid gap-4 py-4">
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="nombre" className="text-right">Nombre</Label>
+                      <Input
+                        id="nombre"
+                        className="col-span-3"
+                        placeholder="Ingrese el nombre del artículo"
+                        value={nombre}
+                        onChange={(e) => setNombre(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="cantidad" className="text-right">Cantidad</Label>
+                      <Input
+                        id="cantidad"
+                        type="number"
+                        className="col-span-3"
+                        placeholder="Ingrese la cantidad"
+                        value={cantidad}
+                        onChange={(e) => setCantidad(Number(e.target.value))}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="unidadMedida" className="text-right">Unidad</Label>
+                      <Select value={unidadMedida} onValueChange={setUnidadMedida}>
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Seleccionar unidad" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {UNIDADES.map((unidad) => (
+                            <SelectItem key={unidad} value={unidad}>{unidad}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="estado" className="text-right">Estado</Label>
+                      <Select value={estado} onValueChange={setEstado}>
+                        <SelectTrigger className="col-span-3">
+                          <SelectValue placeholder="Seleccionar estado" />
+                        </SelectTrigger>
+                        <SelectContent>
+                          {ESTADOS.map((e) => (
+                            <SelectItem key={e} value={e}>{e}</SelectItem>
+                          ))}
+                        </SelectContent>
+                      </Select>
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="fechaVencimiento" className="text-right">Vencimiento</Label>
+                      <Input
+                        id="fechaVencimiento"
+                        type="date"
+                        className="col-span-3"
+                        value={fechaVencimiento}
+                        onChange={(e) => setFechaVencimiento(e.target.value)}
+                      />
+                    </div>
+                    <div className="grid grid-cols-4 items-center gap-4">
+                      <Label htmlFor="ubicacionAlmacen" className="text-right">Ubicación</Label>
+                      <Input
+                        id="ubicacionAlmacen"
+                        className="col-span-3"
+                        placeholder="Ubicación en almacén"
+                        value={ubicacionAlmacen}
+                        onChange={(e) => setUbicacionAlmacen(e.target.value)}
+                      />
+                    </div>
+                  </div>
+                  <div className="flex justify-end space-x-2">
+                    <DialogTrigger asChild>
+                      <Button variant="outline">Cancelar</Button>
+                    </DialogTrigger>
+                    <Button onClick={addInventario} disabled={loading}>
+                      {loading ? "Guardando..." : "Guardar"}
+                    </Button>
+                  </div>
+                </DialogContent>
+              </Dialog>
+              <Button variant="outline" onClick={getInventario}>
+                Actualizar Lista
               </Button>
-              <Button onClick={addOrUpdateDonacion} disabled={loading}>
-                {editId ? "Actualizar" : "Guardar"}
-              </Button>
             </div>
-          </DialogContent>
-        </Dialog>
-      </CardHeader>
-      <CardContent>
-        {loading ? (
-          <p className="text-center">Cargando donaciones...</p>
-        ) : donaciones.length === 0 ? (
-          <p className="text-center text-muted-foreground">
-            No hay donaciones registradas.
-          </p>
-        ) : (
-          <div className="rounded-md border overflow-x-auto">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>#</TableHead>
-                  <TableHead>Donador</TableHead>
-                  <TableHead>Tipo Donación</TableHead>
-                  <TableHead>Monto</TableHead>
-                  <TableHead>Detalles</TableHead>
-                  <TableHead>Categoría</TableHead>
-                  <TableHead>Necesidad</TableHead>
-                  <TableHead>Dirección</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {donaciones.map((item, idx) => (
-                  <TableRow key={item.id}>
-                    <TableCell>{page * pageSize + idx + 1}</TableCell>
-                    <TableCell>{item.donador?.usuario?.nombreCompleto || "N/A"}</TableCell>
-                    <TableCell>{item.tipoDonacion?.tipo || "N/A"}</TableCell>
-                    <TableCell>{item.monto?.toFixed(2) || "-"}</TableCell>
-                    <TableCell>{item.detallesEspecie || "-"}</TableCell>
-                    <TableCell>{item.categoria?.categoria || "-"}</TableCell>
-                    <TableCell>{item.necesidadAsociada?.nombreNecesidad || "-"}</TableCell>
-                    <TableCell>{item.direccionRecojo || "-"}</TableCell>
-                    <TableCell>{item.estado}</TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => handleEdit(item)}
-                        >
-                          Editar
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => deleteDonacion(item.id)}
-                        >
-                          Eliminar
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        )}
-      </CardContent>
-    </Card>
-    <div className="flex justify-center mt-4">
-      {renderPagination()}
-    </div>
-  </div>
-);
-
+          </CardHeader>
+          <CardContent>
+            {loading ? (
+              <p className="text-center">Cargando inventario...</p>
+            ) : inventario.length === 0 ? (
+              <p className="text-center text-muted-foreground">
+                No hay artículos en el inventario.
+              </p>
+            ) : (
+              <>
+                <div className="rounded-md border">
+                  <Table>
+                    <TableHeader>
+                      <TableRow>
+                        <TableHead className="w-12">#</TableHead>
+                        <TableHead>Nombre</TableHead>
+                        <TableHead>Cantidad</TableHead>
+                        <TableHead>Unidad</TableHead>
+                        <TableHead>Estado</TableHead>
+                        <TableHead>Vencimiento</TableHead>
+                        <TableHead>Ubicación</TableHead>
+                        <TableHead>Acciones</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      {inventario.map((item, idx) => (
+                        <TableRow key={item.id}>
+                          <TableCell>{page * pageSize + idx + 1}</TableCell>
+                          <TableCell>{item.nombre}</TableCell>
+                          <TableCell>{item.cantidad}</TableCell>
+                          <TableCell>{item.unidadMedida}</TableCell>
+                          <TableCell>{item.estado}</TableCell>
+                          <TableCell>
+                            {item.fechaVencimiento ? 
+                              new Date(item.fechaVencimiento).toLocaleDateString() : 
+                              '-'
+                            }
+                          </TableCell>
+                          <TableCell>{item.ubicacionAlmacen || '-'}</TableCell>
+                          <TableCell>
+                            <div className="flex space-x-2">
+                              <Dialog>
+                                <DialogTrigger asChild>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => editarInventario(item)}
+                                  >
+                                    Editar
+                                  </Button>
+                                </DialogTrigger>
+                                <DialogContent>
+                                  <DialogHeader>
+                                    <DialogTitle>Editar Artículo</DialogTitle>
+                                    <DialogDescription>
+                                      Modifique los datos del artículo
+                                    </DialogDescription>
+                                  </DialogHeader>
+                                  <div className="grid gap-4 py-4">
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                      <Label htmlFor="edit-nombre" className="text-right">Nombre</Label>
+                                      <Input
+                                        id="edit-nombre"
+                                        className="col-span-3"
+                                        placeholder="Ingrese el nombre del artículo"
+                                        value={nombre}
+                                        onChange={(e) => setNombre(e.target.value)}
+                                      />
+                                    </div>
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                      <Label htmlFor="edit-cantidad" className="text-right">Cantidad</Label>
+                                      <Input
+                                        id="edit-cantidad"
+                                        type="number"
+                                        className="col-span-3"
+                                        placeholder="Ingrese la cantidad"
+                                        value={cantidad}
+                                        onChange={(e) => setCantidad(Number(e.target.value))}
+                                      />
+                                    </div>
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                      <Label htmlFor="edit-unidadMedida" className="text-right">Unidad</Label>
+                                      <Select value={unidadMedida} onValueChange={setUnidadMedida}>
+                                        <SelectTrigger className="col-span-3">
+                                          <SelectValue placeholder="Seleccionar unidad" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {UNIDADES.map((unidad) => (
+                                            <SelectItem key={unidad} value={unidad}>{unidad}</SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                      <Label htmlFor="edit-estado" className="text-right">Estado</Label>
+                                      <Select value={estado} onValueChange={setEstado}>
+                                        <SelectTrigger className="col-span-3">
+                                          <SelectValue placeholder="Seleccionar estado" />
+                                        </SelectTrigger>
+                                        <SelectContent>
+                                          {ESTADOS.map((e) => (
+                                            <SelectItem key={e} value={e}>{e}</SelectItem>
+                                          ))}
+                                        </SelectContent>
+                                      </Select>
+                                    </div>
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                      <Label htmlFor="edit-fechaVencimiento" className="text-right">Vencimiento</Label>
+                                      <Input
+                                        id="edit-fechaVencimiento"
+                                        type="date"
+                                        className="col-span-3"
+                                        value={fechaVencimiento}
+                                        onChange={(e) => setFechaVencimiento(e.target.value)}
+                                      />
+                                    </div>
+                                    <div className="grid grid-cols-4 items-center gap-4">
+                                      <Label htmlFor="edit-ubicacionAlmacen" className="text-right">Ubicación</Label>
+                                      <Input
+                                        id="edit-ubicacionAlmacen"
+                                        className="col-span-3"
+                                        placeholder="Ubicación en almacén"
+                                        value={ubicacionAlmacen}
+                                        onChange={(e) => setUbicacionAlmacen(e.target.value)}
+                                      />
+                                    </div>
+                                  </div>
+                                  <div className="flex justify-end space-x-2">
+                                    <DialogTrigger asChild>
+                                      <Button variant="outline">Cancelar</Button>
+                                    </DialogTrigger>
+                                    <Button onClick={updateInventario} disabled={loading}>
+                                      {loading ? "Actualizando..." : "Actualizar"}
+                                    </Button>
+                                  </div>
+                                </DialogContent>
+                              </Dialog>
+                              <Button
+                                variant="destructive"
+                                size="sm"
+                                onClick={() => eliminarInventario(item.id)}
+                              >
+                                Eliminar
+                              </Button>
+                            </div>
+                          </TableCell>
+                        </TableRow>
+                      ))}
+                    </TableBody>
+                  </Table>
+                </div>
+                {/* Paginación */}
+                <div className="flex justify-center mt-4">
+                  {renderPagination()}
+                </div>
+              </>
+            )}
+          </CardContent>
+        </Card>
+      </div>
+    </>
+  );
 }
 
 export default GestionInventario;
