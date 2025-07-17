@@ -1,0 +1,122 @@
+@startuml
+skinparam backgroundColor #f8f9fa
+skinparam interface {
+  BackgroundColor #d1ecf1
+  BorderColor #17a2b8
+  FontColor #343a40
+  FontSize 11
+}
+
+skinparam class {
+  BackgroundColor #fff3cd
+  BorderColor #ffc107
+  FontColor #343a40
+  FontSize 11
+}
+
+skinparam package {
+  BackgroundColor #e9ecef
+  BorderColor #adb5bd
+  FontColor #495057
+  FontSize 11
+  FontStyle bold
+}
+
+title "⚙️ Diagrama de Servicios - Sistema de Gestión de Donaciones e Inventario"
+
+package "👥 Gestión de Usuarios" {
+  interface IUsuarioService
+  class UsuarioService
+  interface IRolService
+  class RolService
+  interface IDonadorService
+  class DonadorService
+  interface ITiposDonadorService
+  class TiposDonadorService
+  interface IVoluntarioService
+  class VoluntarioService
+}
+
+package "💝 Gestión de Donaciones" {
+  interface IDonacionService
+  class DonacionService
+  interface ITipoDonacionService
+  class TipoDonacionService
+  interface INecesidadesActualesService
+  class NecesidadesActualesService
+}
+
+package "📦 Gestión de Inventario" {
+  interface IInventarioService
+  class InventarioService
+  interface ICategoriaInventario
+  class CategoriaInventarioService
+}
+
+package "🚚 Gestión de Distribución" {
+  interface IDistribucionService
+  class DistribucionService
+  interface IDetalleDistribucionService
+  class DetalleDistribucionService
+  interface IAsignacionRecojoService
+  class AsignacionRecojoService
+  interface IBeneficiarioService
+  class BeneficiarioService
+  interface ITiposBeneficiarioService
+  class TiposBeneficiarioService
+}
+
+package "🔔 Sistema de Notificaciones" {
+  interface INotificacionService
+  class NotificacionService
+}
+
+package "⚠️ Gestión de Incidencias" {
+  interface IIncidenciaService
+  class IncidenciaService
+}
+
+' Implementaciones de interfaces
+IUsuarioService <|.. UsuarioService
+IRolService <|.. RolService
+IDonadorService <|.. DonadorService
+ITiposDonadorService <|.. TiposDonadorService
+IVoluntarioService <|.. VoluntarioService
+
+IDonacionService <|.. DonacionService
+ITipoDonacionService <|.. TipoDonacionService
+INecesidadesActualesService <|.. NecesidadesActualesService
+
+IInventarioService <|.. InventarioService
+ICategoriaInventario <|.. CategoriaInventarioService
+
+IDistribucionService <|.. DistribucionService
+IDetalleDistribucionService <|.. DetalleDistribucionService
+IAsignacionRecojoService <|.. AsignacionRecojoService
+IBeneficiarioService <|.. BeneficiarioService
+ITiposBeneficiarioService <|.. TiposBeneficiarioService
+
+INotificacionService <|.. NotificacionService
+
+IIncidenciaService <|.. IncidenciaService
+
+' Dependencias entre servicios
+DonacionService ..> INotificacionService : "usa"
+DonacionService ..> INecesidadesActualesService : "usa"
+
+AsignacionRecojoService ..> INotificacionService : "usa"
+
+UsuarioService ..> IRolService : "usa"
+DonadorService ..> IUsuarioService : "usa"
+VoluntarioService ..> IUsuarioService : "usa"
+
+NecesidadesActualesService ..> ICategoriaInventario : "usa"
+NecesidadesActualesService ..> ITipoDonacionService : "usa"
+
+DistribucionService ..> IBeneficiarioService : "usa"
+DistribucionService ..> IUsuarioService : "usa"
+
+DetalleDistribucionService ..> IDistribucionService : "usa"
+DetalleDistribucionService ..> IInventarioService : "usa"
+
+@enduml 

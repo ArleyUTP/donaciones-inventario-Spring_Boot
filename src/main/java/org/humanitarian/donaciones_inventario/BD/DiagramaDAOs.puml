@@ -1,0 +1,89 @@
+@startuml
+skinparam backgroundColor #f8f9fa
+skinparam interface {
+  BackgroundColor #d1ecf1
+  BorderColor #17a2b8
+  FontColor #343a40
+  FontSize 12
+}
+
+skinparam package {
+  BackgroundColor #e9ecef
+  BorderColor #adb5bd
+  FontColor #495057
+  FontSize 11
+  FontStyle bold
+}
+
+title "🗄️ Diagrama de DAOs (Repositorios) - Sistema de Gestión de Donaciones e Inventario"
+
+package "👥 Gestión de Usuarios" {
+  interface IUsuarioRepository
+  interface IRolRepository
+  interface IDonadoresRepository
+  interface ITiposDonadorRepository
+  interface IVoluntarioRepository
+}
+
+package "💝 Gestión de Donaciones" {
+  interface IDonacionesRepository
+  interface ITipoDonacionRepository
+  interface INecesidadesActualesRepository
+}
+
+package "📦 Gestión de Inventario" {
+  interface IInventarioRepository
+  interface ICategoriaInventarioRepository
+}
+
+package "🚚 Gestión de Distribución" {
+  interface IDistribucionRepository
+  interface IDetalleDistribucionRepository
+  interface IAsignacionRecojoRepository
+  interface IBeneficiarioRepository
+  interface ITiposBeneficiarioRepository
+}
+
+package "🔔 Sistema de Notificaciones" {
+  interface INotificacionRepository
+}
+
+package "⚠️ Gestión de Incidencias" {
+  interface IIncidenciaRepository
+}
+
+' Relaciones de dependencia entre repositorios
+IDonacionesRepository ..> IDonadoresRepository : "depende de"
+IDonacionesRepository ..> ITipoDonacionRepository : "depende de"
+IDonacionesRepository ..> ICategoriaInventarioRepository : "depende de"
+IDonacionesRepository ..> INecesidadesActualesRepository : "depende de"
+
+IInventarioRepository ..> IDonacionesRepository : "depende de"
+IInventarioRepository ..> ICategoriaInventarioRepository : "depende de"
+
+IDistribucionRepository ..> IBeneficiarioRepository : "depende de"
+IDistribucionRepository ..> IUsuarioRepository : "depende de"
+
+IDetalleDistribucionRepository ..> IDistribucionRepository : "depende de"
+IDetalleDistribucionRepository ..> IInventarioRepository : "depende de"
+
+IAsignacionRecojoRepository ..> IDonacionesRepository : "depende de"
+IAsignacionRecojoRepository ..> IVoluntarioRepository : "depende de"
+
+INotificacionRepository ..> IUsuarioRepository : "depende de"
+
+IIncidenciaRepository ..> IDistribucionRepository : "depende de"
+IIncidenciaRepository ..> IUsuarioRepository : "depende de"
+
+IDonadoresRepository ..> IUsuarioRepository : "depende de"
+IDonadoresRepository ..> ITiposDonadorRepository : "depende de"
+
+IVoluntarioRepository ..> IUsuarioRepository : "depende de"
+
+INecesidadesActualesRepository ..> ICategoriaInventarioRepository : "depende de"
+INecesidadesActualesRepository ..> ITipoDonacionRepository : "depende de"
+INecesidadesActualesRepository ..> IUsuarioRepository : "depende de"
+
+IBeneficiarioRepository ..> ITiposBeneficiarioRepository : "depende de"
+
+@enduml 

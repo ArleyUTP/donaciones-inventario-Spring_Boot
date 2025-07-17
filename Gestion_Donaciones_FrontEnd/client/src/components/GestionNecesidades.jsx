@@ -26,6 +26,15 @@ import {
   TableRow,
 } from "@/components/ui/table";
 import { Badge } from "@/components/ui/badge";
+import {
+  Pagination,
+  PaginationContent,
+  PaginationEllipsis,
+  PaginationItem,
+  PaginationLink,
+  PaginationNext,
+  PaginationPrevious,
+} from "@/components/ui/pagination";
 
 const MySwal = withReactContent(Swal);
 
@@ -45,12 +54,20 @@ function GestionNecesidades() {
   const [tipoDonaciones, setTipoDonaciones] = useState([]);
   const [categorias, setCategorias] = useState([]);
   const [necesidades, setNecesidades] = useState([]);
-  const [editar, setEditar] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState(null);
-  const [selectedNecesidad, setSelectedNecesidad] = useState(null);
   const [isCreateDialogOpen, setIsCreateDialogOpen] = useState(false);
   const [isEditDialogOpen, setIsEditDialogOpen] = useState(false);
+
+  // Paginación
+  const [currentPage, setCurrentPage] = useState(1);
+  const necesidadesPorPagina = 8;
+  const necesidadesFiltradas = necesidades.filter((n) => n.estado !== "Eliminada");
+  const totalPaginas = Math.ceil(necesidadesFiltradas.length / necesidadesPorPagina);
+
+  const necesidadesPaginadas = necesidadesFiltradas
+    .sort((a, b) => a.id - b.id)
+    .slice((currentPage - 1) * necesidadesPorPagina, currentPage * necesidadesPorPagina);
 
   // Cargar datos iniciales
   useEffect(() => {
@@ -218,12 +235,9 @@ function GestionNecesidades() {
     setEstado("Pendiente");
     setBeneficiariosObjetivo("");
     setCategoriaId(null);
-    setEditar(false);
   };
 
   const editarNecesidad = (necesidad) => {
-    setEditar(true);
-    setSelectedNecesidad(necesidad);
     setNecesidadId(necesidad.id);
     setNombreNecesidad(necesidad.nombreNecesidad);
     setDescripcion(necesidad.descripcion);
@@ -694,65 +708,164 @@ function GestionNecesidades() {
                 {error}
               </div>
             )}
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>ID</TableHead>
-                  <TableHead>Categoría</TableHead>
-                  <TableHead>Nombre</TableHead>
-                  <TableHead>Descripción</TableHead>
-                  <TableHead>Cantidad</TableHead>
-                  <TableHead>Prioridad</TableHead>
-                  <TableHead>Estado</TableHead>
-                  <TableHead>Fecha Límite</TableHead>
-                  <TableHead>Beneficiarios</TableHead>
-                  <TableHead>Acciones</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {necesidades.map((necesidad) => (
-                  <TableRow key={necesidad.id}>
-                    <TableCell>{necesidad.id}</TableCell>
-                    <TableCell>{necesidad.categoriaInventario?.categoria}</TableCell>
-                    <TableCell className="font-medium">{necesidad.nombreNecesidad}</TableCell>
-                    <TableCell className="max-w-xs truncate">{necesidad.descripcion}</TableCell>
-                    <TableCell>
-                      {necesidad.cantidadNecesaria} {necesidad.unidadMedida}
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getPrioridadBadgeVariant(necesidad.prioridad)}>
-                        {getPrioridadText(necesidad.prioridad)}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>
-                      <Badge variant={getEstadoBadgeVariant(necesidad.estado)}>
-                        {necesidad.estado}
-                      </Badge>
-                    </TableCell>
-                    <TableCell>{necesidad.fechaLimite}</TableCell>
-                    <TableCell className="max-w-xs truncate">{necesidad.beneficiariosObjetivo}</TableCell>
-                    <TableCell>
-                      <div className="flex space-x-2">
-                        <Button
-                          variant="outline"
-                          size="sm"
-                          onClick={() => editarNecesidad(necesidad)}
-                        >
-                          Editar
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="sm"
-                          onClick={() => eliminarNecesidad(necesidad.id)}
-                        >
-                          Eliminar
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
+            {loading ? (
+              <p className="text-center">Cargando necesidades...</p>
+            ) : necesidades.length === 0 ? (
+              <p className="text-center text-muted-foreground">
+                No hay necesidades registradas.
+              </p>
+            ) : (
+              <div className="rounded-md border">
+                <Table>
+                  <TableHeader>
+                    <TableRow>
+                      <TableHead>ID</TableHead>
+                      <TableHead>Categoría</TableHead>
+                      <TableHead>Nombre</TableHead>
+                      <TableHead>Descripción</TableHead>
+                      <TableHead>Cantidad</TableHead>
+                      <TableHead>Prioridad</TableHead>
+                      <TableHead>Estado</TableHead>
+                      <TableHead>Fecha Límite</TableHead>
+                      <TableHead>Beneficiarios</TableHead>
+                      <TableHead>Acciones</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    {necesidadesPaginadas.map((necesidad) => (
+                      <TableRow key={necesidad.id}>
+                        <TableCell>{necesidad.id}</TableCell>
+                        <TableCell>{necesidad.categoriaInventario?.categoria}</TableCell>
+                        <TableCell className="font-medium">{necesidad.nombreNecesidad}</TableCell>
+                        <TableCell className="max-w-xs truncate">{necesidad.descripcion}</TableCell>
+                        <TableCell>
+                          {necesidad.cantidadNecesaria} {necesidad.unidadMedida}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={getPrioridadBadgeVariant(necesidad.prioridad)}>
+                            {getPrioridadText(necesidad.prioridad)}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={getEstadoBadgeVariant(necesidad.estado)}>
+                            {necesidad.estado}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>{necesidad.fechaLimite}</TableCell>
+                        <TableCell className="max-w-xs truncate">{necesidad.beneficiariosObjetivo}</TableCell>
+                        <TableCell>
+                          <div className="flex space-x-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              onClick={() => editarNecesidad(necesidad)}
+                            >
+                              Editar
+                            </Button>
+                            <Button
+                              variant="destructive"
+                              size="sm"
+                              onClick={() => eliminarNecesidad(necesidad.id)}
+                            >
+                              Eliminar
+                            </Button>
+                          </div>
+                        </TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </div>
+            )}
+            {/* Paginación */}
+            {necesidadesFiltradas.length > 0 && (
+              <div className="flex justify-center mt-6">
+                <Pagination>
+                  <PaginationContent>
+                    <PaginationItem>
+                      <PaginationPrevious
+                        href="#"
+                        onClick={e => {
+                          e.preventDefault();
+                          if (currentPage > 1) setCurrentPage(currentPage - 1);
+                        }}
+                        aria-disabled={currentPage === 1}
+                        className={currentPage === 1 ? "pointer-events-none opacity-50" : ""}
+                      />
+                    </PaginationItem>
+                    {/* Mostrar primer página y ellipsis si es necesario */}
+                    {(() => {
+                      let start = Math.max(1, currentPage - 2);
+                      let end = Math.min(totalPaginas, currentPage + 2);
+                      if (currentPage <= 3) end = Math.min(5, totalPaginas);
+                      if (currentPage >= totalPaginas - 2) start = Math.max(1, totalPaginas - 4);
+
+                      const items = [];
+                      if (start > 1) {
+                        items.push(
+                          <PaginationItem key={1}>
+                            <PaginationLink
+                              href="#"
+                              onClick={e => {
+                                e.preventDefault();
+                                setCurrentPage(1);
+                              }}
+                            >
+                              1
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
+                        if (start > 2) items.push(<PaginationEllipsis key="start-ellipsis" />);
+                      }
+                      for (let i = start; i <= end; i++) {
+                        items.push(
+                          <PaginationItem key={i}>
+                            <PaginationLink
+                              href="#"
+                              isActive={i === currentPage}
+                              onClick={e => {
+                                e.preventDefault();
+                                setCurrentPage(i);
+                              }}
+                            >
+                              {i}
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
+                      }
+                      if (end < totalPaginas) {
+                        if (end < totalPaginas - 1) items.push(<PaginationEllipsis key="end-ellipsis" />);
+                        items.push(
+                          <PaginationItem key={totalPaginas}>
+                            <PaginationLink
+                              href="#"
+                              onClick={e => {
+                                e.preventDefault();
+                                setCurrentPage(totalPaginas);
+                              }}
+                            >
+                              {totalPaginas}
+                            </PaginationLink>
+                          </PaginationItem>
+                        );
+                      }
+                      return items;
+                    })()}
+                    <PaginationItem>
+                      <PaginationNext
+                        href="#"
+                        onClick={e => {
+                          e.preventDefault();
+                          if (currentPage < totalPaginas) setCurrentPage(currentPage + 1);
+                        }}
+                        aria-disabled={currentPage === totalPaginas}
+                        className={currentPage === totalPaginas ? "pointer-events-none opacity-50" : ""}
+                      />
+                    </PaginationItem>
+                  </PaginationContent>
+                </Pagination>
+              </div>
+            )}
           </CardContent>
         </Card>
       </div>

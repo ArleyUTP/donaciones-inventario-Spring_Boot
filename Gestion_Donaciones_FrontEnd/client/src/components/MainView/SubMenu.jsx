@@ -9,7 +9,7 @@ export function SubMenu() {
             <CardContent className="grid grid-cols-3 gap-12 p-8">
                 <div className="space-y-6">
                     <h3 className="text-2xl font-bold text-primary">Gestión</h3>
-                    <nav className="space-y-4">
+                    <nav className="space-y-4 grid grid-cols-2 gap-4">
                         <Button variant="ghost" className="w-full justify-start" asChild>
                             <Link to="/gestion-usuarios">Usuarios</Link>
                         </Button>
@@ -42,13 +42,13 @@ export function SubMenu() {
                         <Button variant="ghost" className="w-full justify-start" asChild>
                             <Link to="/dashboard">Vista reportes</Link>
                         </Button>
-                        <Button variant="ghost" className="w-full justify-start" asChild>
+                        {/* <Button variant="ghost" className="w-full justify-start" asChild>
                             <Link to="#">Estadísticas</Link>
-                        </Button>
+                        </Button> */}
                     </nav>
                 </div>
 
-                <div className="space-y-6">
+                {/* <div className="space-y-6">
                     <h3 className="text-2xl font-bold text-primary">Configuración</h3>
                     <nav className="space-y-4">
                         <Button variant="ghost" className="w-full justify-start" asChild>
@@ -58,7 +58,7 @@ export function SubMenu() {
                             <Link to="#">Permisos</Link>
                         </Button>
                     </nav>
-                </div>
+                </div> */}
             </CardContent>
         </Card>
     );

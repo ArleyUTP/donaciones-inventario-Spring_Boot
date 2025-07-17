@@ -1,0 +1,87 @@
+@startuml
+skinparam backgroundColor #f8f9fa
+skinparam class {
+  BackgroundColor #ffffff
+  BorderColor #343a40
+  FontColor #343a40
+  FontSize 12
+}
+
+skinparam package {
+  BackgroundColor #e9ecef
+  BorderColor #adb5bd
+  FontColor #495057
+  FontSize 11
+  FontStyle bold
+}
+
+' Estilos para diferentes tipos de clases
+skinparam class<<Entity>> {
+  BackgroundColor #d4edda
+  BorderColor #28a745
+}
+
+skinparam class<<DTO>> {
+  BackgroundColor #d1ecf1
+  BorderColor #17a2b8
+}
+
+package "🏢 Entidades del Sistema" {
+  
+  class Usuario <<Entity>>
+  class Rol <<Entity>>
+  class Donador <<Entity>>
+  class TiposDonador <<Entity>>
+  class Voluntario <<Entity>>
+  class Donacion <<Entity>>
+  class TipoDonacion <<Entity>>
+  class CategoriaInventario <<Entity>>
+  class Inventario <<Entity>>
+  class NecesidadesActuales <<Entity>>
+  class AsignacionRecojo <<Entity>>
+  class Distribucion <<Entity>>
+  class DetalleDistribucion <<Entity>>
+  class Beneficiario <<Entity>>
+  class TiposBeneficiario <<Entity>>
+  class Notificacion <<Entity>>
+  class Incidencia <<Entity>>
+}
+
+package "📦 DTOs" {
+  class UbicacionDTO <<DTO>>
+}
+
+' Relaciones entre entidades
+Usuario ||--o{ Donador : "1 usuario puede ser 1 donador"
+Usuario ||--o{ Voluntario : "1 usuario puede ser 1 voluntario"
+Usuario ||--o{ Notificacion : "1 usuario puede tener muchas notificaciones"
+Usuario ||--o{ Incidencia : "1 usuario puede reportar muchas incidencias"
+Usuario ||--o{ Distribucion : "1 usuario puede ser responsable de muchas distribuciones"
+Usuario ||--o{ NecesidadesActuales : "1 usuario puede crear muchas necesidades"
+
+Rol ||--o{ Usuario : "1 rol puede tener muchos usuarios"
+
+TiposDonador ||--o{ Donador : "1 tipo puede tener muchos donadores"
+TiposBeneficiario ||--o{ Beneficiario : "1 tipo puede tener muchos beneficiarios"
+
+Donador ||--o{ Donacion : "1 donador puede hacer muchas donaciones"
+TipoDonacion ||--o{ Donacion : "1 tipo puede tener muchas donaciones"
+CategoriaInventario ||--o{ Donacion : "1 categoría puede tener muchas donaciones"
+CategoriaInventario ||--o{ Inventario : "1 categoría puede tener muchos artículos"
+CategoriaInventario ||--o{ NecesidadesActuales : "1 categoría puede tener muchas necesidades"
+
+Donacion ||--o{ Inventario : "1 donación puede generar muchos artículos en inventario"
+Donacion ||--o{ AsignacionRecojo : "1 donación puede tener muchas asignaciones de recojo"
+Donacion ||--o{ NecesidadesActuales : "1 donación puede estar asociada a 1 necesidad"
+
+Voluntario ||--o{ AsignacionRecojo : "1 voluntario puede tener muchas asignaciones"
+
+Distribucion ||--o{ DetalleDistribucion : "1 distribución puede tener muchos detalles"
+Distribucion ||--o{ Incidencia : "1 distribución puede tener muchas incidencias"
+Beneficiario ||--o{ Distribucion : "1 beneficiario puede recibir muchas distribuciones"
+
+Inventario ||--o{ DetalleDistribucion : "1 artículo puede estar en muchos detalles de distribución"
+
+TipoDonacion ||--o{ NecesidadesActuales : "1 tipo puede tener muchas necesidades"
+
+@enduml 

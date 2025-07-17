@@ -214,7 +214,7 @@ return (
                 <h1 className="text-4xl font-bold text-gray-900 mb-2">
                     Dashboard de Donaciones
                 </h1>
-                <p className="text-gray-600">Panel de control y análisis de donaciones</p>
+                <p className="text-gray-600">Resumen de Información</p>
             </div>
 
             {/* KPIs Section */}

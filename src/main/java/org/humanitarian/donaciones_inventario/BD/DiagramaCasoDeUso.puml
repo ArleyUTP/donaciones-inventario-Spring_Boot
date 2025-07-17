@@ -54,47 +54,68 @@ rectangle "🏢 Sistema de Gestión de Donaciones e Inventario" {
   package "🔧 Funciones del Administrador" {
     usecase "📋 Registrar donación" as UC1 <<Admin>>
     usecase "✅ Confirmar recepción" as UC2 <<Admin>>
-    usecase "📦 Asignar al inventario" as UC3 <<Admin>>
-    usecase "➕ Agregar artículo" as UC4 <<Admin>>
-    usecase "🔄 Actualizar datos" as UC5 <<Admin>>
-    usecase "📊 Control de stock" as UC6 <<Admin>>
-    usecase "⚠️ Alertas de vencimiento" as UC7 <<Admin>>
-    usecase "🚛 Planificar entrega" as UC8 <<Admin>>
-    usecase "⚡ Registrar incidencias" as UC9 <<Admin>>
-    usecase "💬 Ver comentarios" as UC10 <<Admin>>
-    usecase "👤 Registrar usuario" as UC11 <<Admin>>
+    usecase "📦 Gestionar inventario" as UC3 <<Admin>>
+    usecase "➕ Crear artículo inventario" as UC4 <<Admin>>
+    usecase "🔄 Actualizar inventario" as UC5 <<Admin>>
+    usecase "🗑️ Eliminar artículo" as UC6 <<Admin>>
+    usecase "📊 Ver dashboard KPIs" as UC7 <<Admin>>
+    usecase "📈 Ver evolución inventario" as UC8 <<Admin>>
+    usecase "🔥 Ver heatmap donaciones" as UC9 <<Admin>>
+    usecase "📊 Ver rendimiento voluntarios" as UC10 <<Admin>>
+    usecase "👤 Gestionar usuarios" as UC11 <<Admin>>
     usecase "🎭 Asignar roles" as UC12 <<Admin>>
     usecase "🔑 Restablecer contraseñas" as UC13 <<Admin>>
-    usecase "📈 Generar reportes" as UC14 <<Admin>>
-    usecase "📚 Ver bitácora" as UC15 <<Admin>>
-    usecase "🔮 Analítica predictiva" as UC16 <<Admin>>
-    usecase "🔔 Enviar alertas" as UC17 <<Admin>>
-    usecase "📢 Gestionar campañas" as UC18 <<Admin>>
+    usecase "📋 Gestionar necesidades" as UC14 <<Admin>>
+    usecase "➕ Crear necesidad" as UC15 <<Admin>>
+    usecase "🔄 Actualizar necesidad" as UC16 <<Admin>>
+    usecase "🗑️ Eliminar necesidad" as UC17 <<Admin>>
+    usecase "📋 Gestionar donadores" as UC18 <<Admin>>
+    usecase "➕ Registrar donador" as UC19 <<Admin>>
+    usecase "🔄 Actualizar donador" as UC20 <<Admin>>
+    usecase "🗑️ Eliminar donador" as UC21 <<Admin>>
+    usecase "🤝 Gestionar voluntarios" as UC22 <<Admin>>
+    usecase "➕ Registrar voluntario" as UC23 <<Admin>>
+    usecase "🔄 Actualizar voluntario" as UC24 <<Admin>>
+    usecase "🗑️ Eliminar voluntario" as UC25 <<Admin>>
+    usecase "📋 Asignar tareas recojo" as UC26 <<Admin>>
+    usecase "➕ Crear asignación" as UC27 <<Admin>>
+    usecase "🔄 Actualizar asignación" as UC28 <<Admin>>
+    usecase "🗑️ Eliminar asignación" as UC29 <<Admin>>
+    usecase "📦 Gestionar distribuciones" as UC30 <<Admin>>
+    usecase "📊 Ver estadísticas distribuciones" as UC31 <<Admin>>
+    usecase "🔔 Gestionar notificaciones" as UC32 <<Admin>>
+    usecase "📧 Enviar notificaciones" as UC33 <<Admin>>
+    usecase "✅ Marcar notificaciones leídas" as UC34 <<Admin>>
   }
   
   package "💝 Funciones del Donador" {
-    usecase "🔍 Consultar necesidades actuales" as UC19 <<Donador>>
-    usecase "🎯 Seleccionar una necesidad" as UC20 <<Donador>>
-    usecase "📝 Completar formulario de donación" as UC21 <<Donador>>
-    usecase "📤 Confirmar envío" as UC22 <<Donador>>
-    usecase "✉️ Recibir confirmación" as UC23 <<Donador>>
-    usecase "📋 Visualizar historial de donaciones" as UC24 <<Donador>>
-    usecase "🔔 Recibir notificaciones de seguimiento" as UC25 <<Donador>>
+    usecase "🔍 Consultar necesidades actuales" as UC35 <<Donador>>
+    usecase "📝 Completar formulario de donación" as UC36 <<Donador>>
+    usecase "📤 Confirmar envío" as UC37 <<Donador>>
+    usecase "✉️ Recibir confirmación" as UC38 <<Donador>>
+    usecase "📋 Visualizar historial de donaciones" as UC39 <<Donador>>
+    usecase "🔔 Recibir notificaciones de seguimiento" as UC40 <<Donador>>
+    usecase "👤 Registrarse en el sistema" as UC41 <<Donador>>
+    usecase "🔐 Iniciar sesión" as UC42 <<Donador>>
   }
   
   package "🤝 Funciones del Voluntario" {
-    usecase "📋 Visualizar tareas asignadas" as UC26 <<Voluntario>>
-    usecase "✅❌ Aceptar o rechazar tarea" as UC27 <<Voluntario>>
-    usecase "🏃‍♂️ Realizar actividad asignada" as UC28 <<Voluntario>>
-    usecase "📊 Registrar avance o entrega" as UC29 <<Voluntario>>
-    usecase "📄 Completar reporte de actividad" as UC30 <<Voluntario>>
-    usecase "📚 Visualizar historial de voluntariado" as UC31 <<Voluntario>>
+    usecase "📋 Visualizar tareas asignadas" as UC43 <<Voluntario>>
+    usecase "✅ Completar tarea" as UC44 <<Voluntario>>
+    usecase "📊 Registrar avance" as UC45 <<Voluntario>>
+    usecase "📄 Completar reporte" as UC46 <<Voluntario>>
+    usecase "📚 Visualizar historial" as UC47 <<Voluntario>>
+    usecase "🔔 Recibir notificaciones" as UC48 <<Voluntario>>
+    usecase "👤 Registrarse como voluntario" as UC49 <<Voluntario>>
+    usecase "🔐 Iniciar sesión" as UC50 <<Voluntario>>
   }
 
   package "🌍 Funciones para Todos" {
-    usecase "📸 Ver evidencias de distribución" as UC32
-    usecase "🔐 Iniciar sesión" as UC33
-    usecase "🚪 Cerrar sesión" as UC34
+    usecase "📸 Ver evidencias de distribución" as UC51
+    usecase "🚪 Cerrar sesión" as UC52
+    usecase "📊 Ver dashboard general" as UC53
+    usecase "🔔 Ver notificaciones" as UC54
+    usecase "✅ Marcar notificación como leída" as UC55
   }
 }
 
@@ -117,42 +138,86 @@ Administrador --> UC15
 Administrador --> UC16
 Administrador --> UC17
 Administrador --> UC18
+Administrador --> UC19
+Administrador --> UC20
+Administrador --> UC21
+Administrador --> UC22
+Administrador --> UC23
+Administrador --> UC24
+Administrador --> UC25
+Administrador --> UC26
+Administrador --> UC27
+Administrador --> UC28
+Administrador --> UC29
+Administrador --> UC30
+Administrador --> UC31
+Administrador --> UC32
+Administrador --> UC33
+Administrador --> UC34
 
 ' Relaciones del Donador
-Donador --> UC19
-Donador --> UC20
-Donador --> UC21
-Donador --> UC22
-Donador --> UC23
-Donador --> UC24
-Donador --> UC25
+Donador --> UC35
+Donador --> UC36
+Donador --> UC37
+Donador --> UC38
+Donador --> UC39
+Donador --> UC40
+Donador --> UC41
+Donador --> UC42
 
 ' Relaciones del Voluntario
-Voluntario --> UC26
-Voluntario --> UC27
-Voluntario --> UC28
-Voluntario --> UC29
-Voluntario --> UC30
-Voluntario --> UC31
+Voluntario --> UC43
+Voluntario --> UC44
+Voluntario --> UC45
+Voluntario --> UC46
+Voluntario --> UC47
+Voluntario --> UC48
+Voluntario --> UC49
+Voluntario --> UC50
 
 ' Relaciones compartidas
-Administrador --> UC32
-Donador --> UC32
-Voluntario --> UC32
-Administrador --> UC33
-Donador --> UC33
-Voluntario --> UC33
-Administrador --> UC34
-Donador --> UC34
-Voluntario --> UC34
+Administrador --> UC51
+Donador --> UC51
+Voluntario --> UC51
+Administrador --> UC52
+Donador --> UC52
+Voluntario --> UC52
+Administrador --> UC53
+Donador --> UC53
+Voluntario --> UC53
+Administrador --> UC54
+Donador --> UC54
+Voluntario --> UC54
+Administrador --> UC55
+Donador --> UC55
+Voluntario --> UC55
 
 ' Relaciones de dependencia
-UC20 ..> UC19 : <<include>>
-UC21 ..> UC20 : <<include>>
-UC22 ..> UC21 : <<include>>
-UC23 ..> UC22 : <<include>>
-UC3 ..> UC2 : <<include>>
-UC29 ..> UC28 : <<include>>
-UC30 ..> UC29 : <<include>>
+UC36 ..> UC35 : <<include>>
+UC37 ..> UC36 : <<include>>
+UC38 ..> UC37 : <<include>>
+UC44 ..> UC43 : <<include>>
+UC45 ..> UC44 : <<include>>
+UC46 ..> UC45 : <<include>>
+UC41 ..> UC42 : <<extend>>
+UC49 ..> UC50 : <<extend>>
+UC3 ..> UC4 : <<include>>
+UC3 ..> UC5 : <<include>>
+UC3 ..> UC6 : <<include>>
+UC14 ..> UC15 : <<include>>
+UC14 ..> UC16 : <<include>>
+UC14 ..> UC17 : <<include>>
+UC18 ..> UC19 : <<include>>
+UC18 ..> UC20 : <<include>>
+UC18 ..> UC21 : <<include>>
+UC22 ..> UC23 : <<include>>
+UC22 ..> UC24 : <<include>>
+UC22 ..> UC25 : <<include>>
+UC26 ..> UC27 : <<include>>
+UC26 ..> UC28 : <<include>>
+UC26 ..> UC29 : <<include>>
+UC30 ..> UC31 : <<include>>
+UC32 ..> UC33 : <<include>>
+UC32 ..> UC34 : <<include>>
 
 @enduml

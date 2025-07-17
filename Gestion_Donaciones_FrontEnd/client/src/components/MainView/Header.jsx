@@ -44,7 +44,7 @@ export function Header({
       <div className="max-w-7xl mx-auto flex justify-between items-center px-8 py-4">
         <div className="flex items-center space-x-8">
           <div className="font-bold tracking-wide">
-            <img src=".." alt="Logo" />
+            {/* <img src=".." alt="Logo" /> */}
           </div>
 
           <Sheet>
@@ -143,7 +143,7 @@ export function Header({
               <div>
                 <Button
                   variant="outline"
-                  className="bg-gradient-to-r from-yellow-400 to-amber-500 text-white font-semibold rounded-full px-6 py-2 shadow-md hover:from-yellow-500 hover:to-amber-600 transition-colors border-none"
+                  className=" bg-blue-600 text-white font-semibold rounded-full px-6 py-2 shadow-md hover:from-blue-800  transition-colors border-none"
                   onClick={() => {
                     logout();
                     navigate('/');
