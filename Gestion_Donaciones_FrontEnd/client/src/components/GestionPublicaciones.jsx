@@ -1,37 +1,62 @@
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import axios from 'axios';
+import Swal from 'sweetalert2';
+import withReactContent from 'sweetalert2-react-content';
 import { useAuth } from '@/AuthContext';
+
+import { Button } from '@/components/ui/button';
 import { Card, CardHeader, CardTitle, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
-import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
 import { uploadImage } from '../Cloudinary';
 
+const notificacion = withReactContent(Swal);
+
 const GestionPublicaciones = () => {
     const { user } = useAuth();
     const [publicaciones, setPublicaciones] = useState([]);
+    const [idPublicacion, setIdPublicacion] = useState('');
     const [titulo, setTitulo] = useState('');
     const [descripcion, setDescripcion] = useState('');
     const [imagen, setImagen] = useState(null);
     const [imagenUrl, setImagenUrl] = useState('');
     const [loading, setLoading] = useState(true);
 
-    // Obtener publicaciones al cargar el componente
-    useEffect(() => {
-        const fetchPublicaciones = async () => {
-            try {
-                const response = await axios.get('http://localhost:8080/api/mongodb/publicaciones');
-                setPublicaciones(response.data);
-                setLoading(false);
-            } catch {
-                setLoading(false);
-            }
-        };
-        fetchPublicaciones();
+    // Funciones auxiliares
+    const limpiarCampos = useCallback(() => {
+        setIdPublicacion('');
+        setTitulo('');
+        setDescripcion('');
+        setImagen(null);
+        setImagenUrl('');
     }, []);
+
+    const fetchPublicaciones = useCallback(async () => {
+        try {
+            setLoading(true);
+            const response = await axios.get('http://localhost:8080/api/mongodb/publicaciones');
+            setPublicaciones(response.data);
+        } catch (error) {
+            console.error('Error al cargar publicaciones:', error);
+            notificacion.fire({
+                title: "Error",
+                text: "No se pudieron cargar las publicaciones",
+                icon: "error",
+            });
+        } finally {
+            setLoading(false);
+        }
+    }, []);
+
+    // Efectos
+    useEffect(() => {
+        fetchPublicaciones();
+    }, [fetchPublicaciones]);
+
+
 
     // Crear nueva publicación
     const handleImageChange = async (e) => {
@@ -50,21 +75,74 @@ const GestionPublicaciones = () => {
     const crearPublicacion = async (e) => {
         e.preventDefault();
         try {
+            setLoading(true);
             const formData = {
                 titulo,
                 descripcion,
                 usuarioCreador: user,
-                imagenUrl: imagenUrl // Agregamos la URL de la imagen
+                imagenUrl: imagenUrl
             };
 
-            const response = await axios.post('http://localhost:8080/api/mongodb/publicaciones', formData);
-            setPublicaciones([...publicaciones, response.data]);
-            setTitulo('');
-            setDescripcion('');
-            setImagen(null);
-            setImagenUrl('');
+            await axios.post('http://localhost:8080/api/mongodb/publicaciones', formData);
+            await fetchPublicaciones();
+            limpiarCampos();
+
+            notificacion.fire({
+                title: "Guardado",
+                text: "La publicación fue guardada correctamente",
+                icon: "success",
+                confirmButtonText: "Aceptar",
+                timer: 3000,
+            });
         } catch (error) {
             console.error('Error al crear la publicación:', error);
+            notificacion.fire({
+                title: "Error",
+                text: "No se pudo crear la publicación",
+                icon: "error",
+            });
+        } finally {
+            setLoading(false);
+        }
+    };
+
+    const editarPublicacion = async (e) => {
+        e.preventDefault();
+        try {
+            setLoading(true);
+            // Primero obtenemos la publicación existente para mantener la estructura completa
+            const response = await axios.get(`http://localhost:8080/api/mongodb/publicaciones/${idPublicacion}`);
+            const publicacionActual = response.data;
+
+            // Actualizamos solo los campos que queremos modificar
+            const publicacionActualizada = {
+                ...publicacionActual,
+                titulo,
+                descripcion,
+                imagenUrl: imagenUrl || publicacionActual.imagenUrl
+            };
+
+            // Enviamos la publicación completa usando POST
+            await axios.post(`http://localhost:8080/api/mongodb/publicaciones`, publicacionActualizada);
+            await fetchPublicaciones();
+            limpiarCampos();
+
+            notificacion.fire({
+                title: "Actualizado",
+                text: "La publicación fue actualizada correctamente",
+                icon: "success",
+                confirmButtonText: "Aceptar",
+                timer: 3000,
+            });
+        } catch (error) {
+            console.error('Error al actualizar la publicación:', error.response?.data || error.message);
+            notificacion.fire({
+                title: "Error",
+                text: error.response?.data || "No se pudo actualizar la publicación",
+                icon: "error",
+            });
+        } finally {
+            setLoading(false);
         }
     };
 
@@ -127,9 +205,20 @@ const GestionPublicaciones = () => {
                                             </div>
                                         )}
                                     </div>
-                                    <Button type="submit" className="w-full">
-                                        Crear Publicación
-                                    </Button>
+                                    {idPublicacion ? (
+                                        <>
+                                            <Button type="submit" className="w-full mb-2" onClick={editarPublicacion}>
+                                                Actualizar Publicación
+                                            </Button>
+                                            <Button type="button" className="w-full" onClick={limpiarCampos}>
+                                                Nueva Publicación
+                                            </Button>
+                                        </>
+                                    ) : (
+                                        <Button type="submit" className="w-full">
+                                            Crear Publicación
+                                        </Button>
+                                    )}
                                 </form>
                             </CardContent>
                         </Card>
@@ -155,15 +244,71 @@ const GestionPublicaciones = () => {
                                                 <TableRow key={publicacion.id}>
                                                     <TableCell>{publicacion.titulo}</TableCell>
                                                     <TableCell>
-                                                        {publicacion.imagenUrl && (
-                                                            <img
-                                                                src={publicacion.imagenUrl}
-                                                                alt={publicacion.titulo}
-                                                                className="w-20 h-20 object-cover rounded-lg"
-                                                            />
-                                                        )}
-                                                        <div className="mt-2">
-                                                            {publicacion.descripcion}
+                                                        <div className="flex flex-col gap-2">
+                                                            {publicacion.imagenUrl && (
+                                                                <img
+                                                                    src={publicacion.imagenUrl}
+                                                                    alt={publicacion.titulo}
+                                                                    className="w-20 h-20 object-cover rounded-lg"
+                                                                />
+                                                            )}
+                                                            <div className="mt-2">
+                                                                {publicacion.descripcion}
+                                                            </div>
+                                                            <div className="flex gap-2 mt-2">
+                                                                <Button
+                                                                    variant="outline"
+                                                                    size="sm"
+                                                                    onClick={() => {
+                                                                        setIdPublicacion(publicacion.id);
+                                                                        setTitulo(publicacion.titulo);
+                                                                        setDescripcion(publicacion.descripcion);
+                                                                        setImagenUrl(publicacion.imagenUrl);
+                                                                    }}
+                                                                >
+                                                                    Editar
+                                                                </Button>
+                                                                <Button
+                                                                    variant="destructive"
+                                                                    size="sm"
+                                                                    onClick={async () => {
+                                                                        const result = await notificacion.fire({
+                                                                            title: "¿Estás seguro?",
+                                                                            text: "Esta acción eliminará la publicación.",
+                                                                            icon: "warning",
+                                                                            showCancelButton: true,
+                                                                            confirmButtonText: "Sí, eliminar",
+                                                                            cancelButtonText: "Cancelar",
+                                                                        });
+
+                                                                        if (result.isConfirmed) {
+                                                                            try {
+                                                                                setLoading(true);
+                                                                                await axios.delete(`http://localhost:8080/api/mongodb/publicaciones/${publicacion.id}`);
+                                                                                await fetchPublicaciones();
+                                                                                notificacion.fire({
+                                                                                    title: "Eliminado",
+                                                                                    text: "La publicación fue eliminada correctamente",
+                                                                                    icon: "success",
+                                                                                    confirmButtonText: "Aceptar",
+                                                                                    timer: 3000,
+                                                                                });
+                                                                            } catch (error) {
+                                                                                console.error('Error al eliminar la publicación:', error);
+                                                                                notificacion.fire({
+                                                                                    title: "Error",
+                                                                                    text: "No se pudo eliminar la publicación",
+                                                                                    icon: "error",
+                                                                                });
+                                                                            } finally {
+                                                                                setLoading(false);
+                                                                            }
+                                                                        }
+                                                                    }}
+                                                                >
+                                                                    Eliminar
+                                                                </Button>
+                                                            </div>
                                                         </div>
                                                     </TableCell>
                                                     <TableCell>
