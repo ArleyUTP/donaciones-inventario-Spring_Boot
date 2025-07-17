@@ -12,6 +12,7 @@ import GestionVoluntarios from './components/GestionVoluntarios';
 import GestionAsignacionRecojo from './components/GestionAsignacionRecojo';
 import Dashboard from './components/Dashboard/Dashboard';
 import GestionInventario from './components/GestionInventario';
+import GestionPublicaciones from './components/GestionPublicaciones';
 export default function AppRoutes() {
   return (
     <Routes>
@@ -28,6 +29,7 @@ export default function AppRoutes() {
       <Route path="/asignacion-voluntarios" element={<GestionAsignacionRecojo />} />
       <Route path='/dashboard' element={<Dashboard />} />
       <Route path="/gestion-inventario" element={<GestionInventario />} />
+      <Route path="/gestion-publicaciones" element={<GestionPublicaciones />} />
     </Routes>
   );
 }

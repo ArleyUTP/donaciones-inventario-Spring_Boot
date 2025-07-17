@@ -33,6 +33,9 @@ export function SubMenu() {
                         <Button variant="ghost" className="w-full justify-start" asChild>
                             <Link to="/gestion-inventario">Inventario</Link>
                         </Button>
+                        <Button variant="ghost" className="w-full justify-start" asChild>
+                            <Link to="/gestion-publicaciones">Publicaciones</Link>
+                        </Button>
                     </nav>
                 </div>
 
