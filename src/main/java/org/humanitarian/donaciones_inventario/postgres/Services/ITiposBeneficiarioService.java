@@ -1,6 +1,6 @@
-package org.humanitarian.donaciones_inventario.Services;
+package org.humanitarian.donaciones_inventario.postgres.Services;
 
-import org.humanitarian.donaciones_inventario.Entities.TiposBeneficiario;
+import org.humanitarian.donaciones_inventario.postgres.Entities.TiposBeneficiario;
 import java.util.List;
 
 public interface ITiposBeneficiarioService {

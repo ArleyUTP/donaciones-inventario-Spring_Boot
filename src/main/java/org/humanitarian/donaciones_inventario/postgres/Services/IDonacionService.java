@@ -1,9 +1,9 @@
-package org.humanitarian.donaciones_inventario.Services;
+package org.humanitarian.donaciones_inventario.postgres.Services;
 
 import java.util.List;
 import java.util.Map;
 
-import org.humanitarian.donaciones_inventario.Entities.Donacion;
+import org.humanitarian.donaciones_inventario.postgres.Entities.Donacion;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 

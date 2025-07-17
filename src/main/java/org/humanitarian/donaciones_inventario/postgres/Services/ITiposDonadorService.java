@@ -1,8 +1,8 @@
-package org.humanitarian.donaciones_inventario.Services;
+package org.humanitarian.donaciones_inventario.postgres.Services;
 
 import java.util.List;
 
-import org.humanitarian.donaciones_inventario.Entities.TiposDonador;
+import org.humanitarian.donaciones_inventario.postgres.Entities.TiposDonador;
 
 public interface ITiposDonadorService {
     void deleteById(Long id);

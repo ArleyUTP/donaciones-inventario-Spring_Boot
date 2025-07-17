@@ -1,8 +1,7 @@
-package org.humanitarian.donaciones_inventario.Services;
+package org.humanitarian.donaciones_inventario.postgres.Services;
 
 import java.util.List;
-
-import org.humanitarian.donaciones_inventario.Entities.Donador;
+import org.humanitarian.donaciones_inventario.postgres.Entities.Donador;
 
 public interface IDonadorService {
     public Donador save(Donador donador);

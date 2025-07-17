@@ -1,8 +1,8 @@
-package org.humanitarian.donaciones_inventario.DAO;
+package org.humanitarian.donaciones_inventario.postgres.DAO;
 
 import java.util.List;
 
-import org.humanitarian.donaciones_inventario.Entities.Donacion;
+import org.humanitarian.donaciones_inventario.postgres.Entities.Donacion;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;

@@ -1,6 +1,6 @@
-package org.humanitarian.donaciones_inventario.DAO;
+package org.humanitarian.donaciones_inventario.postgres.DAO;
 
-import org.humanitarian.donaciones_inventario.Entities.Donador;
+import org.humanitarian.donaciones_inventario.postgres.Entities.Donador;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 @Repository

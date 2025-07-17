@@ -1,6 +1,6 @@
-package org.humanitarian.donaciones_inventario.Services;
+package org.humanitarian.donaciones_inventario.postgres.Services;
 
-import org.humanitarian.donaciones_inventario.Entities.Incidencia;
+import org.humanitarian.donaciones_inventario.postgres.Entities.Incidencia;
 import java.util.List;
 
 public interface IIncidenciaService {

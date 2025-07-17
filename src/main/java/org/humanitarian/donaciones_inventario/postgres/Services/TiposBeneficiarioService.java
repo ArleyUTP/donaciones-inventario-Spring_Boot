@@ -1,7 +1,7 @@
-package org.humanitarian.donaciones_inventario.Services;
+package org.humanitarian.donaciones_inventario.postgres.Services;
 
-import org.humanitarian.donaciones_inventario.DAO.ITiposBeneficiarioRepository;
-import org.humanitarian.donaciones_inventario.Entities.TiposBeneficiario;
+import org.humanitarian.donaciones_inventario.postgres.DAO.ITiposBeneficiarioRepository;
+import org.humanitarian.donaciones_inventario.postgres.Entities.TiposBeneficiario;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

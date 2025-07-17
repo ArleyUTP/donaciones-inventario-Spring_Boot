@@ -1,10 +1,10 @@
-package org.humanitarian.donaciones_inventario.Services;
+package org.humanitarian.donaciones_inventario.postgres.Services;
 
 import java.util.ArrayList;
 import java.util.List;
 
-import org.humanitarian.donaciones_inventario.DAO.IRolRepository;
-import org.humanitarian.donaciones_inventario.Entities.Rol;
+import org.humanitarian.donaciones_inventario.postgres.DAO.IRolRepository;
+import org.humanitarian.donaciones_inventario.postgres.Entities.Rol;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

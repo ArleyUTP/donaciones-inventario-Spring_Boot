@@ -1,9 +1,9 @@
-package org.humanitarian.donaciones_inventario.Controllers;
+package org.humanitarian.donaciones_inventario.postgres.Controllers;
 
 import java.util.List;
 
-import org.humanitarian.donaciones_inventario.Entities.DetalleDistribucion;
-import org.humanitarian.donaciones_inventario.Services.IDetalleDistribucionService;
+import org.humanitarian.donaciones_inventario.postgres.Entities.DetalleDistribucion;
+import org.humanitarian.donaciones_inventario.postgres.Services.IDetalleDistribucionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;

@@ -1,11 +1,11 @@
-package org.humanitarian.donaciones_inventario.Controllers;
+package org.humanitarian.donaciones_inventario.postgres.Controllers;
 
 import jakarta.transaction.Transactional;
-import org.humanitarian.donaciones_inventario.Entities.Rol;
-import org.humanitarian.donaciones_inventario.Entities.Usuario;
-import org.humanitarian.donaciones_inventario.Entities.Voluntario;
-import org.humanitarian.donaciones_inventario.Services.IUsuarioService;
-import org.humanitarian.donaciones_inventario.Services.IVoluntarioService;
+import org.humanitarian.donaciones_inventario.postgres.Entities.Rol;
+import org.humanitarian.donaciones_inventario.postgres.Entities.Usuario;
+import org.humanitarian.donaciones_inventario.postgres.Entities.Voluntario;
+import org.humanitarian.donaciones_inventario.postgres.Services.IUsuarioService;
+import org.humanitarian.donaciones_inventario.postgres.Services.IVoluntarioService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;

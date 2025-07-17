@@ -1,9 +1,9 @@
-package org.humanitarian.donaciones_inventario.Controllers;
+package org.humanitarian.donaciones_inventario.postgres.Controllers;
 
 import java.util.List;
 
-import org.humanitarian.donaciones_inventario.Entities.Notificacion;
-import org.humanitarian.donaciones_inventario.Services.INotificacionService;
+import org.humanitarian.donaciones_inventario.postgres.Entities.Notificacion;
+import org.humanitarian.donaciones_inventario.postgres.Services.INotificacionService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;

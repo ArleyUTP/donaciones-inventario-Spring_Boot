@@ -1,8 +1,8 @@
-package org.humanitarian.donaciones_inventario.Services;
+package org.humanitarian.donaciones_inventario.postgres.Services;
 
 import java.util.List;
 
-import org.humanitarian.donaciones_inventario.Entities.AsignacionRecojo;
+import org.humanitarian.donaciones_inventario.postgres.Entities.AsignacionRecojo;
 
 public interface IAsignacionRecojoService {
     AsignacionRecojo save(AsignacionRecojo asignacionRecojo);

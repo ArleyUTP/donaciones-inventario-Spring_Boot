@@ -1,8 +1,8 @@
-package org.humanitarian.donaciones_inventario.Services;
+package org.humanitarian.donaciones_inventario.postgres.Services;
 
 import java.util.List;
 
-import org.humanitarian.donaciones_inventario.Entities.NecesidadesActuales;
+import org.humanitarian.donaciones_inventario.postgres.Entities.NecesidadesActuales;
 
 public interface INecesidadesActualesService {
     public NecesidadesActuales save(NecesidadesActuales necesidadesActuales);

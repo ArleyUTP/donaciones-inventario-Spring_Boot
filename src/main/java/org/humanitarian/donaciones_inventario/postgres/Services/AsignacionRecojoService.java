@@ -1,9 +1,9 @@
-package org.humanitarian.donaciones_inventario.Services;
+package org.humanitarian.donaciones_inventario.postgres.Services;
 
 import java.util.List;
 
-import org.humanitarian.donaciones_inventario.DAO.IAsignacionRecojoRepository;
-import org.humanitarian.donaciones_inventario.Entities.AsignacionRecojo;
+import org.humanitarian.donaciones_inventario.postgres.DAO.IAsignacionRecojoRepository;
+import org.humanitarian.donaciones_inventario.postgres.Entities.AsignacionRecojo;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

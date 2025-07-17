@@ -1,10 +1,10 @@
-package org.humanitarian.donaciones_inventario.Services;
+package org.humanitarian.donaciones_inventario.postgres.Services;
 
 import jakarta.transaction.Transactional;
-import org.humanitarian.donaciones_inventario.DAO.INotificacionRepository;
-import org.humanitarian.donaciones_inventario.Entities.AsignacionRecojo;
-import org.humanitarian.donaciones_inventario.Entities.Donacion;
-import org.humanitarian.donaciones_inventario.Entities.Notificacion;
+import org.humanitarian.donaciones_inventario.postgres.DAO.INotificacionRepository;
+import org.humanitarian.donaciones_inventario.postgres.Entities.AsignacionRecojo;
+import org.humanitarian.donaciones_inventario.postgres.Entities.Donacion;
+import org.humanitarian.donaciones_inventario.postgres.Entities.Notificacion;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 

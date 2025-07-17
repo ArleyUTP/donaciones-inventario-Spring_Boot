@@ -1,4 +1,4 @@
-package org.humanitarian.donaciones_inventario.Entities;
+package org.humanitarian.donaciones_inventario.postgres.Entities;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
@@ -9,7 +9,7 @@ import java.util.Map;
 import com.fasterxml.jackson.annotation.JsonIgnore;
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import com.fasterxml.jackson.annotation.JsonProperty;
-import org.humanitarian.donaciones_inventario.DTO.UbicacionDTO;
+import org.humanitarian.donaciones_inventario.postgres.DTO.UbicacionDTO;
 import org.locationtech.jts.geom.Coordinate;
 import org.locationtech.jts.geom.GeometryFactory;
 import org.locationtech.jts.geom.Point;

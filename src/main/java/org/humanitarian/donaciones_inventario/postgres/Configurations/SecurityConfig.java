@@ -1,4 +1,4 @@
-package org.humanitarian.donaciones_inventario.Configurations;
+package org.humanitarian.donaciones_inventario.postgres.Configurations;
 
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;

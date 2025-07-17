@@ -1,4 +1,4 @@
-package org.humanitarian.donaciones_inventario.Controllers;
+package org.humanitarian.donaciones_inventario.postgres.Controllers;
 
 import java.time.LocalDateTime;
 import java.util.Collections;
@@ -6,12 +6,12 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.humanitarian.donaciones_inventario.Entities.NecesidadesActuales;
-import org.humanitarian.donaciones_inventario.Entities.CategoriaInventario;
-import org.humanitarian.donaciones_inventario.Entities.TipoDonacion;
-import org.humanitarian.donaciones_inventario.Services.INecesidadesActualesService;
-import org.humanitarian.donaciones_inventario.Services.ICategoriaInventario;
-import org.humanitarian.donaciones_inventario.Services.ITipoDonacionService;
+import org.humanitarian.donaciones_inventario.postgres.Entities.NecesidadesActuales;
+import org.humanitarian.donaciones_inventario.postgres.Entities.CategoriaInventario;
+import org.humanitarian.donaciones_inventario.postgres.Entities.TipoDonacion;
+import org.humanitarian.donaciones_inventario.postgres.Services.INecesidadesActualesService;
+import org.humanitarian.donaciones_inventario.postgres.Services.ICategoriaInventario;
+import org.humanitarian.donaciones_inventario.postgres.Services.ITipoDonacionService;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CrossOrigin;

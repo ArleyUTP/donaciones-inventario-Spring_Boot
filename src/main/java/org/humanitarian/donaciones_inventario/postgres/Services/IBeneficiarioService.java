@@ -1,6 +1,6 @@
-package org.humanitarian.donaciones_inventario.Services;
+package org.humanitarian.donaciones_inventario.postgres.Services;
 
-import org.humanitarian.donaciones_inventario.Entities.Beneficiario;
+import org.humanitarian.donaciones_inventario.postgres.Entities.Beneficiario;
 import java.util.List;
 import java.util.Map;
 

@@ -1,4 +1,4 @@
-package org.humanitarian.donaciones_inventario.DTO;
+package org.humanitarian.donaciones_inventario.postgres.DTO;
 
 import lombok.Data;
 

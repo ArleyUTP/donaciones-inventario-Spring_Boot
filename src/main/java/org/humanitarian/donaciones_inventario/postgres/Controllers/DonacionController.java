@@ -1,4 +1,4 @@
-package org.humanitarian.donaciones_inventario.Controllers;
+package org.humanitarian.donaciones_inventario.postgres.Controllers;
 
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
@@ -7,13 +7,13 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import org.humanitarian.donaciones_inventario.Entities.Donacion;
-import org.humanitarian.donaciones_inventario.Entities.NecesidadesActuales;
-import org.humanitarian.donaciones_inventario.Entities.TipoDonacion;
-import org.humanitarian.donaciones_inventario.Services.IDonacionService;
-import org.humanitarian.donaciones_inventario.Services.INecesidadesActualesService;
-import org.humanitarian.donaciones_inventario.Services.ITipoDonacionService;
-import org.humanitarian.donaciones_inventario.Services.NotificacionService;
+import org.humanitarian.donaciones_inventario.postgres.Entities.Donacion;
+import org.humanitarian.donaciones_inventario.postgres.Entities.NecesidadesActuales;
+import org.humanitarian.donaciones_inventario.postgres.Entities.TipoDonacion;
+import org.humanitarian.donaciones_inventario.postgres.Services.IDonacionService;
+import org.humanitarian.donaciones_inventario.postgres.Services.INecesidadesActualesService;
+import org.humanitarian.donaciones_inventario.postgres.Services.ITipoDonacionService;
+import org.humanitarian.donaciones_inventario.postgres.Services.NotificacionService;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.web.PageableDefault;

@@ -1,8 +1,8 @@
-package org.humanitarian.donaciones_inventario.Services;
+package org.humanitarian.donaciones_inventario.postgres.Services;
 
 import java.util.List;
 
-import org.humanitarian.donaciones_inventario.Entities.TipoDonacion;
+import org.humanitarian.donaciones_inventario.postgres.Entities.TipoDonacion;
 
 public interface ITipoDonacionService {
     public TipoDonacion save(TipoDonacion tipoDonacion);

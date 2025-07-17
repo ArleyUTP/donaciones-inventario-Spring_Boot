@@ -1,4 +1,4 @@
-package org.humanitarian.donaciones_inventario.Entities;
+package org.humanitarian.donaciones_inventario.postgres.Entities;
 
 import java.io.Serializable;
 
