@@ -8,12 +8,15 @@ import { Button } from '@/components/ui/button';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '@/components/ui/table';
+import { uploadImage } from '../Cloudinary';
 
 const GestionPublicaciones = () => {
     const { user } = useAuth();
     const [publicaciones, setPublicaciones] = useState([]);
     const [titulo, setTitulo] = useState('');
     const [descripcion, setDescripcion] = useState('');
+    const [imagen, setImagen] = useState(null);
+    const [imagenUrl, setImagenUrl] = useState('');
     const [loading, setLoading] = useState(true);
 
     // Obtener publicaciones al cargar el componente
@@ -31,19 +34,37 @@ const GestionPublicaciones = () => {
     }, []);
 
     // Crear nueva publicación
+    const handleImageChange = async (e) => {
+        const file = e.target.files[0];
+        if (file) {
+            try {
+                const url = await uploadImage(file);
+                setImagenUrl(url);
+                setImagen(file);
+            } catch (error) {
+                console.error('Error al subir la imagen:', error);
+            }
+        }
+    };
+
     const crearPublicacion = async (e) => {
         e.preventDefault();
         try {
-            const response = await axios.post('http://localhost:8080/api/mongodb/publicaciones', {
+            const formData = {
                 titulo,
                 descripcion,
-                usuarioCreador: user, // Usar el usuario del contexto de autenticación
-            });
+                usuarioCreador: user,
+                imagenUrl: imagenUrl // Agregamos la URL de la imagen
+            };
+
+            const response = await axios.post('http://localhost:8080/api/mongodb/publicaciones', formData);
             setPublicaciones([...publicaciones, response.data]);
             setTitulo('');
             setDescripcion('');
-        } catch {
-            // Error handling can be improved here
+            setImagen(null);
+            setImagenUrl('');
+        } catch (error) {
+            console.error('Error al crear la publicación:', error);
         }
     };
 
@@ -87,6 +108,25 @@ const GestionPublicaciones = () => {
                                             className="min-h-[100px]"
                                         />
                                     </div>
+                                    <div className="space-y-2">
+                                        <Label htmlFor="imagen">Imagen</Label>
+                                        <input
+                                            type="file"
+                                            id="imagen"
+                                            accept="image/*"
+                                            onChange={handleImageChange}
+                                            className="file-input file-input-bordered w-full"
+                                        />
+                                        {imagenUrl && (
+                                            <div className="mt-2">
+                                                <img
+                                                    src={imagenUrl}
+                                                    alt="Preview"
+                                                    className="max-h-48 w-full object-cover rounded-lg"
+                                                />
+                                            </div>
+                                        )}
+                                    </div>
                                     <Button type="submit" className="w-full">
                                         Crear Publicación
                                     </Button>
@@ -114,7 +154,18 @@ const GestionPublicaciones = () => {
                                             {publicaciones.map((publicacion) => (
                                                 <TableRow key={publicacion.id}>
                                                     <TableCell>{publicacion.titulo}</TableCell>
-                                                    <TableCell>{publicacion.descripcion}</TableCell>
+                                                    <TableCell>
+                                                        {publicacion.imagenUrl && (
+                                                            <img
+                                                                src={publicacion.imagenUrl}
+                                                                alt={publicacion.titulo}
+                                                                className="w-20 h-20 object-cover rounded-lg"
+                                                            />
+                                                        )}
+                                                        <div className="mt-2">
+                                                            {publicacion.descripcion}
+                                                        </div>
+                                                    </TableCell>
                                                     <TableCell>
                                                         <Badge variant="secondary">{publicacion.usuarioCreador?.nombreUsuario}</Badge>
                                                     </TableCell>
