@@ -20,11 +20,17 @@ function CommentCard({ comentario }) {
         <div className="max-w-sm border border-gray-300 rounded-lg shadow-lg bg-white p-6 space-y-4 mb-4">
             <div className="flex items-center space-x-4">
                 <div className="h-12 w-12 flex items-center justify-center bg-[#2563EB] text-white text-lg font-semibold rounded-full">
-                    {comentario.usuario ? getIniciales(comentario.usuario.nombre) : 'U'}
+                    {comentario.usuario?.nombreUsuario ? getIniciales(comentario.usuario.nombreUsuario) : 'U'}
                 </div>
                 <div>
-                    <div className="text-gray-900 font-medium">{comentario.usuario?.nombre || 'Usuario'}</div>
-                    <div className="text-gray-600 text-sm">{comentario.usuario?.rol?.nombre || 'Usuario'}</div>
+                    <div className="text-gray-900 font-medium">{comentario.usuario?.nombreUsuario || 'Usuario'}</div>
+                    <div className="text-gray-600 text-sm">
+                        {comentario.usuario?.rol 
+                            ? (typeof comentario.usuario.rol === 'string' 
+                                ? comentario.usuario.rol 
+                                : comentario.usuario.rol.nombreRol)
+                            : 'Usuario'}
+                    </div>
                 </div>
             </div>
             <p className="text-gray-700">{comentario.contenido}</p>
@@ -62,7 +68,7 @@ function CommentsModal({ open: isOpen, onClose, comentarios, onAddComment }) {
     };
 
     if (!isOpen) return null;
-    
+
     return (
         <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
             <div className="bg-white rounded-xl shadow-2xl max-w-lg w-full p-8 relative">
@@ -108,11 +114,10 @@ function CommentsModal({ open: isOpen, onClose, comentarios, onAddComment }) {
                         <button
                             type="submit"
                             disabled={isSubmitting}
-                            className={`self-end px-4 py-2 rounded-lg font-semibold transition ${
-                                isSubmitting 
-                                    ? 'bg-gray-400 cursor-not-allowed' 
+                            className={`self-end px-4 py-2 rounded-lg font-semibold transition ${isSubmitting
+                                    ? 'bg-gray-400 cursor-not-allowed'
                                     : 'bg-[#2563EB] text-white hover:bg-[#1E3A8A]'
-                            }`}
+                                }`}
                         >
                             {isSubmitting ? 'Enviando...' : 'Comentar'}
                         </button>
@@ -187,9 +192,9 @@ export function PublicationsSeccion() {
 
             // Actualizar la lista de comentarios
             setComentarios(response.data.comentarios || []);
-            
+
             // Actualizar la lista de publicaciones
-            const updatedPublicaciones = publicaciones.map(pub => 
+            const updatedPublicaciones = publicaciones.map(pub =>
                 pub.id === pubSeleccionada.id ? response.data : pub
             );
             setPublicaciones(updatedPublicaciones);
@@ -228,9 +233,9 @@ export function PublicationsSeccion() {
                             <div key={pub.id} className="bg-[#F3F4F6] rounded-2xl shadow p-0 flex flex-col">
                                 {/* Mostrar imagen de la publicación si existe */}
                                 {pub.imagenUrl ? (
-                                    <img 
-                                        src={pub.imagenUrl} 
-                                        alt={pub.titulo} 
+                                    <img
+                                        src={pub.imagenUrl}
+                                        alt={pub.titulo}
                                         className="w-full h-56 object-cover rounded-t-2xl"
                                     />
                                 ) : (
@@ -257,7 +262,8 @@ export function PublicationsSeccion() {
                                                 <circle cx="12" cy="12" r="12" fill="#E5E7EB" />
                                                 <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z" fill="#6B7280" />
                                             </svg>
-                                            {pub.usuarioCreador?.nombre || 'Usuario'}
+                                            {pub.usuarioCreador?.
+                                                nombreUsuario || 'Usuario'}
                                         </span>
                                         <span>•</span>
                                         <span>
