@@ -2,10 +2,11 @@ import React, { useState, useEffect } from "react";
 import { FaRegCommentDots } from "react-icons/fa";
 import axios from "axios";
 import { useAuth } from "@/AuthContext";
-
+import { Button } from "@/components/ui/button";
 // Componente Card de Comentario
 function CommentCard({ comentario }) {
     // Obtener iniciales del nombre del usuario
+    const { user } = useAuth();
     const getIniciales = (nombre) => {
         if (!nombre) return 'U';
         return nombre
@@ -43,6 +44,14 @@ function CommentCard({ comentario }) {
                     minute: '2-digit'
                 })}
             </div>
+            {
+                user?.id === comentario.usuario?.id && (
+                    <div className="flex space-x-2">
+                        <Button variant="destructive" size="sm">Eliminar</Button>
+                        <Button variant="outline" size="sm">Editar</Button>
+                    </div>
+                )
+            }
         </div>
     );
 }
