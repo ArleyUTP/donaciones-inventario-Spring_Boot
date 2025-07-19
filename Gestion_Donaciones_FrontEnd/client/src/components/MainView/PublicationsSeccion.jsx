@@ -3,8 +3,12 @@ import { FaRegCommentDots } from "react-icons/fa";
 import axios from "axios";
 import { useAuth } from "@/AuthContext";
 import { Button } from "@/components/ui/button";
+import Swal from "sweetalert2";
+import withReactContent from "sweetalert2-react-content";
+
+const notificacion = withReactContent(Swal);
 // Componente Card de Comentario
-function CommentCard({ comentario }) {
+function CommentCard({ comentario, onDeleteComment }) {
     // Obtener iniciales del nombre del usuario
     const { user } = useAuth();
     const getIniciales = (nombre) => {
@@ -47,7 +51,16 @@ function CommentCard({ comentario }) {
             {
                 user?.id === comentario.usuario?.id && (
                     <div className="flex space-x-2">
-                        <Button variant="destructive" size="sm">Eliminar</Button>
+                        <Button 
+                            variant="destructive" 
+                            size="sm"
+                            onClick={(e) => {
+                                e.stopPropagation();
+                                onDeleteComment(comentario.id);
+                            }}
+                        >
+                            Eliminar
+                        </Button>
                         <Button variant="outline" size="sm">Editar</Button>
                     </div>
                 )
@@ -57,7 +70,7 @@ function CommentCard({ comentario }) {
 }
 
 // Modal de Comentarios
-function CommentsModal({ open: isOpen, onClose, comentarios, onAddComment }) {
+function CommentsModal({ open: isOpen, onClose, comentarios, onAddComment, onDeleteComment }) {
     const [nuevoComentario, setNuevoComentario] = useState("");
     const [isSubmitting, setIsSubmitting] = useState(false);
     const { user } = useAuth();
@@ -98,7 +111,11 @@ function CommentsModal({ open: isOpen, onClose, comentarios, onAddComment }) {
                         <div className="text-gray-500 text-center">No hay comentarios aún.</div>
                     )}
                     {!isSubmitting && comentarios.map((comentario, idx) => (
-                        <CommentCard key={idx} comentario={comentario} />
+                        <CommentCard 
+                            key={comentario.id || idx} 
+                            comentario={comentario} 
+                            onDeleteComment={onDeleteComment}
+                        />
                     ))}
                 </div>
                 {user ? (
@@ -146,9 +163,62 @@ export function PublicationsSeccion() {
     const [publicaciones, setPublicaciones] = useState([]);
     const [loading, setLoading] = useState(true);
     const [modalOpen, setModalOpen] = useState(false);
+    const [isDeleting, setIsDeleting] = useState(false);
     const [comentarios, setComentarios] = useState([]);
     const [pubSeleccionada, setPubSeleccionada] = useState(null);
-    // State for comment input is now handled in the CommentsModal component
+
+    const handleDeleteComment = async (comentarioId) => {
+        if (!comentarioId || !pubSeleccionada?.id) return;
+        
+        try {
+            const result = await notificacion.fire({
+                title: '¿Estás seguro?',
+                text: 'Esta acción eliminará el comentario permanentemente',
+                icon: 'warning',
+                showCancelButton: true,
+                confirmButtonColor: '#3085d6',
+                cancelButtonColor: '#d33',
+                confirmButtonText: 'Sí, eliminar',
+                cancelButtonText: 'Cancelar',
+                reverseButtons: true
+            });
+
+            if (!result.isConfirmed) return;
+
+            setIsDeleting(true);
+            const response = await axios.delete(
+                `http://localhost:8080/api/mongodb/publicaciones/${pubSeleccionada.id}/comentarios/${comentarioId}`
+            );
+
+            // Actualizar la lista de comentarios
+            setComentarios(response.data.comentarios || []);
+
+            // Actualizar la lista de publicaciones
+            const updatedPublicaciones = publicaciones.map(pub =>
+                pub.id === pubSeleccionada.id ? response.data : pub
+            );
+            setPublicaciones(updatedPublicaciones);
+            
+            // Mostrar mensaje de éxito
+            await notificacion.fire({
+                title: '¡Eliminado!',
+                text: 'El comentario ha sido eliminado correctamente',
+                icon: 'success',
+                timer: 2000,
+                showConfirmButton: false
+            });
+        } catch (error) {
+            console.error('Error al eliminar comentario:', error);
+            await notificacion.fire({
+                title: 'Error',
+                text: 'No se pudo eliminar el comentario. Por favor, inténtalo de nuevo.',
+                icon: 'error',
+                timer: 3000
+            });
+        } finally {
+            setIsDeleting(false);
+        }
+    };
 
     // Obtener publicaciones del backend
     useEffect(() => {
@@ -300,6 +370,7 @@ export function PublicationsSeccion() {
                     onClose={() => setModalOpen(false)}
                     comentarios={comentarios}
                     onAddComment={handleAddComment}
+                    onDeleteComment={handleDeleteComment}
                 />
             </div>
         </section>
