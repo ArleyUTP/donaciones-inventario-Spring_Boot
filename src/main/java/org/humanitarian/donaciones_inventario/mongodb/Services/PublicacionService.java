@@ -57,8 +57,31 @@ public class PublicacionService implements IPublicacionService {
         if (publicacion.getComentarios() == null) {
             publicacion.setComentarios(new ArrayList<>());
         }
+        
+        // Generate sequential ID for the new comment
+        long nextId = 1;
+        if (!publicacion.getComentarios().isEmpty()) {
+            // Find the maximum ID and increment by 1
+            nextId = publicacion.getComentarios().stream()
+                .mapToLong(c -> {
+                    try {
+                        return c.getId() != null ? Long.parseLong(c.getId()) : 0;
+                    } catch (NumberFormatException e) {
+                        return 0;
+                    }
+                })
+                .max()
+                .orElse(0) + 1;
+        }
+        
+        // Set the new ID and timestamp
+        comentario.setId(String.valueOf(nextId));
         comentario.setFechaComentario(LocalDateTime.now());
+        
+        // Add the comment to the list
         publicacion.getComentarios().add(comentario);
+        
+        // Save and return the updated publication
         return publicacionRepository.save(publicacion);
     }
 
