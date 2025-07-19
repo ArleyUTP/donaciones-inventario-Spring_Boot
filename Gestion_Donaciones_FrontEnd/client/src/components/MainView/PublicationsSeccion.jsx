@@ -223,9 +223,6 @@ export function PublicationsSeccion() {
                         <h2 className="text-4xl font-bold text-[#111827] mb-2">Distribuciones de Donaciones</h2>
                         <p className="text-[#6B7280] text-lg">Explora nuestras últimas distribuciones y comentarios.</p>
                     </div>
-                    <button className="border border-[#111827] text-[#111827] px-4 py-2 rounded hover:bg-[#F3F4F6] transition font-medium">
-                        Ver todo
-                    </button>
                 </div>
                 {/* Publicaciones */}
                 <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
