@@ -200,7 +200,7 @@ const GestionPublicaciones = () => {
                                                 <img
                                                     src={imagenUrl}
                                                     alt="Preview"
-                                                    className="max-h-48 w-full object-cover rounded-lg"
+                                                    className="max-h-96 w-1/2 object-cover rounded-lg"
                                                 />
                                             </div>
                                         )}
